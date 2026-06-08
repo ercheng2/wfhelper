@@ -91,7 +91,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .avatar-paste-zone:hover{border-color:#1a73e8;background:#f8f9ff}
 .avatar-paste-zone.has-img{border-style:solid;border-color:#34a853}
 .avatar-paste-zone .hint{color:#aaa;font-size:12px}
-.avatar-paste-zone img{max-width:64px;max-height:64px;border-radius:50%;object-fit:cover;margin:4px;vertical-align:middle}
+.avatar-paste-zone img{max-width:100%;max-height:200px;border-radius:6px;object-fit:contain;margin:4px auto;display:block}
 .avatar-paste-zone .remove-img{position:absolute;top:4px;right:6px;background:#ea4335;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:20px;padding:0;display:none}
 .avatar-paste-zone.has-img .remove-img{display:block}
 @media(max-width:768px){.split{flex-direction:column}.split-left,.split-right{width:100%;border-right:none}.split-left{max-height:280px}}
@@ -484,16 +484,17 @@ function handleAvatarPaste(event,customerId){
     reader.onload=e=>{
       const img=new Image();
       img.onload=()=>{
-        const size=80;
+        const maxW=300,maxH=300;
+        let w=img.width,h=img.height;
+        if(w>maxW){h=h*maxW/w;w=maxW}
+        if(h>maxH){w=w*maxH/h;h=maxH}
         const canvas=document.createElement('canvas');
-        canvas.width=size;canvas.height=size;
+        canvas.width=w;canvas.height=h;
         const ctx=canvas.getContext('2d');
-        const minDim=Math.min(img.width,img.height);
-        const sx=(img.width-minDim)/2,sy=(img.height-minDim)/2;
-        ctx.drawImage(img,sx,sy,minDim,minDim,0,0,size,size);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.7);
+        ctx.drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.8);
         const c=customers.find(x=>x.id===customerId);
-        if(c){c.avatarData=dataUrl;saveData(customers);renderAll();showToast('头像已保存','success')}
+        if(c){c.avatarData=dataUrl;saveData(customers);renderAll();showToast('图片已保存','success')}
       };
       img.src=e.target.result;
     };
