@@ -444,7 +444,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       </div>
       <div class="stamp-section">
         <h4>⚙️ 盖章设置</h4>
-        <div class="form-row"><label>类型</label><select id="espStampType" onchange="espOnTypeChange()"><option value="seal">公章</option><option value="cross">骑缝章</option><option value="both">公章+骑缝章</option></select></div>
+        <div class="form-row"><label>类型</label><select id="espStampType" onchange="espOnTypeChange()"><option value="seal">公章</option><option value="both">公章+骑缝章</option></select></div>
         <div id="espSealSettings">
           <div class="form-row"><label>盖章页</label><span id="espPageInfo" style="font-size:12px;line-height:28px">1 / 1</span></div>
           <div class="form-row"><label>大小</label><input type="range" id="espStampScale" min="5" max="40" value="18" oninput="espUpdateOverlay()" style="flex:1"><span id="espScaleVal" style="font-size:11px;width:32px;text-align:right">18%</span></div>
@@ -452,12 +452,14 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
           <div class="form-row"><label>Y位置</label><input type="range" id="espStampY" min="5" max="95" value="82" oninput="espUpdateOverlay()" style="flex:1"><span id="espStampYVal" style="font-size:11px;width:32px;text-align:right">82%</span></div>
           <div style="font-size:10px;color:#888;margin-top:2px">💡 拖拽印章或用滑条调整位置</div>
         </div>
-        <div id="espCrossHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 骑缝章：自动在每两页之间居中剖切盖章</div>
-        <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：先在指定页盖公章（可拖拽定位），再自动盖骑缝章</div>
+        <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：在指定页盖公章（可拖拽定位），同时在所有页右边缘盖骑缝章</div>
         <button class="btn btn-primary" onclick="espShowConfirm()" style="width:100%;margin-top:8px;padding:8px">✅ 执行盖章</button>
         <div style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px">
           <div class="form-row"><label>保存路径</label><input type="text" id="espSaveDir" placeholder="留空=仅存服务器" style="flex:1;font-size:11px"></div>
-          <div style="font-size:10px;color:#aaa;margin-top:2px">盖章文件额外保存到此本地路径</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <button class="btn btn-sm" onclick="espSaveStampDir()" style="font-size:11px">💾 保存路径</button>
+            <span style="font-size:10px;color:#aaa">盖章文件额外保存到此本地路径</span>
+          </div>
         </div>
       </div>
     </div>
@@ -2352,7 +2354,6 @@ function espNextPage(){
 function espOnTypeChange(){
   const type = document.getElementById('espStampType').value;
   document.getElementById('espSealSettings').style.display = (type==='seal'||type==='both') ? '' : 'none';
-  document.getElementById('espCrossHint').style.display = type==='cross' ? '' : 'none';
   document.getElementById('espBothHint').style.display = type==='both' ? '' : 'none';
   espRenderPreview();
 }
@@ -2365,7 +2366,7 @@ function espShowConfirm(){
   const type = document.getElementById('espStampType').value;
   const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
   const stampName = stampObj ? stampObj.name : _espSelectedStamp;
-  const typeNames = {seal:'公章', cross:'骑缝章', both:'公章+骑缝章'};
+  const typeNames = {seal:'公章', both:'公章+骑缝章'};
   
   let info = `印章：<strong>${stampName}</strong> | 类型：<strong>${typeNames[type]}</strong>`;
   if(type === 'seal' || type === 'both'){
@@ -2396,6 +2397,15 @@ function espCancelConfirm(){
 }
 
 // 执行盖章（确认后）
+// 保存盖章路径到配置（持久化，刷新后仍在）
+function espSaveStampDir(){
+  const dir = document.getElementById('espSaveDir').value.trim();
+  config.stampSaveDir = dir;
+  document.getElementById('cfgStampSaveDir').value = dir;
+  saveConfigToStorage(config);
+  showToast(dir ? '保存路径已保存：'+dir : '保存路径已清除','success');
+}
+
 async function espDoApply(){
   if(!_espSelectedStamp){ showToast('请先选择印章','error'); return }
   if(!_espCurrentFid){ showToast('请先选择PDF文件','error'); return }
@@ -2413,29 +2423,20 @@ async function espDoApply(){
   const saveDir = document.getElementById('espSaveDir').value.trim();
   
   if(type === 'both'){
-    // 公章+骑缝章：先盖公章，再在公章结果上盖骑缝章
-    showToast('正在盖公章...','info');
-    const sealParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'seal', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY, saveDir};
+    // 公章+骑缝章：一次请求，后端同时盖公章和骑缝章，生成一个文件
+    showToast('正在盖章...','info');
+    const params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY, saveDir};
     try{
-      let r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sealParams)});
-      let d = await r.json();
-      if(!d.ok){ showToast(d.error||'公章盖章失败','error'); return }
-      showToast('公章完成，正在盖骑缝章...','info');
-      // 在公章结果上盖骑缝章
-      const crossParams = {fid:d.newFid, stampId:_espSelectedStamp, type:'cross', scale, fileName:d.newName, saveDir};
-      r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(crossParams)});
-      const d2 = await r.json();
-      if(d2.ok){
-        showToast(`盖章成功！已生成：${d2.newName}`,'success');
-        espAddFileToContract(d2, opt);
-        // 删除中间文件（只有公章的那份）
-        try{ await fetch('/api/files/'+encodeURIComponent(d.newFid),{method:'DELETE'}); }catch(e){}
-        espRefreshFileList();
-      } else {
-        // 骑缝章失败但公章成功，保留公章结果
-        showToast(`公章成功，骑缝章失败：${d2.error}`,'error');
+      const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
+      const d = await r.json();
+      if(d.ok){
+        let msg = `盖章成功！已生成：${d.newName}`;
+        if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
+        showToast(msg,'success');
         espAddFileToContract(d, opt);
         espRefreshFileList();
+      } else {
+        showToast(d.error||'盖章失败','error');
       }
     }catch(e){ showToast('盖章请求失败','error') }
     return;
