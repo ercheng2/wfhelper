@@ -734,6 +734,7 @@ _APP_CONFIG = _load_config()
 HOST = _APP_CONFIG.get('host', '0.0.0.0')
 PORT = _APP_CONFIG.get('port', 8199)
 OPEN_BROWSER = _APP_CONFIG.get('open_browser', True)
+MINIMIZE_TO_TRAY = _APP_CONFIG.get('minimize_to_tray', False)
 
 BASE_DIR = _EXE_DIR
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -1263,14 +1264,27 @@ class Handler(BaseHTTPRequestHandler):
                     pw, ph = page.rect.width, page.rect.height
                     # 印章尺寸
                     sw = pw * stamp_scale
-                    stamp_doc = fitz.open(stamp_img)
-                    stamp_pix = stamp_doc[0].get_pixmap(dpi=150, alpha=True)
-                    stamp_doc.close()
-                    sh = sw * (stamp_pix.height / stamp_pix.width) if stamp_pix.width > 0 else sw
-                    sx = pw * pos_x - sw / 2
-                    sy = ph * pos_y - sh / 2
-                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, filename=stamp_img, overlay=True)
+                    # 用PIL转标准RGBA PNG，解决PNG兼容性问题（8位灰度/索引色等）
+                    from PIL import Image as PILImageNorm
+                    import tempfile as _tf_seal
+                    _pil_s = PILImageNorm.open(stamp_img).convert('RGBA')
+                    _tmp_s = _tf_seal.NamedTemporaryFile(suffix='.png', delete=False)
+                    _pil_s.save(_tmp_s.name, 'PNG')
+                    _tmp_s.close()
+                    _stamp_fn = _tmp_s.name
+                    try:
+                        stamp_doc = fitz.open(_stamp_fn)
+                        stamp_pix = stamp_doc[0].get_pixmap(dpi=150, alpha=True)
+                        stamp_doc.close()
+                        sh = sw * (stamp_pix.height / stamp_pix.width) if stamp_pix.width > 0 else sw
+                        sx = pw * pos_x - sw / 2
+                        sy = ph * pos_y - sh / 2
+                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                        page.insert_image(rect, filename=_stamp_fn, overlay=True)
+                    finally:
+                        import os as _os_s
+                        try: _os_s.unlink(_stamp_fn)
+                        except: pass
                 elif stamp_type == 'cross':
                     # 骑缝章：完整印章按页数等分，每页右边缘放一片
                     # 所有页的片拼在一起才是完整的章，防止抽换页面
@@ -1317,14 +1331,26 @@ class Handler(BaseHTTPRequestHandler):
                     page = doc[pg]
                     pw, ph = page.rect.width, page.rect.height
                     sw = pw * stamp_scale
-                    stamp_doc_b = fitz.open(stamp_img)
-                    stamp_pix_b = stamp_doc_b[0].get_pixmap(dpi=150, alpha=True)
-                    stamp_doc_b.close()
-                    sh = sw * (stamp_pix_b.height / stamp_pix_b.width) if stamp_pix_b.width > 0 else sw
-                    sx = pw * pos_x - sw / 2
-                    sy = ph * pos_y - sh / 2
-                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, filename=stamp_img, overlay=True)
+                    from PIL import Image as PILImageNorm2
+                    import tempfile as _tf_seal2
+                    _pil_s2 = PILImageNorm2.open(stamp_img).convert('RGBA')
+                    _tmp_s2 = _tf_seal2.NamedTemporaryFile(suffix='.png', delete=False)
+                    _pil_s2.save(_tmp_s2.name, 'PNG')
+                    _tmp_s2.close()
+                    _stamp_fn2 = _tmp_s2.name
+                    try:
+                        stamp_doc_b = fitz.open(_stamp_fn2)
+                        stamp_pix_b = stamp_doc_b[0].get_pixmap(dpi=150, alpha=True)
+                        stamp_doc_b.close()
+                        sh = sw * (stamp_pix_b.height / stamp_pix_b.width) if stamp_pix_b.width > 0 else sw
+                        sx = pw * pos_x - sw / 2
+                        sy = ph * pos_y - sh / 2
+                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                        page.insert_image(rect, filename=_stamp_fn2, overlay=True)
+                    finally:
+                        import os as _os_s2
+                        try: _os_s2.unlink(_stamp_fn2)
+                        except: pass
                     # 2. 骑缝章（所有页右边缘等分印章）
                     if total_pages >= 2:
                         from PIL import Image as PILImage
@@ -1668,20 +1694,86 @@ def main():
     print(f'  监听地址：{HOST}:{PORT}')
     print(f'  配置文件：config.json（可修改host/port）')
     print(f'  数据目录：{DATA_DIR}')
+    if MINIMIZE_TO_TRAY:
+        print(f'  托盘模式：已启用（最小化到系统托盘）')
     print(f'  按 Ctrl+C 停止服务器')
     print('=' * 50)
     
     # Open browser after a short delay
-    if OPEN_BROWSER:
+    if OPEN_BROWSER and not MINIMIZE_TO_TRAY:
         def open_browser():
             webbrowser.open(f'http://localhost:{PORT}')
         threading.Timer(1.5, open_browser).start()
     
+    if MINIMIZE_TO_TRAY:
+        _run_with_tray(server, PORT)
+    else:
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print('\n服务器已停止')
+            server.server_close()
+
+def _run_with_tray(server, port):
+    """以系统托盘方式运行"""
     try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print('\n服务器已停止')
-        server.server_close()
+        import pystray
+        from PIL import Image as PILImage
+    except ImportError:
+        print('[警告] pystray未安装，无法最小化到托盘，以普通模式运行')
+        print('[提示] 运行 pip install pystray 后重试')
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            server.server_close()
+        return
+    
+    # 创建托盘图标（蓝色圆形带"微"字）
+    icon_size = 64
+    img = PILImage.new('RGBA', (icon_size, icon_size), (0, 0, 0, 0))
+    from PIL import ImageDraw, ImageFont
+    draw = ImageDraw.Draw(img)
+    draw.ellipse([4, 4, icon_size-4, icon_size-4], fill=(26, 115, 232, 255))
+    try:
+        font = ImageFont.truetype("msyh.ttc", 32)
+    except:
+        try:
+            font = ImageFont.truetype("simhei.ttf", 32)
+        except:
+            font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), "微", font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    tx = (icon_size - tw) // 2 - bbox[0]
+    ty = (icon_size - th) // 2 - bbox[1]
+    draw.text((tx, ty), "微", fill=(255, 255, 255, 255), font=font)
+    
+    # 托盘菜单
+    def open_ui(icon, item):
+        webbrowser.open(f'http://localhost:{port}')
+    
+    def quit_app(icon, item):
+        icon.stop()
+        server.shutdown()
+    
+    menu = pystray.Menu(
+        pystray.MenuItem('打开界面', open_ui, default=True),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem(f'访问地址：localhost:{port}', None, enabled=False),
+        pystray.MenuItem('退出', quit_app),
+    )
+    
+    icon = pystray.Icon('wfhelper', img, f'微信好友助手 - :{port}', menu)
+    
+    # 服务器在后台线程运行
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+    
+    # 第一次启动自动打开浏览器
+    if OPEN_BROWSER:
+        threading.Timer(2.0, lambda: webbrowser.open(f'http://localhost:{port}')).start()
+    
+    # 运行托盘（阻塞主线程）
+    icon.run()
 
 if __name__ == '__main__':
     main()

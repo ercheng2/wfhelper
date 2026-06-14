@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller pymupdf Pillow pdf2image
+          pip install pyinstaller pymupdf Pillow pdf2image pystray
 
       - name: Build EXE
         working-directory: server
@@ -54,4 +54,5 @@ jobs:
             - host: 监听地址，默认 0.0.0.0（所有网卡）
             - port: 监听端口，默认 8199
             - open_browser: 是否自动打开浏览器，默认 true
+            - minimize_to_tray: 是否最小化到系统托盘，默认 false
           files: server/dist/wfhelper_v2.zip

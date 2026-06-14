@@ -1,5 +1,6 @@
 {
     "host": "0.0.0.0",
     "port": 8199,
-    "open_browser": true
+    "open_browser": true,
+    "minimize_to_tray": false
 }

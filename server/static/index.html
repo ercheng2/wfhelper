@@ -1018,7 +1018,7 @@ function handleAvatarPaste(event,customerId){
         canvas.width=w;canvas.height=h;
         const ctx=canvas.getContext('2d');
         ctx.drawImage(img,0,0,w,h);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.8);
+        const dataUrl=canvas.toDataURL('image/png');
         const c=customers.find(x=>x.id===customerId);
         if(c){c.avatarData=dataUrl;saveData(customers);renderAll();showToast('图片已保存','success')}
       };
@@ -1270,7 +1270,7 @@ function renderContractDetail(c){
       <span style="font-size:11px;padding:2px 6px;border-radius:10px;${isPaid?'background:#e6f4ea;color:#34a853':'background:#fef7e0;color:#e37400'}">${isPaid?'✓已收':'待收'}</span>
       <button class="btn btn-danger btn-sm" onclick="removePaymentRow(${i})" style="padding:2px 6px">✕</button>
     </div>`}).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">暂无付款节点</div>';
-  const fileItems=(c.files&&c.files.length)?c.files.map(f=>{const isImg=f.type&&f.type.startsWith('image/');const isPdf=f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf');const icon=isPdf?'📕':f.type&&f.type.startsWith('text/')?'📝':'📄';return`<div class="contract-file-item" style="cursor:pointer" onclick="viewContractFile('${f.id}','${f.name||''}','${f.type||''}')">${isImg&&f.thumbnail?`<img src="${f.thumbnail}">`:`<div class="file-icon">${icon}</div>`}<div class="file-name">${f.name}</div><button class="remove-file" onclick="event.stopPropagation();removeContractFile('${c.id}','${f.id}')">✕</button></div>`}).join(''):'';
+  const fileItems=(c.files&&c.files.length)?c.files.map(f=>{const isImg=f.type&&f.type.startsWith('image/');const isPdf=f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf');const icon=isPdf?'📕':f.type&&f.type.startsWith('text/')?'📝':'📄';const imgSrc=isImg?(f.thumbnail||('/api/files/'+f.id+'?name='+encodeURIComponent(f.name||f.id)+'&type='+encodeURIComponent(f.type||''))):'';return`<div class="contract-file-item" style="cursor:pointer" onclick="viewContractFile('${f.id}','${f.name||''}','${f.type||''}')">${isImg&&imgSrc?`<img src="${imgSrc}">`:`<div class="file-icon">${icon}</div>`}<div class="file-name">${f.name}</div><button class="remove-file" onclick="event.stopPropagation();removeContractFile('${c.id}','${f.id}')">✕</button></div>`}).join(''):'';
   document.getElementById('contractDetail').innerHTML=`
   <div class="contract-form" style="max-width:100%;margin:0 auto;padding:0">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;border-radius:10px"><h3 style="margin:0;font-size:17px;color:#fff">合同详情</h3><span style="padding:3px 12px;border-radius:12px;font-size:12px;font-weight:500;${st==='completed'?'background:#34a853;color:#fff':st==='overdue'?'background:#ea4335;color:#fff':'background:rgba(255,255,255,.25);color:#fff'}">${sl[st]}</span></div>
@@ -1413,7 +1413,7 @@ async function handleContractFileUploadObj(fileList){
             if(w>h){h=h*mx/w;w=mx}else{w=w*mx/h;h=mx}
             cv.width=w;cv.height=h;
             cv.getContext('2d').drawImage(img,0,0,w,h);
-            r(cv.toDataURL('image/jpeg',0.6));
+            r(cv.toDataURL('image/png'));
           };
           img.src=e.target.result;
         };
