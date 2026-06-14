@@ -1325,7 +1325,23 @@ class Handler(BaseHTTPRequestHandler):
                 doc.close()
                 
                 new_size = os.path.getsize(save_path)
-                self.send_json({'ok': True, 'newFid': new_fid, 'newName': new_fid, 'size': new_size, 'pages': total_pages})
+                
+                # 复制到用户指定的保存路径
+                save_dir = params.get('saveDir', '').strip()
+                copied_to = ''
+                if save_dir and os.path.isdir(save_dir):
+                    try:
+                        import shutil
+                        dest = os.path.join(save_dir, new_fid)
+                        shutil.copy2(save_path, dest)
+                        copied_to = save_dir
+                    except Exception as e:
+                        print(f'[盖章] 复制到保存路径失败: {e}')
+                
+                result = {'ok': True, 'newFid': new_fid, 'newName': new_fid, 'size': new_size, 'pages': total_pages}
+                if copied_to:
+                    result['copiedTo'] = copied_to
+                self.send_json(result)
             except ImportError:
                 self.send_json({'error': '需要安装PyMuPDF: pip install pymupdf'}, 500)
             except Exception as e:
