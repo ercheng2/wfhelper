@@ -28,8 +28,27 @@ jobs:
         run: |
           copy config.json dist\
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create release package
+        working-directory: server/dist
+        run: |
+          Compress-Archive -Path * -DestinationPath wfhelper_v2.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: wfhelper-exe
-          path: server/dist/
+          tag_name: v2.0
+          name: 微信好友助手 v2.0
+          body: |
+            微信好友助手 v2.0 服务器版
+            
+            ## 使用方法
+            1. 下载 wfhelper_v2.zip 并解压
+            2. 编辑 config.json 可修改监听地址和端口
+            3. 双击 微信好友助手.exe 启动服务器
+            4. 局域网其他设备访问 http://IP:8199
+            
+            ## config.json 说明
+            - host: 监听地址，默认 0.0.0.0（所有网卡）
+            - port: 监听端口，默认 8199
+            - open_browser: 是否自动打开浏览器，默认 true
+          files: server/dist/wfhelper_v2.zip
