@@ -838,13 +838,16 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
     
-    def send_file(self, filepath, download_name=None, inline=False):
+    def send_file(self, filepath, download_name=None, inline=False, mime_type=None):
         if not os.path.exists(filepath):
             self.send_error(404, 'File not found')
             return
-        mime, _ = mimetypes.guess_type(filepath)
-        if not mime:
-            mime = 'application/octet-stream'
+        if mime_type:
+            mime = mime_type
+        else:
+            mime, _ = mimetypes.guess_type(filepath)
+            if not mime:
+                mime = 'application/octet-stream'
         size = os.path.getsize(filepath)
         self.send_response(200)
         # 图片和PDF不加charset
@@ -905,7 +908,7 @@ class Handler(BaseHTTPRequestHandler):
             name = params.get('name', [fid])[0]
             mimetype = params.get('type', ['application/octet-stream'])[0]
             if mimetype.startswith('image/') or mimetype == 'application/pdf':
-                self.send_file(filepath, download_name=None, inline=True)
+                self.send_file(filepath, download_name=None, inline=True, mime_type=mimetype)
             else:
                 self.send_file(filepath, name)
             return
@@ -1264,66 +1267,52 @@ class Handler(BaseHTTPRequestHandler):
                     pw, ph = page.rect.width, page.rect.height
                     # 印章尺寸
                     sw = pw * stamp_scale
-                    # 用PIL转标准RGBA PNG，解决PNG兼容性问题（8位灰度/索引色等）
+                    # 用PIL转标准RGBA PNG，用stream方式插入避免格式兼容问题
                     from PIL import Image as PILImageNorm
-                    import tempfile as _tf_seal
+                    import io as _io_seal
                     _pil_s = PILImageNorm.open(stamp_img).convert('RGBA')
-                    _tmp_s = _tf_seal.NamedTemporaryFile(suffix='.png', delete=False)
-                    _pil_s.save(_tmp_s.name, 'PNG')
-                    _tmp_s.close()
-                    _stamp_fn = _tmp_s.name
-                    try:
-                        stamp_doc = fitz.open(_stamp_fn)
-                        stamp_pix = stamp_doc[0].get_pixmap(dpi=150, alpha=True)
-                        stamp_doc.close()
-                        sh = sw * (stamp_pix.height / stamp_pix.width) if stamp_pix.width > 0 else sw
-                        sx = pw * pos_x - sw / 2
-                        sy = ph * pos_y - sh / 2
-                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                        page.insert_image(rect, filename=_stamp_fn, overlay=True)
-                    finally:
-                        import os as _os_s
-                        try: _os_s.unlink(_stamp_fn)
-                        except: pass
+                    _buf_s = _io_seal.BytesIO()
+                    _pil_s.save(_buf_s, 'PNG')
+                    _buf_s.seek(0)
+                    _png_bytes_s = _buf_s.read()
+                    _img_w_s, _img_h_s = _pil_s.size
+                    sh = sw * (_img_h_s / _img_w_s) if _img_w_s > 0 else sw
+                    sx = pw * pos_x - sw / 2
+                    sy = ph * pos_y - sh / 2
+                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                    page.insert_image(rect, stream=_png_bytes_s, overlay=True)
                 elif stamp_type == 'cross':
                     # 骑缝章：完整印章按页数等分，每页右边缘放一片
                     # 所有页的片拼在一起才是完整的章，防止抽换页面
                     if total_pages < 2:
                         self.send_json({'error': '骑缝章至少需要2页'}, 400); return
                     from PIL import Image as PILImage
-                    import tempfile
+                    import io as _io_cross2
                     pil_img = PILImage.open(stamp_img)
                     sw, sh_img = pil_img.size
                     # 按页数从左到右等分印章
                     strip_w = sw // total_pages
-                    tmp_files = []
-                    try:
-                        for i in range(total_pages):
-                            x0 = i * strip_w
-                            x1 = (i + 1) * strip_w if i < total_pages - 1 else sw
-                            strip = pil_img.crop((x0, 0, x1, sh_img))
-                            tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-                            strip.save(tmp.name, 'PNG')
-                            tmp.close()
-                            tmp_files.append(tmp.name)
-                            # 在第i页右边缘放第i片
-                            page = doc[i]
-                            pw, ph = page.rect.width, page.rect.height
-                            # 印章完整尺寸
-                            full_stamp_w = pw * stamp_scale
-                            full_stamp_h = full_stamp_w * (sh_img / sw) if sw > 0 else full_stamp_w
-                            # 这一页的条宽
-                            page_strip_w = full_stamp_w / total_pages
-                            # 竖向居中，水平靠右边缘
-                            stamp_y = ph * 0.5 - full_stamp_h / 2
-                            stamp_x = pw - page_strip_w
-                            rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
-                            page.insert_image(rect, filename=tmp.name, overlay=True)
-                    finally:
-                        import os as _os
-                        for f in tmp_files:
-                            try: _os.unlink(f)
-                            except: pass
+                    for i in range(total_pages):
+                        x0 = i * strip_w
+                        x1 = (i + 1) * strip_w if i < total_pages - 1 else sw
+                        strip = pil_img.crop((x0, 0, x1, sh_img))
+                        _buf_c2 = _io_cross2.BytesIO()
+                        strip.save(_buf_c2, 'PNG')
+                        _buf_c2.seek(0)
+                        _strip_bytes2 = _buf_c2.read()
+                        # 在第i页右边缘放第i片
+                        page = doc[i]
+                        pw, ph = page.rect.width, page.rect.height
+                        # 印章完整尺寸
+                        full_stamp_w = pw * stamp_scale
+                        full_stamp_h = full_stamp_w * (sh_img / sw) if sw > 0 else full_stamp_w
+                        # 这一页的条宽
+                        page_strip_w = full_stamp_w / total_pages
+                        # 竖向居中，水平靠右边缘
+                        stamp_y = ph * 0.5 - full_stamp_h / 2
+                        stamp_x = pw - page_strip_w
+                        rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
+                        page.insert_image(rect, stream=_strip_bytes2, overlay=True)
                 elif stamp_type == 'both':
                     # 公章+骑缝章：先盖公章，再盖骑缝章，一次生成一个文件
                     # 1. 公章
@@ -1332,56 +1321,42 @@ class Handler(BaseHTTPRequestHandler):
                     pw, ph = page.rect.width, page.rect.height
                     sw = pw * stamp_scale
                     from PIL import Image as PILImageNorm2
-                    import tempfile as _tf_seal2
+                    import io as _io_seal2
                     _pil_s2 = PILImageNorm2.open(stamp_img).convert('RGBA')
-                    _tmp_s2 = _tf_seal2.NamedTemporaryFile(suffix='.png', delete=False)
-                    _pil_s2.save(_tmp_s2.name, 'PNG')
-                    _tmp_s2.close()
-                    _stamp_fn2 = _tmp_s2.name
-                    try:
-                        stamp_doc_b = fitz.open(_stamp_fn2)
-                        stamp_pix_b = stamp_doc_b[0].get_pixmap(dpi=150, alpha=True)
-                        stamp_doc_b.close()
-                        sh = sw * (stamp_pix_b.height / stamp_pix_b.width) if stamp_pix_b.width > 0 else sw
-                        sx = pw * pos_x - sw / 2
-                        sy = ph * pos_y - sh / 2
-                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                        page.insert_image(rect, filename=_stamp_fn2, overlay=True)
-                    finally:
-                        import os as _os_s2
-                        try: _os_s2.unlink(_stamp_fn2)
-                        except: pass
+                    _buf_s2 = _io_seal2.BytesIO()
+                    _pil_s2.save(_buf_s2, 'PNG')
+                    _buf_s2.seek(0)
+                    _png_bytes_s2 = _buf_s2.read()
+                    _img_w_s2, _img_h_s2 = _pil_s2.size
+                    sh = sw * (_img_h_s2 / _img_w_s2) if _img_w_s2 > 0 else sw
+                    sx = pw * pos_x - sw / 2
+                    sy = ph * pos_y - sh / 2
+                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                    page.insert_image(rect, stream=_png_bytes_s2, overlay=True)
                     # 2. 骑缝章（所有页右边缘等分印章）
                     if total_pages >= 2:
                         from PIL import Image as PILImage
-                        import tempfile
+                        import io as _io_cross
                         pil_img = PILImage.open(stamp_img)
                         img_w, img_h = pil_img.size
                         strip_w = img_w // total_pages
-                        tmp_files = []
-                        try:
-                            for i in range(total_pages):
-                                x0 = i * strip_w
-                                x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
-                                strip = pil_img.crop((x0, 0, x1, img_h))
-                                tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-                                strip.save(tmp.name, 'PNG')
-                                tmp.close()
-                                tmp_files.append(tmp.name)
-                                p = doc[i]
-                                ppw, pph = p.rect.width, p.rect.height
-                                full_stamp_w = ppw * stamp_scale
-                                full_stamp_h = full_stamp_w * (img_h / img_w) if img_w > 0 else full_stamp_w
-                                page_strip_w = full_stamp_w / total_pages
-                                stamp_y = pph * 0.5 - full_stamp_h / 2
-                                stamp_x = ppw - page_strip_w
-                                r = fitz.Rect(stamp_x, stamp_y, ppw, stamp_y + full_stamp_h)
-                                p.insert_image(r, filename=tmp.name, overlay=True)
-                        finally:
-                            import os as _os
-                            for f in tmp_files:
-                                try: _os.unlink(f)
-                                except: pass
+                        for i in range(total_pages):
+                            x0 = i * strip_w
+                            x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
+                            strip = pil_img.crop((x0, 0, x1, img_h))
+                            _buf_c = _io_cross.BytesIO()
+                            strip.save(_buf_c, 'PNG')
+                            _buf_c.seek(0)
+                            _strip_bytes = _buf_c.read()
+                            p = doc[i]
+                            ppw, pph = p.rect.width, p.rect.height
+                            full_stamp_w = ppw * stamp_scale
+                            full_stamp_h = full_stamp_w * (img_h / img_w) if img_w > 0 else full_stamp_w
+                            page_strip_w = full_stamp_w / total_pages
+                            stamp_y = pph * 0.5 - full_stamp_h / 2
+                            stamp_x = ppw - page_strip_w
+                            r = fitz.Rect(stamp_x, stamp_y, ppw, stamp_y + full_stamp_h)
+                            p.insert_image(r, stream=_strip_bytes, overlay=True)
                 
                 # 保存为新文件（不覆盖原文件）
                 # 文件名格式：原文件名_YYYYMMDD_HHMM【盖章.pdf

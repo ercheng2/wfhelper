@@ -6,3 +6,4 @@ server/data/
 dist/
 build/
 *.spec
+app.py.bak*
