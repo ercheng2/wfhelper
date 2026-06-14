@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>API Test</title></head>
+<body>
+<h2>API Diagnostic</h2>
+<div id="result">Testing...</div>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('/api/data/wfhelper_data');
+    document.getElementById('result').innerText='Status: '+r.status+' OK';
+    const d=await r.json();
+    document.getElementById('result').innerText+='\nCustomers: '+d.length;
+  }catch(e){
+    document.getElementById('result').innerText='ERROR: '+e.message;
+  }
+})();
+</script>
+</body></html>

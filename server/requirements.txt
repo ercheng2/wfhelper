@@ -1,0 +1,4 @@
+# 无需安装任何Python包！
+# app.py 纯标准库，零依赖
+# 打包只需 pyinstaller
+pyinstaller>=6.0

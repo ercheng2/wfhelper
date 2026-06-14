@@ -1,0 +1,674 @@
+[
+  {
+    "id": "19e9cfb95d622a6",
+    "company": "中国海洋石油工业展览馆",
+    "status": "存续",
+    "scope": "中海油下属展馆",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95d7161e",
+    "company": "北京菲晟达广告有限公司",
+    "status": "存续",
+    "scope": "广告、承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95d8e01",
+    "company": "博朗国际会展（北京）有限公司",
+    "status": "存续",
+    "scope": "现名博琅（北京）国际会议展览",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95d92642",
+    "company": "沈阳新世界博览馆",
+    "status": "存续",
+    "scope": "沈阳新世界博览馆管理有限公司",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95dadd8",
+    "company": "盛世笔特国际文化创意产业集团有限公司",
+    "status": "存续",
+    "scope": "展览工程设计施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95db6b7",
+    "company": "北京力创昕业科技发展有限公司",
+    "status": "存续",
+    "scope": "音视频控制系统",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95dc9cf",
+    "company": "北京精艺千汇展览展示有限公司",
+    "status": "存续",
+    "scope": "承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95dd692",
+    "company": "北京钓鱼台会展有限公司",
+    "status": "存续",
+    "scope": "会议服务、承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95de1d0b",
+    "company": "澳缔纳国际会展（北京）有限公司",
+    "status": "存续",
+    "scope": "展览展示、会议服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95df5bb",
+    "company": "北京企发展览服务有限公司",
+    "status": "存续",
+    "scope": "会议展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e0abe",
+    "company": "北京科博瑞达工程设计有限公司",
+    "status": "存续",
+    "scope": "工程勘察设计、展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e11c68",
+    "company": "北京攀美多国际广告有限公司",
+    "status": "存续",
+    "scope": "广告、承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e28b2",
+    "company": "北京圣娲国际装饰工程有限公司",
+    "status": "存续",
+    "scope": "装饰设计、承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e326bd",
+    "company": "北京中企铭信科技有限公司",
+    "status": "存续",
+    "scope": "数字展厅设计制作",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e4c47",
+    "company": "博立雅展览服务有限公司",
+    "status": "存续",
+    "scope": "组织展览展示活动",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e51484",
+    "company": "永诚世纪展览（北京）有限公司",
+    "status": "存续",
+    "scope": "承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e62313",
+    "company": "天禹文化集团有限公司",
+    "status": "存续",
+    "scope": "博物馆陈列展览设计施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e7142b",
+    "company": "北京中核铭鸿科技发展有限公司",
+    "status": "未知",
+    "scope": "搜索结果不明确",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95e8130d",
+    "company": "北京大雅合国际会展有限公司",
+    "status": "存续",
+    "scope": "会议展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95e9163a",
+    "company": "北京飞鹰超华会展服务有限公司",
+    "status": "存续",
+    "scope": "会展服务、展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95ea1a48",
+    "company": "北京洪旭世纪文化发展有限公司",
+    "status": "存续",
+    "scope": "已转型音乐/AI漫剧",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95eb20b7",
+    "company": "北京思德展览服务有限公司",
+    "status": "存续",
+    "scope": "承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95ec2329",
+    "company": "北京黑油数字展览股份有限公司",
+    "status": "存续",
+    "scope": "展览展示设计制作",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95ed1961",
+    "company": "澜景图（北京）数字科技有限公司",
+    "status": "注销",
+    "scope": "已注销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95ee19d1",
+    "company": "北京宏志伟业展览展示有限公司",
+    "status": "未知",
+    "scope": "搜不到精确匹配，仅找到同名文化传媒公司",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95ef1571",
+    "company": "北京京海通联国际科技会展有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、会议服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f0e76",
+    "company": "北京今腾盛展览有限公司",
+    "status": "存续",
+    "scope": "展览展示设计搭建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f11ad9",
+    "company": "北京雪格传媒科技有限公司",
+    "status": "存续",
+    "scope": "传媒科技、展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f21378",
+    "company": "北京瑞相天然广告有限公司",
+    "status": "存续",
+    "scope": "现名北京瑞相天然科技，含展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f31126",
+    "company": "北京金宏展国际展览有限公司",
+    "status": "存续",
+    "scope": "展览服务、商业空间设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f423b9",
+    "company": "北京星光影视设备科技股份有限公司",
+    "status": "存续",
+    "scope": "影视设备",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f5171e",
+    "company": "北京培照展览有限公司",
+    "status": "存续",
+    "scope": "专业承包、承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f61a54",
+    "company": "北京展鹏国际会展有限公司",
+    "status": "吊销",
+    "scope": "已吊销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95f75c3",
+    "company": "东道博朗（北京）国际会展有限公司",
+    "status": "存续",
+    "scope": "承办展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f879e",
+    "company": "一派视觉（北京）数字科技有限公司",
+    "status": "存续",
+    "scope": "数字视觉、展览馆",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95f9ae6",
+    "company": "宇德建筑劳务分包有限公司",
+    "status": "存续",
+    "scope": "原名尚枫国际营销策划，已转型建筑劳务",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95fa734",
+    "company": "赛尔特篷房制造（北京）有限公司",
+    "status": "存续",
+    "scope": "篷房制造、展览篷房",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95fb637",
+    "company": "优展（北京）国际展览有限公司",
+    "status": "吊销",
+    "scope": "已吊销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95fc2211",
+    "company": "北京中新吉毅国际商务会展有限公司",
+    "status": "存续",
+    "scope": "商务会展",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95fdae9",
+    "company": "北京世纪网展科技有限公司",
+    "status": "存续",
+    "scope": "网展科技",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95fe262d",
+    "company": "北京水魔方数字科技有限公司",
+    "status": "存续",
+    "scope": "数字科技",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95ffe88",
+    "company": "北京筑高展览有限公司",
+    "status": "吊销",
+    "scope": "已吊销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb96002450",
+    "company": "北京明德清源文化传播有限公司",
+    "status": "存续",
+    "scope": "反腐教育基地策划设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96012675",
+    "company": "度为（武汉）设计工程有限公司",
+    "status": "存续",
+    "scope": "展览展示设计布展施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96021588",
+    "company": "北京思恒展览策划有限公司",
+    "status": "存续",
+    "scope": "展览组织策划、工程设计搭建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960316fb",
+    "company": "北京赛凡策划有限公司",
+    "status": "存续",
+    "scope": "体验空间设计、展厅设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960415a9",
+    "company": "北京万商会展服务有限公司",
+    "status": "存续",
+    "scope": "会议展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96051a57",
+    "company": "北京励智灵翔广告有限责任公司",
+    "status": "存续",
+    "scope": "广告、展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960612f8",
+    "company": "北京风云汇工程设计有限公司",
+    "status": "存续",
+    "scope": "工程设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960722d6",
+    "company": "北京中装润达展览有限公司",
+    "status": "存续",
+    "scope": "展览展示服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96081fd2",
+    "company": "北京兆维天成文化发展有限公司",
+    "status": "存续",
+    "scope": "文化发展",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960949e",
+    "company": "北京顺祥金属结构厂",
+    "status": "存续",
+    "scope": "金属结构，非展览",
+    "related": false
+  },
+  {
+    "id": "19e9cfb960a14db",
+    "company": "北京数字博文科技发展有限公司",
+    "status": "存续",
+    "scope": "文物展示柜展具",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960b104d",
+    "company": "北京风鸣雅艺形象策划有限责任公司",
+    "status": "注销",
+    "scope": "已注销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb960c7c2",
+    "company": "北京嘉创恒辉国际文化传播有限公司",
+    "status": "存续",
+    "scope": "现名中星新线文化传媒",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960d17af",
+    "company": "北京中鹏虹文化传播有限公司",
+    "status": "存续",
+    "scope": "文化传播",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960e1ca0",
+    "company": "北京柏丽斯展览展示服务有限公司",
+    "status": "存续",
+    "scope": "展览展示服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb960f8ab",
+    "company": "一木博大国际会展(北京)有限公司",
+    "status": "存续",
+    "scope": "国际展览设计承建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961016d1",
+    "company": "北京博瑞思特展览有限公司",
+    "status": "存续",
+    "scope": "展览",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961125e3",
+    "company": "奥企达（北京）国际会展有限公司",
+    "status": "存续",
+    "scope": "展览展示、主场服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961272f",
+    "company": "北京威视讯达科技有限公司",
+    "status": "存续",
+    "scope": "视听技术AV方案",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9613dea",
+    "company": "北京汇合传媒有限公司",
+    "status": "存续",
+    "scope": "传媒",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96141236",
+    "company": "北京华阳恒通国际会展服务有限公司",
+    "status": "存续",
+    "scope": "会展服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961511b0",
+    "company": "北京正昊广告有限公司",
+    "status": "存续",
+    "scope": "广告",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9616152f",
+    "company": "中国机械工程学会",
+    "status": "存续",
+    "scope": "社会团体，非展览企业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb961749b",
+    "company": "中国环境保护产业协会",
+    "status": "存续",
+    "scope": "社会团体，非展览企业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb96182380",
+    "company": "北京博帆时代信息科技有限公司",
+    "status": "存续",
+    "scope": "数字视频、多媒体展厅",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9619146c",
+    "company": "北京东方仁杰展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961adbf",
+    "company": "北京福展祥瑞国际展览有限公司",
+    "status": "吊销",
+    "scope": "已吊销",
+    "related": false
+  },
+  {
+    "id": "19e9cfb961b9d9",
+    "company": "北京艺览新天地国际展览有限公司",
+    "status": "存续",
+    "scope": "国际展览",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961ca4e",
+    "company": "优尼博览（北京）有限公司",
+    "status": "存续",
+    "scope": "展示服务、展览策划",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961d89e",
+    "company": "中国国际贸易促进委员会建筑材料行业分会",
+    "status": "存续",
+    "scope": "举办建材展览",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961eee2",
+    "company": "北京森格伟业展览展示有限公司",
+    "status": "存续",
+    "scope": "展具开发销售",
+    "related": true
+  },
+  {
+    "id": "19e9cfb961f12c0",
+    "company": "北京美明凯广告有限公司",
+    "status": "未知",
+    "scope": "搜不到精确匹配，仅找到北京美明凯投资有限公司",
+    "related": false
+  },
+  {
+    "id": "19e9cfb962016b2",
+    "company": "北京鑫博展展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96212160",
+    "company": "北京世创名典国际会展服务有限公司",
+    "status": "存续",
+    "scope": "组织展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962281b",
+    "company": "北京兴中创国际展示有限公司",
+    "status": "存续",
+    "scope": "展馆工程设计施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96231d1a",
+    "company": "北京博菲信诺装饰工程有限公司",
+    "status": "存续",
+    "scope": "装饰工程、展陈设计施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9624c26",
+    "company": "北京鑫赛克展示服务有限公司",
+    "status": "存续",
+    "scope": "展示服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96251687",
+    "company": "北京盛世永信文化发展有限公司",
+    "status": "存续",
+    "scope": "文化馆建设、数字多媒体",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9626dca",
+    "company": "北京东方世源展览展示有限公司",
+    "status": "存续",
+    "scope": "承办展览展示活动；会议服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96275a3",
+    "company": "北京盛典博览会展咨询有限公司",
+    "status": "存续",
+    "scope": "现名大观创展文化创意，会议及展览服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96282571",
+    "company": "北京清尚建筑装饰工程有限公司",
+    "status": "存续",
+    "scope": "建筑装饰、承办展览展示、博物馆展陈设计施工",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96292455",
+    "company": "北京永一格国际展览有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、施工总承包、室内装饰工程设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962aab2",
+    "company": "北京笔克展览展示有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、会议服务、展台展柜制作",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962b1a65",
+    "company": "北京振威展览有限公司",
+    "status": "存续",
+    "scope": "展览展示服务、展示设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962c1dc4",
+    "company": "中国机械国际合作股份有限公司",
+    "status": "存续",
+    "scope": "国际机械展览组织、商务服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962d1388",
+    "company": "中国服装协会",
+    "status": "存续",
+    "scope": "社会团体，旗下有北京时尚博展国际展览有限公司（承办展览展示）",
+    "related": true
+  },
+  {
+    "id": "19e9cfb962e45c",
+    "company": "中国食品添加剂生产应用工业协会",
+    "status": "存续",
+    "scope": "社会团体，非展览企业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb962f1f74",
+    "company": "中国演艺设备技术协会",
+    "status": "存续",
+    "scope": "社会团体，主办PALM展等展览",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9630dc8",
+    "company": "北京藏蓝国际会展服务有限公司",
+    "status": "存续",
+    "scope": "承办展览展示及会议服务、展览工程",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96311fdb",
+    "company": "北京力洋展示设计有限责任公司",
+    "status": "存续",
+    "scope": "展览展示设计、展台搭建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9632b0d",
+    "company": "传承主建国际展览服务（北京）有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、展具租赁",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9633153a",
+    "company": "北京绘事后素展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示设计制作、展台设计建造",
+    "related": true
+  },
+  {
+    "id": "19e9cfb96342595",
+    "company": "中国国际展览运输有限公司",
+    "status": "存续",
+    "scope": "展览运输代理、展品物流",
+    "related": true
+  },
+  {
+    "id": "19e9cfb963518fb",
+    "company": "北京昆仑亿发科技发展有限公司",
+    "status": "存续",
+    "scope": "现名昆仑亿发科技股份，会展信息化服务",
+    "related": true
+  }
+]

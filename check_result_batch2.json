@@ -1,0 +1,352 @@
+[
+  {
+    "id": "19e9cfb955e20a1",
+    "company": "博瑞纳（北京）文化传播有限公司",
+    "status": "注销",
+    "scope": "文化传播、工程勘察、工程设计",
+    "related": false
+  },
+  {
+    "id": "19e9cfb955f2365",
+    "company": "励展华百展览（北京）有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、百货会、商展会议",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95602599",
+    "company": "北京洞见未来会展有限公司",
+    "status": "存续",
+    "scope": "会议展览承办、技术服务、文化活动组织、广告策划",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9561217c",
+    "company": "北京光影花生文化传播有限公司",
+    "status": "存续",
+    "scope": "展览展示、展台搭建、会议活动策划、主场运营",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95621e77",
+    "company": "华易致远（北京）文化发展有限公司",
+    "status": "存续",
+    "scope": "文化艺术、会议展览（旗下有会展子公司）",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9563f0b",
+    "company": "北京凌智展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示、博物馆展柜研发生产销售",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9564174e",
+    "company": "北京广阔展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95651056",
+    "company": "北京华墨展览有限公司",
+    "status": "存续",
+    "scope": "展览（华夏家博会、华机展等大型展会）",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956623dd",
+    "company": "北京寰宇九天展览展示服务有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、设计制作",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956719e0",
+    "company": "中泽国际会展（北京）有限公司",
+    "status": "存续",
+    "scope": "会议展览、设计搭建、文化传媒",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956817aa",
+    "company": "北京龙象新天文化传媒有限公司",
+    "status": "存续",
+    "scope": "文化艺术业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb956924b5",
+    "company": "北京众智时代科技有限公司",
+    "status": "存续",
+    "scope": "展览展示多媒体数字交互策划、技术研发",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956ac0e",
+    "company": "北京京旅恒展国际会展有限公司",
+    "status": "存续",
+    "scope": "会展服务、文旅消费博览会",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956b10aa",
+    "company": "北京耀银兴广告有限公司",
+    "status": "存续",
+    "scope": "展台搭建、展览搭建、舞台搭建、广告",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956c209d",
+    "company": "睿通讯达（北京）科技有限公司",
+    "status": "存续",
+    "scope": "多媒体网络技术在展览展示领域应用、VR虚拟现实",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956dc42",
+    "company": "北京宝丰会展服务有限公司",
+    "status": "存续",
+    "scope": "会议论坛、发布会、礼仪庆典、主场搭建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956e1cc7",
+    "company": "北京国威沃源科技有限公司",
+    "status": "存续",
+    "scope": "展览展示互动系统、规划馆博物馆项目",
+    "related": true
+  },
+  {
+    "id": "19e9cfb956f1547",
+    "company": "北京大广空间展览展示有限公司",
+    "status": "存续",
+    "scope": "承办展览展示、会议服务、广告、企业策划",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95701239",
+    "company": "北京直径文化传媒有限责任公司",
+    "status": "存续",
+    "scope": "博物馆美术馆策展设计运营咨询、城市空间叙事",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95711a96",
+    "company": "北京环球视觉文化发展有限公司",
+    "status": "存续",
+    "scope": "文化艺术、演艺设计服务、展览馆协会会员",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957211f0",
+    "company": "北京艾亚视觉文化传媒有限公司",
+    "status": "存续",
+    "scope": "数字体验展馆建设、数字多媒体定制开发、VR/AR、影视拍摄",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95732068",
+    "company": "北京优趣文化发展有限公司",
+    "status": "存续",
+    "scope": "三维二维商业动画创意制作、动漫IP",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95741d56",
+    "company": "北京博闻企阳国际展览有限公司",
+    "status": "存续",
+    "scope": "承办展览展示活动、会议服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9575aa0",
+    "company": "弈衡（北京）国际会展服务有限公司",
+    "status": "存续",
+    "scope": "会议服务、承办展览展示、广告、企业策划",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9576125e",
+    "company": "北京晟世伟业科技有限公司",
+    "status": "存续",
+    "scope": "多媒体互动咨询研发定制施工、展厅展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9577234e",
+    "company": "北京天禾空间展示有限公司",
+    "status": "存续",
+    "scope": "空间展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957823e6",
+    "company": "北京云景慧通空间设计有限责任公司",
+    "status": "存续",
+    "scope": "空间设计、广告公关",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95792091",
+    "company": "天成图景文化传媒（北京）有限公司",
+    "status": "存续",
+    "scope": "组织文化艺术交流、影视策划、展览搭建",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957a1bf9",
+    "company": "北京琢悦空间设计有限公司",
+    "status": "存续",
+    "scope": "空间设计、专业技术服务业",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957b226a",
+    "company": "北京鸿创励治企业形象策划有限公司",
+    "status": "存续",
+    "scope": "企业形象策划、展览展示、多媒体技术、品牌形象设计",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957c6d5",
+    "company": "北京六耳文化传媒有限公司",
+    "status": "存续",
+    "scope": "文化艺术业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb957d1ff7",
+    "company": "北京赛博空间科技有限公司",
+    "status": "存续",
+    "scope": "科技推广和应用服务业",
+    "related": false
+  },
+  {
+    "id": "19e9cfb957e830",
+    "company": "北京中克清油展览展示有限公司",
+    "status": "存续",
+    "scope": "展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb957f19ce",
+    "company": "君合大成（北京）文化传播有限公司",
+    "status": "存续",
+    "scope": "组织文化艺术交流、会议服务",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95802291",
+    "company": "奇点长阳科技（北京）有限公司",
+    "status": "存续",
+    "scope": "技术开发推广、计算机技术咨询",
+    "related": false
+  },
+  {
+    "id": "19e9cfb958113e5",
+    "company": "博锐志（北京）国际广告有限公司",
+    "status": "存续",
+    "scope": "广告",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95821002",
+    "company": "北京蓝图画装饰有限公司（原名：北京蓝图邦装饰设计有限公司）",
+    "status": "注销",
+    "scope": "建筑装饰和装修",
+    "related": false
+  },
+  {
+    "id": "19e9cfb95831442",
+    "company": "华堂展业（北京）国际展览有限公司",
+    "status": "存续",
+    "scope": "互动展项、多媒体展示技术研发制作服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95841933",
+    "company": "睿虎品牌管理（北京）有限公司",
+    "status": "存续",
+    "scope": "品牌设计、医疗空间设计、院史馆",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95851019",
+    "company": "北京盛东国际展览展示有限公司",
+    "status": "吊销",
+    "scope": "展览展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95867cd",
+    "company": "中航科工（北京）展示股份有限公司",
+    "status": "存续",
+    "scope": "展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb95871896",
+    "company": "北京桂湘文化艺术发展股份有限公司",
+    "status": "存续",
+    "scope": "文化艺术发展、文化活动服务",
+    "related": false
+  },
+  {
+    "id": "19e9cfb9588a62",
+    "company": "北京金石视觉数字科技有限公司",
+    "status": "存续",
+    "scope": "数字科技视觉、展览展示多媒体",
+    "related": true
+  },
+  {
+    "id": "19e9cfb9589c80",
+    "company": "北京九州红运文化传播有限公司（原名：北京九州红运展览展示有限公司）",
+    "status": "存续",
+    "scope": "承办展览展示、室内装饰设计、技术开发",
+    "related": true
+  },
+  {
+    "id": "19e9cfb958afdc",
+    "company": "北京百特思达会展有限公司",
+    "status": "未知",
+    "scope": "会展服务",
+    "related": true
+  },
+  {
+    "id": "19e9cfb958be92",
+    "company": "北京城建亚泰建筑装饰工程设计有限公司",
+    "status": "存续",
+    "scope": "建筑装饰工程设计、专业承包、技术推广",
+    "related": false
+  },
+  {
+    "id": "19e9cfb958c260f",
+    "company": "北京水晶石文博展示有限公司",
+    "status": "存续",
+    "scope": "工程勘察设计、承办展览展示、文博展示",
+    "related": true
+  },
+  {
+    "id": "19e9cfb958d262c",
+    "company": "北京思睿观通展览展示有限公司",
+    "status": "存续",
+    "scope": "展台搭建、展柜制作、博物馆陈列、会议布置",
+    "related": true
+  },
+  {
+    "id": "19e9cfb958e21d8",
+    "company": "北京云锐通科技有限公司",
+    "status": "存续",
+    "scope": "科技开发",
+    "related": false
+  },
+  {
+    "id": "19e9cfb958f1370",
+    "company": "诺联会展（北京）有限公司",
+    "status": "存续",
+    "scope": "会议及展览服务、项目策划与公关服务",
+    "related": true
+  }
+]

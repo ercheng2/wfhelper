@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微信好友助手 v2.0</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;color:#333}
+.app{max-width:90%;margin:0 auto;padding:0 8px 8px}
+.top-bar{position:sticky;top:0;z-index:100;background:#f0f2f5;padding:8px 0 2px}
+.top-bar-inner{padding:0;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;border-radius:0;margin-bottom:0;flex-wrap:wrap;gap:8px;box-shadow:none}
+.header h1{font-size:20px;font-weight:600}
+.header-stats{display:flex;gap:20px;font-size:13px}
+.header-stats b{font-size:16px;margin-right:3px}
+.tabs{display:flex;gap:4px;margin-bottom:4px;background:#fff;border-radius:0;padding:4px;box-shadow:none}
+.tab{flex:1;padding:10px 8px;text-align:center;cursor:pointer;border-radius:8px;font-size:13px;font-weight:500;transition:all .2s;color:#666}
+.tab:hover{background:#e8f0fe;color:#1a73e8}
+.tab.active{background:#1a73e8;color:#fff}
+.panel{display:none;background:#fff;border-radius:0;box-shadow:none;overflow:hidden;margin:0 auto 8px}
+.panel.active{display:block}
+.split{display:flex;gap:0;min-height:500px}
+.split-left{width:70%;border-right:1px solid #eee;display:flex;flex-direction:column}
+.split-right{width:30%;padding:20px;overflow-y:auto}
+.list-toolbar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid #eee;align-items:center;flex-wrap:wrap}
+.list-toolbar select,.list-toolbar input{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
+.btn{padding:5px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:12px;background:#fff;transition:all .15s}
+.btn:hover{background:#f5f5f5}
+.btn-primary{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.btn-primary:hover{background:#1557b0}
+.btn-success{background:#34a853;color:#fff;border-color:#34a853}
+.btn-warning{background:#fbbc04;color:#333;border-color:#fbbc04}
+.btn-danger{background:#ea4335;color:#fff;border-color:#ea4335}
+.btn-sm{padding:3px 8px;font-size:11px}
+.customer-list{flex:1;overflow-y:auto}
+.customer-item{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;gap:8px}
+.customer-item:hover{background:#f8f9ff}
+.customer-item.selected{background:#e8f0fe;border-left:3px solid #1a73e8}
+.customer-name{font-weight:600;min-width:55px;font-size:13px}
+.customer-phone{color:#888;font-size:12px;min-width:90px;font-family:Consolas,monospace}
+.customer-company{color:#555;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status-badge{padding:2px 7px;border-radius:10px;font-size:11px;font-weight:500;white-space:nowrap}
+.status-0{background:#e8eaed;color:#666}
+.status-1{background:#e8f0fe;color:#1a73e8}
+.status-2{background:#e6f4ea;color:#34a853}
+.status-3{background:#fce8e6;color:#ea4335}
+.status-4{background:#fef7e0;color:#e37400}
+.detail-empty{display:flex;align-items:center;justify-content:center;height:100%;color:#aaa;font-size:14px}
+.detail-info{margin-bottom:14px}
+.detail-info .name{font-size:17px;font-weight:700;margin-bottom:5px}
+.detail-info .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#666}
+.copy-section{margin-bottom:16px}
+.copy-section label{display:block;font-weight:600;margin-bottom:5px;font-size:13px}
+.copy-box{position:relative}
+.copy-box textarea{width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:'Microsoft YaHei',sans-serif;resize:vertical;min-height:44px;background:#fffef5;transition:border-color .2s}
+.copy-box textarea:focus{outline:none;border-color:#1a73e8}
+.copy-btn{position:absolute;top:6px;right:6px;padding:3px 10px;background:#1a73e8;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px}
+.copy-btn:hover{background:#1557b0}
+.copy-btn.copied{background:#34a853}
+.quick-actions{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.quick-actions .btn{flex:1;min-width:70px;text-align:center;padding:7px}
+.import-panel{padding:0}
+.import-panel h3{margin:0;padding:10px 14px;border-bottom:1px solid #eee;font-size:14px}
+.import-panel .hint{color:#888;font-size:12px;line-height:1.8;margin-bottom:14px}
+.import-content{padding:14px}
+.import-area{border:2px dashed #ccc;border-radius:12px;padding:36px;text-align:center;cursor:pointer;transition:all .2s}
+.import-area:hover{border-color:#1a73e8;background:#f8f9ff}
+.import-area.dragover{border-color:#1a73e8;background:#e8f0fe}
+.manual-form{margin-top:16px}
+.form-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+.form-row label{width:65px;text-align:right;font-size:13px;color:#555;flex-shrink:0}
+.form-row input,.form-row select{flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+.form-row input:focus,.form-row select:focus{outline:none;border-color:#1a73e8}
+.template-panel{padding:0}
+.template-toolbar{padding:10px 14px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px}
+.template-content{padding:14px}
+.template-add{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.template-add input,.template-add select{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
+.template-add input{flex:1;min-width:100px}
+.template-table{width:100%;border-collapse:collapse;font-size:12px}
+.template-table th{background:#f5f5f5;padding:8px 6px;text-align:left;border-bottom:2px solid #ddd}
+.template-table td{padding:8px 6px;border-bottom:1px solid #eee}
+.template-table tr:hover td{background:#f8f9ff}
+.settings-panel{padding:0}
+.settings-panel h3{margin:0;padding:10px 14px;border-bottom:1px solid #eee;font-size:14px}
+.settings-content{padding:14px}
+.stats-box{background:#f8f9ff;border-radius:10px;padding:16px;font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.9;white-space:pre;margin-top:10px}
+.source-stats{margin-top:14px}
+.source-stats .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee;font-size:12px}
+.toast{position:fixed;top:20px;right:20px;padding:10px 20px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.toast-success{background:#34a853}
+.toast-error{background:#ea4335}
+.toast-info{background:#1a73e8}
+.avatar-paste-zone{margin-top:14px;border:2px dashed #ccc;border-radius:10px;min-height:80px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.avatar-paste-zone:hover{border-color:#1a73e8;background:#f8f9ff}
+.avatar-paste-zone.has-img{border-style:solid;border-color:#34a853}
+.avatar-paste-zone .hint{color:#aaa;font-size:12px}
+.avatar-paste-zone img{max-width:100%;max-height:120px;border-radius:6px;object-fit:contain;margin:4px auto;display:block;cursor:zoom-in;transition:transform .15s}
+.avatar-paste-zone img:hover{transform:scale(2.5);transform-origin:center center;z-index:100;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:4px}
+.img-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;cursor:pointer;justify-content:center;align-items:center;overflow:auto}
+.img-overlay.show{display:flex}
+.img-overlay img{max-width:95%;max-height:95%;object-fit:contain;border-radius:8px;box-shadow:0 0 40px rgba(0,0,0,.5);cursor:default}
+.avatar-paste-zone .remove-img{position:absolute;top:4px;right:6px;background:#ea4335;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:20px;padding:0;display:none}
+.avatar-paste-zone.has-img .remove-img{display:block}
+/* Contract Management */
+.contract-alerts{padding:10px 16px;background:#fff3cd;border-bottom:1px solid #ffc107;display:none}
+.contract-alerts.show{display:block}
+.contract-alerts .alert-title{font-weight:600;font-size:13px;margin-bottom:4px}
+.contract-alerts .alert-item{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:12px}
+.alert-badge{padding:2px 6px;border-radius:10px;font-size:11px;font-weight:600}
+.alert-urgent{background:#fce8e6;color:#ea4335}
+.alert-warning{background:#fef7e0;color:#e37400}
+.contract-item{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;gap:8px}
+.contract-item:hover{background:#f8f9ff}
+.contract-item.selected{background:#e8f0fe;border-left:3px solid #1a73e8}
+.contract-item .c-name{font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contract-item .c-customer{font-size:11px;color:#888;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contract-item .c-amount{font-size:12px;color:#1a73e8;font-weight:600;white-space:nowrap}
+.c-status{padding:2px 7px;border-radius:10px;font-size:11px;font-weight:500;white-space:nowrap}
+.cs-active{background:#e8f0fe;color:#1a73e8}
+.cs-completed{background:#e6f4ea;color:#34a853}
+.cs-overdue{background:#fce8e6;color:#ea4335}
+.contract-form{padding:0}
+.contract-form h3{font-size:15px;margin-bottom:12px;font-weight:600}
+.contract-form h4{font-size:13px;margin:14px 0 8px;color:#555;font-weight:600;border-bottom:1px solid #eee;padding-bottom:4px}
+.payment-row{display:flex;gap:5px;margin-bottom:5px;align-items:center;flex-wrap:wrap}
+.payment-row input,.payment-row select{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
+.p-name{width:80px!important}.p-amount{width:90px!important}.p-date{width:125px!important}
+.contract-file-zone{border:2px dashed #ccc;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:8px;font-size:13px;color:#888}
+.contract-file-zone:hover{border-color:#1a73e8;background:#f8f9ff}
+.contract-file-zone.dragover{border-color:#1a73e8;background:#e8f0fe}
+.contract-files-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.contract-file-item{position:relative;border:1px solid #ddd;border-radius:8px;padding:6px;width:80px;text-align:center}
+.contract-file-item img{width:68px;height:68px;object-fit:cover;border-radius:4px;cursor:pointer}
+.contract-file-item .file-icon{width:68px;height:68px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;border-radius:4px;font-size:24px}
+.contract-file-item .file-name{font-size:10px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.contract-file-item .remove-file{position:absolute;top:-4px;right:-4px;background:#ea4335;color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;line-height:16px;padding:0}
+.pdf-page-thumb{position:relative;border:1px solid #ddd;border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;background:#f8f8f8}
+.pdf-page-thumb:hover{border-color:#1a73e8;box-shadow:0 2px 8px rgba(26,115,232,.2);transform:translateY(-1px)}
+.pdf-page-thumb img{width:100%;display:block}
+.pdf-page-thumb .page-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;text-align:center;padding:2px 0}
+.contract-summary{background:#f8f9ff;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px}
+.contract-summary .srow{display:flex;justify-content:space-between;padding:3px 0}
+.contract-summary .srow b{color:#333}
+.pay-progress{margin:6px 0}
+.pay-progress-bar{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.pay-progress-fill{height:100%;background:#34a853;border-radius:3px;transition:width .3s}
+.pay-progress-text{font-size:11px;color:#666;margin-top:2px}
+@media(max-width:768px){.split{flex-direction:column}.split-left,.split-right{width:100%;border-right:none}.split-left{max-height:280px}.payment-row{flex-direction:column}.p-name,.p-amount,.p-date{width:100%!important}}
+
+/* === 手风琴/年份分组样式 === */
+.contract-group-header{display:flex;align-items:center;padding:10px 14px;background:#f0f4f8;border-bottom:1px solid #dde3ea;cursor:pointer;user-select:none;transition:background .15s;gap:6px}
+.contract-group-header:hover{background:#e4eaf2}
+.contract-group-header .group-arrow{font-size:10px;transition:transform .2s;color:#888;width:14px;text-align:center}
+.contract-group-header .group-arrow.open{transform:rotate(90deg)}
+.contract-group-header .group-label{font-weight:600;font-size:13px;color:#333}
+.contract-group-header .group-count{font-size:11px;color:#888;margin-left:4px}
+.contract-group-items{overflow:visible;transition:none}
+.contract-group-items.collapsed{display:none}
+.contract-item-expandable{border-bottom:1px solid #f0f0f0}
+.contract-item-header{display:flex;align-items:center;padding:10px 14px;cursor:pointer;transition:background .15s;gap:8px}
+.contract-item-header:hover{background:#f8f9ff}
+.contract-item-expandable.selected .contract-item-header{background:#e8f0fe;border-left:3px solid #1a73e8}
+.contract-item-header .expand-arrow{font-size:10px;transition:transform .2s;color:#aaa;width:14px;text-align:center;flex-shrink:0}
+.contract-item-header .expand-arrow.open{transform:rotate(90deg)}
+.contract-item-header .c-name{font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contract-item-header .c-amount{font-size:12px;color:#1a73e8;font-weight:600;white-space:nowrap;margin-right:4px}
+.contract-item-detail{display:none;padding:10px 14px 14px;background:#fafbfd;border-top:1px solid #eee}
+.contract-item-expandable.selected .contract-item-detail{display:block}
+.contract-detail-summary{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#555;margin-bottom:8px}
+.contract-detail-summary b{color:#333}
+.contract-detail-summary .label{color:#888}
+.thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:6px}
+.thumb-grid .pdf-page-thumb{position:relative;border:1px solid #ddd;border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;background:#f8f8f8}
+.thumb-grid .pdf-page-thumb:hover{border-color:#1a73e8;box-shadow:0 2px 8px rgba(26,115,232,.2);transform:translateY(-1px)}
+.thumb-grid .pdf-page-thumb img{width:100%;display:block}
+.thumb-grid .pdf-page-thumb .page-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;text-align:center;padding:2px 0}
+.thumb-grid .img-thumb{position:relative;border:1px solid #ddd;border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s}
+.thumb-grid .img-thumb:hover{border-color:#1a73e8;box-shadow:0 2px 8px rgba(26,115,232,.2);transform:translateY(-1px)}
+.thumb-grid .img-thumb img{width:100%;height:70px;object-fit:cover;display:block;border-radius:5px}
+/* === 上传Spinner === */
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.upload-spinner-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:#f8f9ff;border-radius:8px;margin-bottom:8px}
+.upload-spinner{width:20px;height:20px;border:3px solid #e0e0e0;border-top:3px solid #1a73e8;border-radius:50%;animation:spin .8s linear infinite}
+.upload-spinner-text{font-size:13px;color:#1a73e8;font-weight:500}
+/* === 模态弹窗 === */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:10000;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:14px;max-width:520px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eee}
+.modal-header h3{font-size:16px;margin:0;color:#333}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#999;padding:0 4px;line-height:1}
+.modal-close:hover{color:#333}
+.modal-content{padding:16px 20px}
+.modal-content .alert-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+.modal-content .alert-row:last-child{border-bottom:none}
+.modal-content .alert-row .alert-icon{flex-shrink:0;font-size:16px;margin-top:1px}
+.modal-footer{padding:12px 20px 16px;text-align:center}
+.modal-footer .btn{min-width:120px;padding:8px 20px;font-size:14px}
+
+/* === 合同电子章面板 === */
+.stamp-layout{display:flex;gap:0;min-height:500px}
+.stamp-left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;padding:14px;border-right:1px solid #eee;overflow-y:auto}
+.stamp-right{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px}
+.stamp-section{background:#f8f9ff;border-radius:8px;padding:12px}
+.stamp-section h4{font-size:13px;margin-bottom:8px;font-weight:600;color:#333}
+.stamp-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:2px solid #eee;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:4px}
+.stamp-item:hover{border-color:#bbb}
+.stamp-item.selected{border-color:#1a73e8;background:#e8f0fe}
+.stamp-item img{width:40px;height:40px;object-fit:contain;border-radius:4px}
+.stamp-item .s-name{font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stamp-item .s-del{background:#ea4335;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;padding:0;flex-shrink:0}
+.pdf-preview-container{position:relative;border:1px solid #ddd;border-radius:8px;overflow:hidden;background:#e8e8e8;flex:1;display:flex;align-items:center;justify-content:center;min-height:400px}
+.pdf-preview-container img{max-width:100%;max-height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none}
+.stamp-overlay{position:absolute;cursor:move;opacity:.75;transition:opacity .15s}
+.stamp-overlay:hover{opacity:.9}
+.stamp-overlay img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.stamp-overlay.dragging{opacity:.6;outline:2px dashed #1a73e8}
+.stamp-page-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:#fafafa;border-top:1px solid #eee;border-radius:0 0 8px 8px}
+.stamp-page-nav button{padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:12px}
+.stamp-page-nav button:hover{background:#f0f0f0}
+.stamp-page-nav span{font-size:12px;color:#666}
+.maint-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #eee}
+.maint-content{padding:14px}
+.maint-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.maint-filters select,.maint-filters input{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
+.maint-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.maint-stat-card{flex:1;min-width:140px;background:#f8f9ff;border-radius:8px;padding:12px 14px;text-align:center}
+.maint-stat-card .num{font-size:24px;font-weight:700;color:#1a73e8}
+.maint-stat-card .label{font-size:11px;color:#888;margin-top:2px}
+.maint-stat-card.urgent .num{color:#ea4335}
+.maint-stat-card.warning .num{color:#e37400}
+.maint-stat-card.ok .num{color:#34a853}
+.maint-timeline{position:relative;padding-left:28px}
+.maint-timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:#e0e0e0}
+.maint-month-header{font-size:13px;font-weight:600;color:#555;margin:16px 0 8px;position:relative}
+.maint-month-header::before{content:'';position:absolute;left:-22px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#1a73e8;border:2px solid #fff;box-shadow:0 0 0 2px #1a73e8}
+.maint-item{position:relative;background:#fff;border:1px solid #eee;border-radius:8px;padding:12px 14px;margin-bottom:8px;transition:box-shadow .15s}
+.maint-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.maint-item::before{content:'';position:absolute;left:-22px;top:16px;width:8px;height:8px;border-radius:50%;background:#ddd}
+.maint-item.urgent{border-left:3px solid #ea4335}
+.maint-item.urgent::before{background:#ea4335}
+.maint-item.warning{border-left:3px solid #e37400}
+.maint-item.warning::before{background:#e37400}
+.maint-item.info{border-left:3px solid #1a73e8}
+.maint-item.info::before{background:#1a73e8}
+.maint-item.ok{border-left:3px solid #34a853}
+.maint-item.ok::before{background:#34a853}
+.maint-item-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.maint-item-badge{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap}
+.maint-item-badge.b-urgent{background:#ea4335}
+.maint-item-badge.b-warning{background:#e37400}
+.maint-item-badge.b-info{background:#1a73e8}
+.maint-item-badge.b-ok{background:#34a853}
+.maint-item-title{font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.maint-item-date{font-size:11px;color:#888;white-space:nowrap}
+.maint-item-desc{font-size:12px;color:#666;line-height:1.5}
+.maint-item-contract{font-size:11px;color:#1a73e8;cursor:pointer;margin-top:4px}
+.maint-item-contract:hover{text-decoration:underline}
+.maint-empty{text-align:center;padding:60px 20px;color:#aaa;font-size:14px}
+.maint-calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:12px}
+.maint-cal-header{text-align:center;font-size:11px;font-weight:600;color:#888;padding:4px 0}
+.maint-cal-day{text-align:center;padding:6px 2px;font-size:11px;border-radius:4px;cursor:default;position:relative;min-height:28px}
+.maint-cal-day.today{background:#e8f0fe;font-weight:700;color:#1a73e8}
+.maint-cal-day.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%}
+.maint-cal-day.has-urgent::after{background:#ea4335}
+.maint-cal-day.has-warning::after{background:#e37400}
+.maint-cal-day.has-info::after{background:#1a73e8}
+.maint-cal-day.other-month{color:#ccc}
+.maint-cal-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}
+.maint-cal-nav button{padding:4px 10px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:12px}
+.maint-cal-nav button:hover{background:#f0f0f0}
+.maint-cal-nav span{font-size:13px;font-weight:600;min-width:120px;text-align:center}
+.maint-view-toggle{display:flex;gap:4px;margin-left:auto}
+.maint-view-toggle button{padding:4px 10px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:11px}
+.maint-view-toggle button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top-bar">
+<div class="top-bar-inner">
+<div class="header">
+<h1>📋 微信好友助手 v2.0</h1>
+<div class="header-stats" id="headerStats"><span id="contractAlertBadge" style="display:none;background:#ea4335;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">⚠ 合同逾期</span></div>
+</div>
+<div class="tabs">
+<div class="tab active" data-tab="today">📋 今日任务</div>
+<div class="tab" data-tab="all">👥 全部客户</div>
+<div class="tab" data-tab="import">📥 导入客户</div>
+<div class="tab" data-tab="template">💬 话术模板</div>
+<div class="tab" data-tab="settings">⚙️ 设置</div>
+<div class="tab" data-tab="contract">📄 合同管理</div>
+<div class="tab" data-tab="stamp" style="color:#ea4335;font-weight:600">🔴 合同电子章</div>
+<div class="tab" data-tab="maint" style="color:#e37400;font-weight:600">📅 维保日程提醒</div>
+</div>
+</div>
+</div>
+
+<div class="panel active" id="panel-today">
+<div class="split">
+<div class="split-left">
+<div class="list-toolbar"><span style="font-weight:600">今日待添加</span><span style="color:#888;margin-left:auto" id="todayCount"></span></div>
+<div class="customer-list" id="todayList"></div>
+</div>
+<div class="split-right" id="todayDetail"><div class="detail-empty">← 选择客户查看详情</div></div>
+</div>
+</div>
+
+<div class="panel" id="panel-all">
+<div class="split">
+<div class="split-left">
+<div class="list-toolbar">
+<label>添加状态：</label>
+<select id="filterStatus" onchange="renderAllList()"><option value="-1">全部</option><option value="0">待添加</option><option value="1">已发送</option><option value="2">已通过</option><option value="3">未通过</option><option value="4">待重试</option></select>
+<label>公司：</label>
+<select id="filterCompany" onchange="renderAllList()"><option value="all">全部</option><option value="active">✅ 存续+展厅相关</option><option value="notrelated">⚠️ 非展厅相关</option><option value="cancelled">❌ 注销/吊销</option></select>
+<label>搜索：</label>
+<input type="text" id="searchInput" placeholder="姓名/公司/手机号" oninput="renderAllList()" style="flex:1">
+<button class="btn btn-danger btn-sm" onclick="deleteSelected()">删除</button>
+<button class="btn btn-sm" onclick="exportCSV()">导出</button>
+</div>
+<div class="customer-list" id="allList"></div>
+</div>
+<div class="split-right" id="allDetail"><div class="detail-empty">← 选择客户查看详情</div></div>
+</div>
+</div>
+
+<div class="panel" id="panel-import">
+<div class="import-panel">
+<h3>📥 导入CSV文件</h3>
+<div class="import-content">
+<p class="hint">CSV格式：姓名,手机号,公司,行业,来源<br>行业建议：展览展示 / 博物馆 / 科技馆 / 规划馆 / 企业展厅<br>来源建议：展会 / 同行介绍 / 行业筛选 / 其他</p>
+<div class="import-area" id="importArea">
+<p>📂 点击选择CSV文件 或 拖拽文件到此处</p>
+<input type="file" id="fileInput" accept=".csv" style="display:none" onchange="handleFileImport(this)">
+</div>
+<button class="btn" style="margin-top:10px" onclick="downloadSampleCSV()">📄 下载示例CSV模板</button>
+<h3>✚ 手动添加</h3>
+<div class="manual-form">
+<div class="form-row"><label>姓名 *</label><input type="text" id="mfName" placeholder="如：张总"></div>
+<div class="form-row"><label>手机号 *</label><input type="text" id="mfPhone" placeholder="如：13800138001"></div>
+<div class="form-row"><label>公司</label><input type="text" id="mfCompany" placeholder="如：XX展览公司"></div>
+<div class="form-row"><label>行业</label><select id="mfIndustry"><option value="">请选择</option><option>展览展示</option><option>博物馆</option><option>科技馆</option><option>规划馆</option><option>企业展厅</option><option>主题馆</option><option>其他</option></select></div>
+<div class="form-row"><label>来源</label><select id="mfSource"><option value="">请选择</option><option>展会</option><option>同行介绍</option><option>行业筛选</option><option>其他</option></select></div>
+<div class="form-row"><label></label><button class="btn btn-primary" onclick="addManual()">✚ 添加客户</button></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="panel" id="panel-template">
+<div class="template-panel">
+<div class="template-toolbar"><span style="font-weight:600">💬 话术模板管理</span></div>
+<div class="template-content">
+<div class="template-add">
+<label>来源：</label><select id="tplSource"><option>展会</option><option>同行介绍</option><option>行业筛选</option><option>其他</option></select>
+<label>行业：</label><input type="text" id="tplIndustry" placeholder="留空=通用" style="width:70px">
+<label>备注：</label><input type="text" id="tplRemark" placeholder="{MyTitle}，{Source}展会" style="flex:1.5">
+<label>话术：</label><input type="text" id="tplGreeting" placeholder="{Name}总您好，..." style="flex:2">
+<button class="btn btn-primary btn-sm" onclick="addTemplate()">添加</button>
+</div>
+<table class="template-table">
+<thead><tr><th style="width:70px">来源</th><th style="width:70px">行业</th><th>备注模板</th><th>话术模板</th><th style="width:50px">操作</th></tr></thead>
+<tbody id="tplBody"></tbody>
+</table>
+<p style="margin-top:14px;color:#888;font-size:12px">可用变量：{Name}=姓名, {Phone}=手机号, {Company}=公司, {Industry}=行业, {Source}=来源, {MyTitle}=我的称呼, {Referrer}=推荐人</p>
+</div>
+</div>
+</div>
+
+<div class="panel" id="panel-settings">
+<div class="settings-panel">
+<h3>⚙️ 基本设置</h3>
+<div class="settings-content">
+<div class="form-row"><label>每日添加上限</label><input type="number" id="cfgLimit" min="5" max="100" value="25"></div>
+<div class="form-row"><label>重试间隔（天）</label><input type="number" id="cfgRetry" min="1" max="14" value="3"></div>
+<div class="form-row"><label>我的称呼</label><input type="text" id="cfgTitle" value="悦动双成-展厅中控" style="flex:1"></div>
+<div class="form-row"><label></label><button class="btn btn-primary" onclick="saveConfig()">💾 保存设置</button></div>
+<h3>📊 统计概览</h3>
+<div class="stats-box" id="statsBox"></div>
+<div class="source-stats" id="sourceStats"></div>
+<button class="btn" style="margin-top:10px" onclick="refreshStats()">🔄 刷新统计</button>
+<h3 style="margin-top:16px">📦 数据迁移</h3>
+<p style="font-size:12px;color:#888;margin-bottom:8px">从旧版本导出数据后，在此导入即可恢复所有编辑记录</p>
+<div class="form-row"><label></label><button class="btn btn-primary" onclick="exportData()">📤 导出数据</button> <button class="btn" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button> <button class="btn btn-success" onclick="document.getElementById('mergeFileInput').click()">📋 追加新客户</button><input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)"><input type="file" id="mergeFileInput" accept=".json,.csv,.txt" style="display:none" onchange="mergeNewCustomers(event)"></div>
+</div>
+</div>
+</div>
+<div class="panel" id="panel-contract">
+<div class="contract-alerts" id="contractAlerts"></div>
+<div class="split">
+<div class="split-left">
+<div class="list-toolbar">
+<span style="font-weight:600">合同列表</span>
+<select id="contractFilter" onchange="renderContractList()"><option value="all">全部</option><option value="active">执行中</option><option value="completed">已完成</option><option value="overdue">有逾期</option></select>
+<span style="color:#888;margin-left:auto" id="contractCount"></span>
+<button class="btn btn-primary btn-sm" onclick="showAddContract()">+ 新增合同</button>
+</div>
+<div class="customer-list" id="contractList"></div>
+</div>
+<div class="split-right" id="contractDetail"><div class="detail-empty">← 选择或新增合同查看详情</div></div>
+</div>
+</div>
+
+<div class="panel" id="panel-stamp">
+  <div class="stamp-layout">
+    <div class="stamp-left">
+      <div class="stamp-section">
+        <h4>📄 选择文件</h4>
+        <select id="espFileSelect" onchange="espOnFileChange()" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"><option value="">-- 选择合同PDF --</option></select>
+        <div style="margin-top:6px;text-align:center;border-top:1px dashed #ddd;padding-top:6px">
+          <span style="font-size:11px;color:#888">或</span>
+          <button class="btn btn-sm" onclick="document.getElementById('espPdfUpload').click()" style="margin-left:4px">📤 上传PDF</button>
+          <input type="file" id="espPdfUpload" accept=".pdf" style="display:none" onchange="espUploadPdf(this)">
+        </div>
+      </div>
+      <div class="stamp-section">
+        <h4>🔴 印章</h4>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="btn btn-sm" onclick="document.getElementById('espStampInput').click()">+ 上传</button>
+          <input type="file" id="espStampInput" accept="image/*" style="display:none" onchange="espUploadStamp(this)">
+          <span style="font-size:11px;color:#888;line-height:26px">透明PNG最佳</span>
+        </div>
+        <div id="espStampList" style="max-height:160px;overflow-y:auto"></div>
+      </div>
+      <div class="stamp-section">
+        <h4>⚙️ 盖章设置</h4>
+        <div class="form-row"><label>类型</label><select id="espStampType" onchange="espOnTypeChange()"><option value="seal">公章</option><option value="cross">骑缝章</option><option value="both">公章+骑缝章</option></select></div>
+        <div id="espSealSettings">
+          <div class="form-row"><label>盖章页</label><span id="espPageInfo" style="font-size:12px;line-height:28px">1 / 1</span></div>
+          <div class="form-row"><label>大小</label><input type="range" id="espStampScale" min="5" max="40" value="18" oninput="espUpdateOverlay()" style="flex:1"><span id="espScaleVal" style="font-size:11px;width:32px;text-align:right">18%</span></div>
+        </div>
+        <div id="espCrossHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 骑缝章：自动在每两页之间居中剖切盖章</div>
+        <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：先在指定页盖公章（可拖拽定位），再自动盖骑缝章</div>
+        <button class="btn btn-primary" onclick="espApply()" style="width:100%;margin-top:8px;padding:8px">✅ 执行盖章</button>
+      </div>
+    </div>
+    <div class="stamp-right">
+      <div class="pdf-preview-container" id="espPreviewContainer">
+        <div style="color:#aaa;font-size:14px;text-align:center;padding:40px">← 请先选择PDF文件和印章</div>
+      </div>
+      <div class="stamp-page-nav" id="espPageNav" style="display:none">
+        <button onclick="espPrevPage()">◀ 上一页</button>
+        <span id="espPageLabel">第 1 页 / 共 1 页</span>
+        <button onclick="espNextPage()">下一页 ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-maint">
+  <div class="maint-toolbar">
+    <span style="font-weight:600">📅 维保日程提醒</span>
+    <button class="btn btn-primary btn-sm" onclick="toggleMaintAddForm()" style="margin-left:auto">+ 添加日程</button>
+  </div>
+  <div class="maint-content">
+  <div id="maintAddForm" style="display:none;background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:14px;border:1px solid #d0d9f0">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:120px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">标题 *</label><input type="text" id="maintAddTitle" placeholder="如：XX展厅年度维护" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
+      <div style="min-width:100px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">类型</label><select id="maintAddType" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"><option value="custom">📌 自定义</option><option value="warranty">🛡️ 质保</option><option value="payment">💰 付款</option><option value="contract_end">📋 合同到期</option><option value="inspection">🔍 巡检</option><option value="renewal">🔄 续约</option></select></div>
+      <div style="min-width:120px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">日期 *</label><input type="date" id="maintAddDate" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
+      <div style="flex:1;min-width:120px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">关联合同</label><select id="maintAddContract" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"><option value="">无</option></select></div>
+      <div style="flex:2;min-width:160px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">备注</label><input type="text" id="maintAddNote" placeholder="备注说明" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
+      <div style="display:flex;gap:4px"><button class="btn btn-primary btn-sm" onclick="addMaintItem()">✅ 添加</button><button class="btn btn-sm" onclick="toggleMaintAddForm()">取消</button></div>
+    </div>
+  </div>
+  <div class="maint-stats" id="maintStats"></div>
+  <div class="maint-filters">
+    <select id="maintFilterType" onchange="renderMaint()">
+      <option value="all">全部类型</option>
+      <option value="warranty">质保到期</option>
+      <option value="payment">付款提醒</option>
+      <option value="contract_end">合同到期</option>
+      <option value="custom">📌 自定义</option>
+      <option value="inspection">🔍 巡检</option>
+      <option value="renewal">🔄 续约</option>
+    </select>
+    <select id="maintFilterStatus" onchange="renderMaint()">
+      <option value="all">全部状态</option>
+      <option value="urgent">🔴 逾期</option>
+      <option value="warning">🟠 即将到期</option>
+      <option value="info">🔵 未来</option>
+      <option value="done">✅ 已完成</option>
+    </select>
+    <input type="text" id="maintSearch" placeholder="搜索..." oninput="renderMaint()" style="flex:1;max-width:200px">
+    <div class="maint-view-toggle">
+      <button id="maintViewTimeline" class="active" onclick="switchMaintView('timeline')">📋 时间线</button>
+      <button id="maintViewCalendar" onclick="switchMaintView('calendar')">🗓️ 日历</button>
+    </div>
+  </div>
+  <div id="maintTimelineView">
+    <div class="maint-timeline" id="maintTimeline"></div>
+  </div>
+  <div id="maintCalendarView" style="display:none">
+    <div class="maint-cal-nav">
+      <button onclick="maintCalPrev()">◀</button>
+      <span id="maintCalTitle">2026年6月</span>
+      <button onclick="maintCalNext()">▶</button>
+    </div>
+    <div class="maint-calendar" id="maintCalendar"></div>
+    <div id="maintCalDetail" style="margin-top:12px"></div>
+  </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="img-overlay" id="imgOverlay" onclick="this.classList.remove('show')"><img id="overlayImg"></div>
+
+
+<div class="modal-overlay" id="contractAlertModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="modalTitle">⚠️ 合同提醒</h3><button class="modal-close" onclick="closeContractAlertModal()">✕</button></div>
+    <div class="modal-content" id="modalContent"></div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeContractAlertModal()">知道了</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="stampModal">
+  <div class="modal-box" style="max-width:680px">
+    <div class="modal-header"><h3>🔴 盖章</h3><button class="modal-close" onclick="closeStampModal()">✕</button></div>
+    <div class="modal-content" id="stampModalContent">
+      <div style="margin-bottom:12px">
+        <h4 style="font-size:14px;margin-bottom:8px">📦 印章管理</h4>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="document.getElementById('stampFileInput').click()">+ 上传印章</button>
+          <input type="file" id="stampFileInput" accept="image/*" style="display:none" onchange="uploadStamp(this)">
+          <span style="font-size:11px;color:#888">建议上传透明背景PNG</span>
+        </div>
+        <div id="stampList" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div>
+      </div>
+      <hr style="border:none;border-top:1px solid #eee;margin:12px 0">
+      <div id="stampAction" style="display:none">
+        <h4 style="font-size:14px;margin-bottom:8px">📝 盖章设置</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+          <div class="form-row"><label>盖章文件</label><select id="stampFileSelect"></select></div>
+          <div class="form-row"><label>盖章类型</label><select id="stampTypeSelect"><option value="seal">公章</option><option value="cross">骑缝章</option></select></div>
+          <div class="form-row" id="stampPageRow"><label>盖章页码</label><input type="number" id="stampPage" value="1" min="1"></div>
+          <div class="form-row"><label>印章大小</label><input type="range" id="stampScale" min="5" max="35" value="18" style="flex:1"><span id="stampScaleVal" style="font-size:12px;width:35px;text-align:right">18%</span></div>
+          <div class="form-row" id="stampPosXRow"><label>X位置</label><input type="range" id="stampPosX" min="10" max="90" value="72" style="flex:1"><span id="stampPosXVal" style="font-size:12px;width:35px;text-align:right">72%</span></div>
+          <div class="form-row" id="stampPosYRow"><label>Y位置</label><input type="range" id="stampPosY" min="10" max="90" value="82" style="flex:1"><span id="stampPosYVal" style="font-size:12px;width:35px;text-align:right">82%</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#888">💡 公章：盖在指定页面指定位置；骑缝章：自动在每两页之间居中剖切</div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="applyStamp()">✅ 执行盖章</button>
+          <span style="font-size:11px;color:#888;line-height:30px">盖章后生成新PDF文件，不覆盖原文件</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === 顶部导航栏sticky ===
+
+const DB_KEY='wfhelper_data',CFG_KEY='wfhelper_config',TPL_KEY='wfhelper_templates',CONTRACT_KEY='wfhelper_contracts',MAINT_KEY='wfhelper_maint_items';
+const STATUS=['待添加','已发送','已通过','未通过','待重试'];
+const STATUS_CLASS=['status-0','status-1','status-2','status-3','status-4'];
+
+// === API 数据层（替代 localStorage） ===
+async function apiGet(key){
+  try{const r=await fetch('/api/data/'+key);return await r.json()}catch(e){console.error('API GET failed:',key,e);return null}
+}
+async function apiPut(key,data){
+  try{await fetch('/api/data/'+key,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}catch(e){console.error('API PUT failed:',key,e)}
+}
+function loadData(){return apiGet(DB_KEY)}
+function saveData(d){apiPut(DB_KEY,d)}
+function loadConfig(){return apiGet(CFG_KEY)}
+function saveConfigToStorage(c){apiPut(CFG_KEY,c)}
+async function loadTemplates(){
+  let t=await apiGet(TPL_KEY);
+  if(!t||!t.length){
+    t=[
+      {source:'展会',industry:'',remark:'{MyTitle}，{Source}展会',greeting:'{Name}总您好，{Source}展会上了解到贵司有展厅项目，我们做展厅中控系统，价格优、专业可靠，售后服务至善至上，方便发您参考吗？'},
+      {source:'同行介绍',industry:'',remark:'{MyTitle}，{Referrer}推荐',greeting:'{Name}总您好，听{Referrer}提到贵司在做展厅项目，我们专注展厅中控系统，性价比高、专业靠谱，售后至善至上，加您发些案例'},
+      {source:'行业筛选',industry:'',remark:'{MyTitle}，展厅中控咨询',greeting:'{Name}总您好，看到贵司在展厅方向有业务，我们做展厅中控产品，价格优、专业强、售后至善至上，加个微信交流下？'},
+      {source:'其他',industry:'',remark:'{MyTitle}',greeting:'{Name}总您好，我是做展厅中控的，价格优、专业可靠、售后至善至上，想跟您交流下，方便吗？'},
+      {source:'展会',industry:'展览展示',remark:'{MyTitle}，{Source}展会',greeting:'{Name}总您好，{Source}展会上了解到贵司做展览展示，我们专注展厅中控系统，价格优、专业可靠、售后至善至上，有不少案例可以分享'},
+      {source:'行业筛选',industry:'博物馆',remark:'{MyTitle}，博物馆中控方案',greeting:'{Name}总您好，了解到贵司有博物馆项目，我们在展厅中控方面经验丰富，价格优、专业强、售后至善至上，方便交流下吗？'},
+      {source:'行业筛选',industry:'科技馆',remark:'{MyTitle}，科技馆中控方案',greeting:'{Name}总您好，了解到贵司有科技馆项目，我们在展厅中控方面经验丰富，价格优、专业强、售后至善至上，方便交流下吗？'},
+      {source:'行业筛选',industry:'企业展厅',remark:'{MyTitle}，企业展厅中控方案',greeting:'{Name}总您好，了解到贵司有企业展厅项目，我们做展厅中控系统，价格优、专业可靠、售后至善至上，加您发些案例？'}
+    ];apiPut(TPL_KEY,t);
+  }return t||[]
+}
+function saveTemplates(t){apiPut(TPL_KEY,t)}
+function loadContracts(){return apiGet(CONTRACT_KEY)}
+function saveContractsData(d){apiPut(CONTRACT_KEY,d)}
+function loadMaintItems(){return apiGet(MAINT_KEY)}
+function saveMaintItems(d){apiPut(MAINT_KEY,d)}
+
+// === 文件操作（替代 IndexedDB） ===
+async function uploadContractFile(file,thumbnail){
+  const fd=new FormData();fd.append('file',file);
+  if(thumbnail)fd.append('thumbnail',thumbnail);
+  const r=await fetch('/api/files/upload',{method:'POST',body:fd});
+  return await r.json();
+}
+async function getContractFileUrl(fid,name,type){
+  return '/api/files/'+fid+'?name='+encodeURIComponent(name||fid)+'&type='+encodeURIComponent(type||'');
+}
+async function deleteContractFile(fid){
+  await fetch('/api/files/'+fid,{method:'DELETE'});
+}
+
+let customers=[],config={dailyLimit:25,retryDays:3,myTitle:'悦动双成-展厅中控'},templates=[],contracts=[],maintItems=[],selectedId=null,selectedContractId=null;
+
+function generateGreeting(c){
+  let m=templates.find(t=>t.source===c.source&&t.industry&&t.industry===c.industry)
+    ||templates.find(t=>t.source===c.source&&!t.industry)
+    ||templates.find(t=>t.source==='其他'&&!t.industry);
+  if(!m)return{remark:config.myTitle,greeting:`${c.name}总您好，我是做展厅中控的，价格优、专业可靠、售后至善至上，想跟您交流下，方便吗？`};
+  const repl=tpl=>tpl.replace(/{Name}/g,c.name).replace(/{Phone}/g,c.phone).replace(/{Company}/g,c.company||'').replace(/{Industry}/g,c.industry||'').replace(/{Source}/g,c.source||'').replace(/{MyTitle}/g,config.myTitle).replace(/{Referrer}/g,c.source.replace(/(.+?)介绍.*/,'$1')||c.source);
+  return{remark:repl(m.remark),greeting:repl(m.greeting)};
+}
+
+function maskPhone(p){return p.length>=7?p.slice(0,3)+'****'+p.slice(-4):p}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+
+function renderHeader(){
+  const total=customers.length,s=[0,0,0,0,0];
+  customers.forEach(c=>s[c.status]++);
+  const resp=s[1]+s[2]+s[3],rate=resp>0?(s[2]/resp*100).toFixed(1):'0.0';
+  const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
+  document.getElementById('headerStats').innerHTML=`<span>今日 <b>${todaySent}</b>/${config.dailyLimit}</span><span>通过率 <b>${rate}%</b></span><span>总计 <b>${total}</b></span>`;
+}
+
+function renderCItem(c,sel){
+  let csBadge='';
+  if(c.companyStatus==='注销')csBadge='<span class="status-badge" style="background:#fce8e6;color:#ea4335;margin-right:2px">注销</span>';
+  else if(c.companyStatus==='吊销')csBadge='<span class="status-badge" style="background:#fce8e6;color:#ea4335;margin-right:2px">吊销</span>';
+  else if(c.related===false)csBadge='<span class="status-badge" style="background:#fef7e0;color:#e37400;margin-right:2px">非展厅</span>';
+  return`<div class="customer-item${sel?' selected':''}" data-id="${c.id}" onclick="selectCustomer('${c.id}')">${c.avatarData?`<img src="${c.avatarData}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">`:'<span style="width:28px;height:28px;border-radius:50%;background:#e0e0e0;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#999;flex-shrink:0">'+c.name[0]+'</span>'}<span class="customer-name">${c.name}</span><span class="customer-phone">${maskPhone(c.phone)}</span><span class="customer-company">${c.company||'-'}</span>${csBadge}<span class="status-badge ${STATUS_CLASS[c.status]}">${STATUS[c.status]}</span></div>`;
+}
+
+function renderTodayList(){
+  const now=new Date(),retryMs=config.retryDays*864e5;
+  customers.forEach(c=>{
+    if(c.status===3&&c.sentAt){
+      if(now-new Date(c.sentAt)>=retryMs&&(c.retryCount||0)<(c.maxRetry||3)){
+        c.status=4;c.retryCount=(c.retryCount||0)+1;
+        const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
+      }
+    }
+  });saveData(customers);
+  const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
+  const remaining=config.dailyLimit-todaySent;
+  const list=customers.filter(c=>c.status===4||c.status===0).slice(0,Math.max(remaining,customers.filter(c=>c.status===4).length));
+  document.getElementById('todayList').innerHTML=list.length?list.map(c=>renderCItem(c,c.id===selectedId)).join(''):'<div style="padding:36px;text-align:center;color:#aaa">今日任务已完成 🎉</div>';
+  document.getElementById('todayCount').textContent=`${list.length} 人待处理`;
+}
+
+function renderAllList(){
+  const filter=parseInt(document.getElementById('filterStatus').value);
+  const companyFilter=document.getElementById('filterCompany').value;
+  const search=(document.getElementById('searchInput').value||'').toLowerCase();
+  let list=customers;
+  if(filter>=0)list=list.filter(c=>c.status===filter);
+  if(companyFilter==='active')list=list.filter(c=>c.companyStatus!=='注销'&&c.companyStatus!=='吊销'&&c.related!==false);
+  else if(companyFilter==='notrelated')list=list.filter(c=>c.related===false&&c.companyStatus!=='注销'&&c.companyStatus!=='吊销');
+  else if(companyFilter==='cancelled')list=list.filter(c=>c.companyStatus==='注销'||c.companyStatus==='吊销');
+  if(search)list=list.filter(c=>(c.name+c.phone+c.company).toLowerCase().includes(search));
+  document.getElementById('allList').innerHTML=list.length?list.map(c=>renderCItem(c,c.id===selectedId)).join(''):'<div style="padding:36px;text-align:center;color:#aaa">无匹配客户</div>';
+}
+
+function renderDetail(c,cid){
+  if(!c){document.getElementById(cid).innerHTML='<div class="detail-empty">← 选择客户查看详情</div>';return}
+  if(!c.remark||!c.greeting){const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;saveData(customers)}
+  document.getElementById(cid).innerHTML=`
+    <div class="detail-info"><div class="name">${c.name}</div><div class="meta"><span>📱 ${c.phone}</span><span>🏢 ${c.company||'-'}</span><span>🏭 ${c.industry||'-'}</span><span>📌 ${c.source||'-'}</span></div>${c.companyStatus&&c.companyStatus!=='未核查'?'<div class="meta" style="margin-top:4px"><span style="font-weight:600">公司状态：</span><span style="color:'+(c.companyStatus==='注销'||c.companyStatus==='吊销'?'#ea4335':'#34a853')+'">'+c.companyStatus+'</span>'+(c.businessScope?'<span style="margin-left:10px;font-weight:600">业务：</span><span>'+c.businessScope+'</span>':'')+(c.related===false?'<span style="margin-left:10px;color:#e37400">⚠️ 非展厅相关</span>':'')+'</div>':''}</div>
+    <div class="copy-section"><label>添加备注</label><div class="copy-box"><textarea id="remarkArea">${c.remark}</textarea><button class="copy-btn" onclick="copyText('remarkArea',this)">📋复制</button></div></div>
+    <div class="copy-section"><label>打招呼话术</label><div class="copy-box"><textarea id="greetingArea">${c.greeting}</textarea><button class="copy-btn" onclick="copyText('greetingArea',this)">📋复制</button></div></div>
+    <div class="quick-actions">
+      <button class="btn btn-warning" onclick="setStatus('${c.id}',1)">标记已发送</button>
+      <button class="btn btn-success" onclick="setStatus('${c.id}',2)">✅ 已通过</button>
+      <button class="btn btn-danger" onclick="setStatus('${c.id}',3)">❌ 未通过</button>
+      <button class="btn" onclick="regenGreeting('${c.id}')">🔄 重新生成</button>
+    </div>
+    <div class="avatar-paste-zone${c.avatarData?' has-img':''}" id="avatarZone" tabindex="0" onclick="document.getElementById('avatarZone').focus()" onpaste="handleAvatarPaste(event,'${c.id}')" title="点击后 Ctrl+V 粘贴微信头像截图">
+      <button class="remove-img" onclick="event.stopPropagation();removeAvatar('${c.id}')">✕</button>
+      ${c.avatarData?`<img src="${c.avatarData}" alt="截图" onclick="document.getElementById('overlayImg').src=this.src;document.getElementById('imgOverlay').classList.add('show')">`:'<div class="hint">📷 点击此处 → Ctrl+V 粘贴微信头像截图</div>'}
+    </div>`;
+}
+
+function renderTemplates(){
+  document.getElementById('tplBody').innerHTML=templates.map((t,i)=>
+    `<tr><td>${t.source}</td><td>${t.industry||'通用'}</td><td>${t.remark}</td><td>${t.greeting}</td><td><button class="btn btn-danger btn-sm" onclick="delTemplate(${i})">删除</button></td></tr>`
+  ).join('');
+}
+
+function refreshStats(){
+  const s=[0,0,0,0,0];customers.forEach(c=>s[c.status]++);
+  const total=customers.length,resp=s[1]+s[2]+s[3];
+  const rate=resp>0?(s[2]/resp*100).toFixed(1):'0.0';
+  const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
+  const cs={active:0,cancelled:0,notrelated:0,unchecked:0};
+  customers.forEach(c=>{if(c.companyStatus==='注销'||c.companyStatus==='吊销')cs.cancelled++;else if(c.related===false)cs.notrelated++;else if(c.companyStatus&&c.companyStatus!=='未核查')cs.active++;else cs.unchecked++});
+  document.getElementById('statsBox').textContent=
+`╔══════════════════════════════════════╗
+║          📊 客户添加统计             ║
+╠══════════════════════════════════════╣
+║  总客户数：  ${String(total).padStart(5)}                    ║
+║  待添加：    ${String(s[0]).padStart(5)}                    ║
+║  已发送：    ${String(s[1]).padStart(5)}                    ║
+║  已通过：    ${String(s[2]).padStart(5)}                    ║
+║  未通过：    ${String(s[3]).padStart(5)}                    ║
+║  待重试：    ${String(s[4]).padStart(5)}                    ║
+╠══════════════════════════════════════╣
+║  通过率：    ${String(rate).padStart(5)}%                  ║
+║  今日已加：  ${String(todaySent).padStart(5)}/${config.dailyLimit}              ║
+╚══════════════════════════════════════╝`;
+  const srcMap={};
+  customers.forEach(c=>{const k=c.source||'未分类';if(!srcMap[k])srcMap[k]={total:0,accepted:0};srcMap[k].total++;if(c.status===2)srcMap[k].accepted++});
+  document.getElementById('sourceStats').innerHTML=Object.entries(srcMap).sort((a,b)=>b[1].total-a[1].total).map(([k,v])=>`<div class="row"><span>${k}</span><span>${v.total}人 / 通过 ${v.accepted}人 (${v.total>0?(v.accepted/v.total*100).toFixed(1):0}%)</span></div>`).join('');
+}
+
+function selectCustomer(id){
+  selectedId=id;
+  const c=customers.find(x=>x.id===id);
+  const at=document.querySelector('.tab.active').dataset.tab;
+  renderDetail(c,at==='today'?'todayDetail':'allDetail');
+  renderTodayList();renderAllList();
+}
+
+function setStatus(id,status){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  c.status=status;
+  if(status===1)c.sentAt=new Date().toISOString();
+  if(status===2)c.acceptedAt=new Date().toISOString();
+  saveData(customers);selectedId=id;renderAll();showToast(STATUS[status],'success');
+}
+
+function regenGreeting(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
+  saveData(customers);renderAll();showToast('话术已重新生成','info');
+}
+
+function deleteSelected(){
+  if(!selectedId){showToast('请先选择客户','error');return}
+  const c=customers.find(x=>x.id===selectedId);if(!c)return;
+  if(!confirm(`确定删除客户「${c.name}」？`))return;
+  customers=customers.filter(x=>x.id!==selectedId);selectedId=null;
+  saveData(customers);renderAll();showToast('已删除','success');
+}
+
+function addManual(){
+  const name=document.getElementById('mfName').value.trim(),phone=document.getElementById('mfPhone').value.trim();
+  if(!name||!phone){showToast('姓名和手机号必填','error');return}
+  if(customers.some(c=>c.phone===phone)){showToast('该手机号已存在','error');return}
+  const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,phone,company:document.getElementById('mfCompany').value.trim(),industry:document.getElementById('mfIndustry').value,source:document.getElementById('mfSource').value,status:0,retryCount:0,maxRetry:3,createdAt:new Date().toISOString()};
+  const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
+  customers.unshift(c);saveData(customers);
+  ['mfName','mfPhone','mfCompany'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mfIndustry').value='';document.getElementById('mfSource').value='';
+  renderAll();showToast('添加成功','success');
+}
+
+function handleFileImport(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim());
+    let imported=0,skipped=0;
+    lines.slice(1).forEach(line=>{
+      const parts=line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
+      if(parts.length<2)return;const name=parts[0],phone=parts[1];
+      if(!name||!phone)return;
+      if(customers.some(c=>c.phone===phone)){skipped++;return}
+      const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6)+imported,name,phone,company:parts[2]||'',industry:parts[3]||'',source:parts[4]||'',status:0,retryCount:0,maxRetry:3,createdAt:new Date().toISOString()};
+      const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
+      customers.push(c);imported++;
+    });saveData(customers);renderAll();showToast(`导入完成！成功${imported}条，跳过${skipped}条`,'success');
+  };reader.readAsText(file,'UTF-8');
+}
+
+function downloadSampleCSV(){
+  const csv='姓名,手机号,公司,行业,来源\n张三,13800138001,XX展览公司,展览展示,展会\n李四,13900139002,YY博物馆,博物馆,同行介绍\n王五,13700137003,ZZ科技馆,科技馆,行业筛选\n';
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='客户导入模板.csv';a.click();
+}
+
+function exportCSV(){
+  const header='姓名,手机号,公司,行业,来源,状态,添加备注,打招呼话术\n';
+  const rows=customers.map(c=>`"${c.name}","${c.phone}","${c.company||''}","${c.industry||''}","${c.source||''}","${STATUS[c.status]}","${c.remark||''}","${c.greeting||''}"`).join('\n');
+  const blob=new Blob(['\uFEFF'+header+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`客户数据_${todayStr()}.csv`;a.click();showToast('导出成功','success');
+}
+
+function addTemplate(){
+  const t={source:document.getElementById('tplSource').value,industry:document.getElementById('tplIndustry').value.trim(),remark:document.getElementById('tplRemark').value.trim(),greeting:document.getElementById('tplGreeting').value.trim()};
+  if(!t.remark&&!t.greeting){showToast('备注或话术至少填一项','error');return}
+  templates.push(t);saveTemplates(templates);renderTemplates();
+  document.getElementById('tplIndustry').value='';document.getElementById('tplRemark').value='';document.getElementById('tplGreeting').value='';
+  showToast('模板添加成功','success');
+}
+
+function delTemplate(i){templates.splice(i,1);saveTemplates(templates);renderTemplates()}
+
+function saveConfig(){
+  config.dailyLimit=parseInt(document.getElementById('cfgLimit').value)||25;
+  config.retryDays=parseInt(document.getElementById('cfgRetry').value)||3;
+  config.myTitle=document.getElementById('cfgTitle').value.trim()||'悦动双成-展厅中控';
+  saveConfigToStorage(config);renderAll();showToast('设置已保存','success');
+}
+
+async function exportData(){
+  const data={customers:customers,config:config,templates:templates,contracts:contracts,maintItems:maintItems};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='微信好友助手_数据备份_'+todayStr()+'.json';a.click();
+  showToast('数据已导出（含合同）','success');
+}
+async function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.customers&&data.customers.length){
+        const existMap=new Map(customers.map(c=>[c.id,c]));
+        let merged=data.customers.map(c=>{
+          if(existMap.has(c.id)){const ex=existMap.get(c.id);if(ex.status>0||ex.remark||ex.greeting||ex.avatarData)return ex;}
+          return c;
+        });
+        merged=merged.concat(customers.filter(c=>!data.customers.find(d=>d.id===c.id)));
+        customers=merged;saveData(customers);
+        if(data.config){Object.assign(config,data.config);saveConfigToStorage(config);}
+        if(data.templates){templates=data.templates;saveTemplates(templates);}
+        if(data.contracts&&data.contracts.length){
+          const existCMap=new Map(contracts.map(c=>[c.id,c]));
+          let mergedC=data.contracts.map(c=>existCMap.has(c.id)?existCMap.get(c.id):c);
+          mergedC=mergedC.concat(contracts.filter(c=>!data.contracts.find(d=>d.id===c.id)));
+          contracts=mergedC;saveContractsData(contracts);
+        }
+        if(data.maintItems&&data.maintItems.length){
+          const existMMap=new Map(maintItems.map(m=>[m.id,m]));
+          let mergedM=data.maintItems.map(m=>existMMap.has(m.id)?existMMap.get(m.id):m);
+          mergedM=mergedM.concat(maintItems.filter(m=>!data.maintItems.find(d=>d.id===m.id)));
+          maintItems=mergedM;saveMaintItems(maintItems);
+        }
+        renderAll();showToast('导入成功！共'+merged.length+'条客户'+(contracts.length)+'份合同','success');
+      }else{showToast('文件格式不正确','error');}
+    }catch(err){showToast('导入失败：'+err.message,'error');}
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function handleAvatarPaste(event,customerId){
+  event.preventDefault();
+  const items=event.clipboardData&&event.clipboardData.items;
+  if(!items)return;
+  for(let i=0;i<items.length;i++){
+    if(items[i].type.indexOf('image')===-1)continue;
+    const blob=items[i].getAsFile();
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=300,maxH=300;
+        let w=img.width,h=img.height;
+        if(w>maxW){h=h*maxW/w;w=maxW}
+        if(h>maxH){w=w*maxH/h;h=maxH}
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.8);
+        const c=customers.find(x=>x.id===customerId);
+        if(c){c.avatarData=dataUrl;saveData(customers);renderAll();showToast('图片已保存','success')}
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(blob);
+    return;
+  }
+  showToast('未检测到图片，请先截图再粘贴','error');
+}
+function removeAvatar(customerId){
+  const c=customers.find(x=>x.id===customerId);
+  if(c){delete c.avatarData;saveData(customers);renderAll();showToast('头像已移除','success')}
+}
+function copyText(taId,btn){
+  const ta=document.getElementById(taId);
+  navigator.clipboard.writeText(ta.value).then(()=>{btn.textContent='✅已复制';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋复制';btn.classList.remove('copied')},1500)});
+}
+
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className=`toast toast-${type} show`;setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// === 合同管理模块 ===
+function getContractStatus(c){
+  if(!c)return'active';const now=new Date().toISOString().slice(0,10);
+  const allPaid=c.payments&&c.payments.length>0&&c.payments.every(p=>p.paidDate);
+  const warrantyDone=!c.warrantyAmount||c.warrantyPaidDate;
+  const warrantyEnded=c.warrantyEnd&&c.warrantyEnd<now;
+  if(allPaid&&warrantyDone&&warrantyEnded)return'completed';
+  if(c.payments&&c.payments.some(p=>!p.paidDate&&p.date&&p.date<now))return'overdue';
+  return'active';
+}
+function checkContractAlerts(){
+  const now=new Date().toISOString().slice(0,10);
+  const wk=new Date(Date.now()+7*864e5).toISOString().slice(0,10);
+  const mo=new Date(Date.now()+30*864e5).toISOString().slice(0,10);
+  const alerts=[];
+  contracts.forEach(c=>{
+    if(c.payments)c.payments.forEach(p=>{
+      if(p.paidDate)return;
+      if(p.date&&p.date<now)alerts.push({t:'urgent',text:`「${c.name||'未命名'}」${p.name||'付款'}已逾期（${p.date}），¥${(p.amount||0).toLocaleString()}`});
+      else if(p.date&&p.date<=wk)alerts.push({t:'warning',text:`「${c.name||'未命名'}」${p.name||'付款'}即将到期（${p.date}），¥${(p.amount||0).toLocaleString()}`});
+    });
+    if(c.warrantyEnd&&!c.warrantyPaidDate&&c.warrantyAmount){
+      if(c.warrantyEnd<now)alerts.push({t:'urgent',text:`「${c.name||'未命名'}」质保金¥${c.warrantyAmount.toLocaleString()}已到期（质保至${c.warrantyEnd}）`});
+      else if(c.warrantyEnd<=mo)alerts.push({t:'warning',text:`「${c.name||'未命名'}」质保期即将到期（${c.warrantyEnd}），质保金¥${c.warrantyAmount.toLocaleString()}`});
+    }
+  });return alerts;
+}
+function renderContractAlerts(){
+  const alerts=checkContractAlerts();const el=document.getElementById('contractAlerts');
+  if(!alerts.length){el.classList.remove('show');el.innerHTML='';return}
+  el.classList.add('show');
+  el.innerHTML=`<div class="alert-title">⚠️ 合同提醒（${alerts.length}条）</div>`+alerts.map(a=>`<div class="alert-item"><span class="alert-badge ${a.t==='urgent'?'alert-urgent':'alert-warning'}">${a.t==='urgent'?'逾期':'即将到期'}</span><span>${a.text}</span></div>`).join('');
+}
+function renderContractList(){
+  const filter=document.getElementById('contractFilter').value;
+  let list=contracts.map(c=>({...c,_s:getContractStatus(c)}));
+  if(filter!=='all')list=list.filter(c=>c._s===filter);
+  const sl={active:'执行中',completed:'已完成',overdue:'有逾期'};
+  const sc={active:'cs-active',completed:'cs-completed',overdue:'cs-overdue'};
+  // 按年份分组
+  const groups={};
+  list.forEach(c=>{
+    const dateStr=c.signDate||c.createdAt||'';
+    const year=dateStr?dateStr.slice(0,4):'未知年份';
+    if(!groups[year])groups[year]=[];
+    groups[year].push(c);
+  });
+  const sortedYears=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  if(!list.length){
+    document.getElementById('contractList').innerHTML='<div style="padding:36px;text-align:center;color:#aaa">暂无合同</div>';
+    document.getElementById('contractCount').textContent='0 份';
+    return;
+  }
+  let html='';
+  sortedYears.forEach(year=>{
+    const items=groups[year];
+    const collapsed=year!==(sortedYears[0]||'');
+    html+=`<div class="contract-group-header" onclick="toggleYearGroup(this)">
+      <span class="group-arrow${collapsed?'':' open'}">▶</span>
+      <span class="group-label">📄 ${year}年</span>
+      <span class="group-count">(${items.length}份)</span>
+    </div>
+    <div class="contract-group-items${collapsed?' collapsed':''}">`;
+    items.forEach(c=>{
+      const cu=customers.find(x=>x.id===c.customerId);
+      const isSelected=c.id===selectedContractId;
+      html+=`<div class="contract-item-expandable${isSelected?' selected':''}" data-cid="${c.id}">
+        <div class="contract-item-header" onclick="toggleContractAccordion('${c.id}')">
+          <span class="expand-arrow${isSelected?' open':''}">▶</span>
+          <span class="c-name">${c.name||'未命名合同'}</span>
+          <span class="c-amount">¥${(c.amount||0).toLocaleString()}</span>
+          <span class="c-status ${sc[c._s]}">${sl[c._s]}</span>
+        </div>
+        <div class="contract-item-detail" id="cd-${c.id}">
+          ${buildAccordionDetail(c,cu)}
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('contractList').innerHTML=html;
+  document.getElementById('contractCount').textContent=`${list.length} 份`;
+  // 加载展开合同的PDF缩略图
+  if(selectedContractId){
+    const c=contracts.find(x=>x.id===selectedContractId);
+    if(c)loadAccordionPdfThumbs(c);
+  }
+  const urgents=checkContractAlerts().filter(a=>a.t==='urgent').length;
+  const hdrEl=document.getElementById('contractAlertBadge');
+  if(hdrEl)hdrEl.style.display=urgents>0?'inline':'none';
+}
+
+function buildAccordionDetail(c,cu){
+  const totalPay=c.payments?c.payments.reduce((s,p)=>s+(p.amount||0),0):0;
+  const paidPay=c.payments?c.payments.filter(p=>p.paidDate).reduce((s,p)=>s+(p.amount||0),0):0;
+  const pct=totalPay>0?Math.round(paidPay/totalPay*100):0;
+  let html=`<div class="contract-detail-summary">
+    <span><span class="label">客户：</span><b>${cu?cu.company||cu.name:'-'}</b></span>
+    <span><span class="label">签订：</span><b>${c.signDate||'-'}</b></span>
+    <span><span class="label">金额：</span><b>¥${(c.amount||0).toLocaleString()}</b></span>
+    <span><span class="label">已收：</span><b style="color:#34a853">¥${paidPay.toLocaleString()}</b></span>
+  </div>
+  <div class="pay-progress"><div class="pay-progress-bar"><div class="pay-progress-fill" style="width:${pct}%"></div></div><div class="pay-progress-text">收款进度 ${pct}%</div></div>`;
+  // 缩略图区域
+  const pdfFiles=(c.files&&c.files.length)?c.files.filter(f=>f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf')):[];
+  const imgFiles=(c.files&&c.files.length)?c.files.filter(f=>f.type&&f.type.startsWith('image/')):[];
+  if(c.files&&c.files.length){
+    html+=`<div class="thumb-grid" id="thumb-grid-${c.id}">`;
+    imgFiles.forEach(f=>{
+      const thumbSrc=f.thumbnail||('/api/files/'+f.id+'?name='+encodeURIComponent(f.name||f.id)+'&type='+encodeURIComponent(f.type||''));
+      html+=`<div class="img-thumb" onclick="zoomImageThumb('${f.id}','${f.name||''}','${f.type||''}')"><img src="${thumbSrc}" loading="lazy"></div>`;
+    });
+    pdfFiles.forEach(pf=>{
+      html+=`<div class="pdf-loading" id="pdf-thumbs-loading-${pf.id}" style="color:#aaa;font-size:11px;padding:4px;grid-column:1/-1">⏳ 加载PDF页面...</div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="selectContract('${c.id}')">✏️ 编辑</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteContract('${c.id}')">🗑 删除</button>
+  </div>`;
+  return html;
+}
+function toggleYearGroup(el){
+  const arrow=el.querySelector('.group-arrow');
+  const itemsDiv=el.nextElementSibling;
+  if(!itemsDiv)return;
+  const isCollapsed=itemsDiv.classList.contains('collapsed');
+  if(isCollapsed){
+    itemsDiv.classList.remove('collapsed');
+    arrow.classList.add('open');
+  }else{
+    itemsDiv.classList.add('collapsed');
+    arrow.classList.remove('open');
+  }
+}
+function toggleContractAccordion(cid){
+  if(selectedContractId===cid){
+    // 收起当前
+    selectedContractId=null;
+    renderContractList();
+    document.getElementById('contractDetail').innerHTML='<div class="detail-empty">← 选择或新增合同</div>';
+    return;
+  }
+  selectedContractId=cid;
+  renderContractList();
+  renderContractDetail(contracts.find(x=>x.id===cid));
+}
+async function loadAccordionPdfThumbs(c){
+  const pdfFiles=(c.files&&c.files.length)?c.files.filter(f=>f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf')):[];
+  if(!pdfFiles.length)return;
+  const grid=document.getElementById('thumb-grid-'+c.id);
+  if(!grid)return;
+  for(const pf of pdfFiles){
+    const loadingEl=document.getElementById('pdf-thumbs-loading-'+pf.id);
+    try{
+      const r=await fetch('/api/pdf-pages/'+pf.id);
+      const data=await r.json();
+      if(data.error){
+        if(loadingEl)loadingEl.innerHTML='📕 '+data.error;
+        continue;
+      }
+      if(data.pages&&data.pages.length>0){
+        const thumbHtml=data.pages.map(p=>`<div class="pdf-page-thumb" onclick="viewPdfPage('${p.url}')"><img src="${p.url}" loading="lazy" alt="第${p.page}页"><div class="page-label">第${p.page}页</div></div>`).join('');
+        if(loadingEl){loadingEl.insertAdjacentHTML('afterend',thumbHtml);loadingEl.remove();}
+        else{grid.insertAdjacentHTML('beforeend',thumbHtml);}
+      }else{
+        if(loadingEl)loadingEl.innerHTML='📕 无页面';
+      }
+    }catch(e){
+      if(loadingEl)loadingEl.innerHTML='📕 加载失败';
+    }
+  }
+}
+// 点击图片缩略图放大
+async function zoomImageThumb(fid,name,type){
+  const url='/api/files/'+fid+'?name='+encodeURIComponent(name||fid)+'&type='+encodeURIComponent(type||'');
+  document.getElementById('overlayImg').src=url;
+  document.getElementById('imgOverlay').classList.add('show');
+}
+function showContractAlertsModal(){
+  const alerts=checkContractAlerts();
+  if(!alerts.length)return;
+  const urgent=alerts.filter(a=>a.t==='urgent');
+  const warning=alerts.filter(a=>a.t==='warning');
+  let html='';
+  if(urgent.length){
+    html+=`<div style="font-weight:600;font-size:14px;color:#ea4335;margin-bottom:8px">🚨 逾期提醒（${urgent.length}条）</div>`;
+    urgent.forEach(a=>{
+      html+=`<div class="alert-row"><span class="alert-icon">🔴</span><span>${a.text}</span></div>`;
+    });
+  }
+  if(warning.length){
+    html+=`<div style="font-weight:600;font-size:14px;color:#e37400;margin-bottom:8px${urgent.length?';margin-top:12px':''}">⏰ 即将到期（${warning.length}条）</div>`;
+    warning.forEach(a=>{
+      html+=`<div class="alert-row"><span class="alert-icon">🟡</span><span>${a.text}</span></div>`;
+    });
+  }
+  document.getElementById('modalTitle').textContent=`⚠️ 合同提醒（${alerts.length}条）`;
+  document.getElementById('modalContent').innerHTML=html;
+  document.getElementById('contractAlertModal').classList.add('show');
+}
+function closeContractAlertModal(){
+  document.getElementById('contractAlertModal').classList.remove('show');
+}
+
+function selectContract(id){selectedContractId=id;renderContractDetail(contracts.find(x=>x.id===id));renderContractList()}
+function renderContractDetail(c){
+  if(!c){document.getElementById('contractDetail').innerHTML='<div class="detail-empty">← 选择或新增合同查看详情</div>';return}
+  const st=getContractStatus(c);const sl={active:'执行中',completed:'已完成',overdue:'有逾期'};
+  const sc={active:'cs-active',completed:'cs-completed',overdue:'cs-overdue'};
+  const totalPay=c.payments?c.payments.reduce((s,p)=>s+(p.amount||0),0):0;
+  const paidPay=c.payments?c.payments.filter(p=>p.paidDate).reduce((s,p)=>s+(p.amount||0),0):0;
+  const pct=totalPay>0?Math.round(paidPay/totalPay*100):0;
+  const custOpts=customers.map(cu=>`<option value="${cu.id}"${c.customerId===cu.id?' selected':''}>${cu.name}${cu.company?' - '+cu.company:''}</option>`).join('');
+  const payRows=(c.payments&&c.payments.length)?c.payments.map((p,i)=>{
+    const amt=parseFloat(c.amount)||0;
+    const pPct=amt>0&&p.amount?Math.round(p.amount/amt*100):0;
+    const isPaid=!!p.paidDate;
+    return`<div class="payment-row" style="background:${isPaid?'#f0faf0':'#fff'};border:1px solid ${isPaid?'#c8e6c9':'#eee'};border-radius:6px;padding:6px 8px">
+      <input class="p-name" value="${p.name||''}" placeholder="节点名" data-pi="${i}" data-pf="name" style="width:80px">
+      <input class="p-amount" type="number" value="${p.amount||''}" placeholder="金额" data-pi="${i}" data-pf="amount" style="width:90px" oninput="updatePayPct(this)">
+      <span class="pay-pct" style="font-size:11px;color:#1a73e8;min-width:36px;text-align:right">${pPct? pPct+'%':''}</span>
+      <input class="p-date" type="date" value="${p.date||''}" title="应收日期" data-pi="${i}" data-pf="date" style="width:125px">
+      <input class="p-date" type="date" value="${p.paidDate||''}" title="实收日期" data-pi="${i}" data-pf="paidDate" style="background:${isPaid?'#e6f4ea':'#fff'};width:125px">
+      <span style="font-size:11px;padding:2px 6px;border-radius:10px;${isPaid?'background:#e6f4ea;color:#34a853':'background:#fef7e0;color:#e37400'}">${isPaid?'✓已收':'待收'}</span>
+      <button class="btn btn-danger btn-sm" onclick="removePaymentRow(${i})" style="padding:2px 6px">✕</button>
+    </div>`}).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">暂无付款节点</div>';
+  const fileItems=(c.files&&c.files.length)?c.files.map(f=>{const isImg=f.type&&f.type.startsWith('image/');const isPdf=f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf');const icon=isPdf?'📕':f.type&&f.type.startsWith('text/')?'📝':'📄';return`<div class="contract-file-item" style="cursor:pointer" onclick="viewContractFile('${f.id}','${f.name||''}','${f.type||''}')">${isImg&&f.thumbnail?`<img src="${f.thumbnail}">`:`<div class="file-icon">${icon}</div>`}<div class="file-name">${f.name}</div><button class="remove-file" onclick="event.stopPropagation();removeContractFile('${c.id}','${f.id}')">✕</button></div>`}).join(''):'';
+  document.getElementById('contractDetail').innerHTML=`
+  <div class="contract-form" style="max-width:100%;margin:0 auto;padding:0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;border-radius:10px"><h3 style="margin:0;font-size:17px;color:#fff">合同详情</h3><span style="padding:3px 12px;border-radius:12px;font-size:12px;font-weight:500;${st==='completed'?'background:#34a853;color:#fff':st==='overdue'?'background:#ea4335;color:#fff':'background:rgba(255,255,255,.25);color:#fff'}">${sl[st]}</span></div>
+  <div class="contract-summary">
+    <div class="srow"><span>合同金额</span><b>¥${(c.amount||0).toLocaleString()}</b></div>
+    <div class="srow"><span>已收款</span><b style="color:#34a853">¥${paidPay.toLocaleString()}</b></div>
+    <div class="pay-progress"><div class="pay-progress-bar"><div class="pay-progress-fill" style="width:${pct}%"></div></div><div class="pay-progress-text">收款进度 ${pct}%</div></div>
+    ${c.warrantyAmount?`<div class="srow"><span>质保金</span><b style="color:${c.warrantyPaidDate?'#34a853':'#e37400'}">¥${c.warrantyAmount.toLocaleString()}${c.warrantyPaidDate?' ✓已收':''}</b></div>`:''}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin-top:4px">
+  <div style="min-width:0;overflow:hidden">
+  <h4>📋 基础信息</h4>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">
+  <div class="form-row"><label>合同名称 *</label><input type="text" id="cfName" value="${c.name||''}" placeholder="如：XX展厅中控项目合同"></div>
+  <div class="form-row"><label>关联客户</label><select id="cfCustomer"><option value="">-- 选择客户 --</option>${custOpts}</select></div>
+  <div class="form-row"><label>合同金额</label><input type="number" id="cfAmount" value="${c.amount||''}" placeholder="合同总金额" oninput="updateAllPayPct()"></div>
+  <div class="form-row"><label>签订日期</label><input type="date" id="cfSignDate" value="${c.signDate||''}"></div>
+  <div class="form-row"><label>甲方</label><input type="text" id="cfPartyA" value="${c.partyA||''}" placeholder="甲方名称"></div>
+  <div class="form-row"><label>乙方</label><input type="text" id="cfPartyB" value="${c.partyB||''}" placeholder="乙方名称"></div>
+  <div class="form-row"><label>开始日期</label><input type="date" id="cfStartDate" value="${c.startDate||''}"></div>
+  <div class="form-row"><label>结束日期</label><input type="date" id="cfEndDate" value="${c.endDate||''}"></div>
+  </div>
+  <h4>🛡️ 质保信息</h4>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">
+  <div class="form-row"><label>质保开始</label><input type="date" id="cfWS" value="${c.warrantyStart||''}"></div>
+  <div class="form-row"><label>质保结束</label><input type="date" id="cfWE" value="${c.warrantyEnd||''}"></div>
+  <div class="form-row"><label>质保金</label><input type="number" id="cfWA" value="${c.warrantyAmount||''}" placeholder="质保金金额"></div>
+  <div class="form-row"><label>质保金回收</label><input type="date" id="cfWPD" value="${c.warrantyPaidDate||''}"></div>
+  </div>
+  </div>
+  <div style="min-width:0;overflow:hidden">
+  <h4>💰 付款计划 <span style="font-weight:400;font-size:11px;color:#888">（节点名 | 金额 | 占比 | 应收日期 | 实收日期 | 状态）</span></h4>
+  <div id="paymentRows">${payRows}</div>
+  <button class="btn btn-sm" onclick="addPaymentRow()" style="margin-top:4px">+ 添加付款节点</button>
+  <h4 style="margin-top:12px">📎 合同文件</h4>
+  <div id="ocrStatus" style="display:none;background:#e8f0fe;padding:8px 12px;border-radius:6px;font-size:12px;color:#1a73e8;margin-bottom:8px"></div>
+  <div id="ocrRawBlock" style="display:none;margin-bottom:8px">
+    <div style="font-size:12px;color:#666;cursor:pointer;padding:4px 8px;background:#f5f5f5;border-radius:4px 4px 0 1px;user-select:none" onclick="var t=document.getElementById('ocrRawText');t.style.display=t.style.display==='none'?'block':'none'">📋 OCR识别原文（点击展开/收起）</div>
+    <pre id="ocrRawText" style="display:none;max-height:200px;overflow:auto;font-size:11px;line-height:1.5;background:#fafafa;border:1px solid #eee;border-radius:0 0 4px 4px;padding:8px;margin:0;white-space:pre-wrap;word-break:break-all"></pre>
+  </div>
+  <div class="contract-file-zone" id="contractFileZone" onclick="document.getElementById('contractFileInput').click()">📂 点击上传合同文件（图片/PDF）<input type="file" id="contractFileInput" accept="image/*,.pdf" multiple style="display:none" onchange="handleContractFileUpload(this)"></div>
+  <div class="contract-files-list" id="contractFilesList">${fileItems}</div>
+  <div class="form-row" style="align-items:flex-start;margin-top:8px"><label>备注</label><textarea id="cfNotes" rows="3" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical">${c.notes||''}</textarea></div>
+  </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:14px">
+    <button class="btn btn-primary" onclick="saveContract()">💾 保存合同</button>
+    <button class="btn" onclick="reOcrContract()" style="background:#e8f0fe;color:#1a73e8;border-color:#1a73e8">🔍 重新识别</button>
+    <button class="btn btn-danger" onclick="deleteContract('${c.id}')">🗑 删除</button>
+    <button class="btn" onclick="selectedContractId=null;renderContractDetail(null);renderContractList()">取消</button>
+  </div></div>`;
+  const zone=document.getElementById('contractFileZone');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragover')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('dragover'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');if(e.dataTransfer.files.length)handleContractFileUploadObj(e.dataTransfer.files)});
+}
+function showAddContract(){
+  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:'',customerId:'',amount:0,signDate:'',partyA:'',partyB:'',startDate:'',endDate:'',payments:[],warrantyStart:'',warrantyEnd:'',warrantyAmount:0,warrantyPaidDate:'',files:[],notes:'',createdAt:new Date().toISOString()};
+  contracts.push(nc);saveContractsData(contracts);selectedContractId=nc.id;renderContractList();renderContractDetail(nc);document.getElementById('cfName').focus();
+}
+function collectContractData(){
+  const payments=[];
+  document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
+    const p={name:row.querySelector('[data-pf="name"]')?.value||'',amount:parseFloat(row.querySelector('[data-pf="amount"]')?.value)||0,date:row.querySelector('[data-pf="date"]')?.value||'',paidDate:row.querySelector('[data-pf="paidDate"]')?.value||''};
+    if(p.name||p.amount||p.date)payments.push(p);
+  });
+  return{name:document.getElementById('cfName').value.trim(),customerId:document.getElementById('cfCustomer').value,amount:parseFloat(document.getElementById('cfAmount').value)||0,signDate:document.getElementById('cfSignDate').value,partyA:document.getElementById('cfPartyA').value.trim(),partyB:document.getElementById('cfPartyB').value.trim(),startDate:document.getElementById('cfStartDate').value,endDate:document.getElementById('cfEndDate').value,payments,warrantyStart:document.getElementById('cfWS').value,warrantyEnd:document.getElementById('cfWE').value,warrantyAmount:parseFloat(document.getElementById('cfWA').value)||0,warrantyPaidDate:document.getElementById('cfWPD').value,notes:document.getElementById('cfNotes').value.trim()};
+}
+function saveContract(){
+  if(!selectedContractId){showToast('请先选择合同','error');return}
+  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);c.updatedAt=new Date().toISOString();
+  saveContractsData(contracts);renderContractList();renderContractDetail(c);renderContractAlerts();showToast('合同已保存','success');
+}
+function deleteContract(id){
+  if(!confirm('确定删除此合同？'))return;
+  const c=contracts.find(x=>x.id===id);
+  if(c&&c.files)c.files.forEach(f=>deleteContractFile(f.id).catch(()=>{}));
+  contracts=contracts.filter(x=>x.id!==id);saveContractsData(contracts);selectedContractId=null;renderContractList();renderContractDetail(null);renderContractAlerts();showToast('合同已删除','success');
+}
+// 付款占比自动计算
+function updatePayPct(el){
+  const row=el.closest('.payment-row');
+  const pctSpan=row.querySelector('.pay-pct');
+  const amt=parseFloat(document.getElementById('cfAmount').value)||0;
+  const val=parseFloat(el.value)||0;
+  const p=amt>0&&val?Math.round(val/amt*100):0;
+  pctSpan.textContent=p?p+'%':'';
+}
+function updateAllPayPct(){
+  const amt=parseFloat(document.getElementById('cfAmount').value)||0;
+  document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
+    const pctSpan=row.querySelector('.pay-pct');
+    const amountInput=row.querySelector('.p-amount');
+    const val=parseFloat(amountInput.value)||0;
+    const p=amt>0&&val?Math.round(val/amt*100):0;
+    pctSpan.textContent=p?p+'%':'';
+  });
+}
+function addPaymentRow(){
+  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);c.payments.push({name:'',amount:0,date:'',paidDate:''});
+  saveContractsData(contracts);renderContractDetail(c);
+  const rows=document.querySelectorAll('#paymentRows .payment-row');if(rows.length)rows[rows.length-1].querySelector('.p-name').focus();
+}
+function removePaymentRow(idx){
+  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);c.payments.splice(idx,1);saveContractsData(contracts);renderContractDetail(c);
+}
+async function handleContractFileUpload(input){if(!selectedContractId||!input.files.length)return;await handleContractFileUploadObj(input.files);input.value=''}
+async function handleContractFileUploadObj(fileList){
+  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  // 显示上传spinner
+  const spinnerId='uploadSpinner_'+Date.now();
+  const fileZone=document.getElementById('contractFileZone');
+  if(fileZone){
+    const spinnerDiv=document.createElement('div');
+    spinnerDiv.id=spinnerId;
+    spinnerDiv.className='upload-spinner-wrap';
+    spinnerDiv.innerHTML='<div class="upload-spinner"></div><span class="upload-spinner-text">正在上传...</span>';
+    fileZone.parentNode.insertBefore(spinnerDiv,fileZone);
+  }
+  let firstOcrFile=null;
+  for(const file of fileList){
+    // Generate thumbnail for images
+    let thumbnail='';
+    if(file.type.startsWith('image/')){
+      thumbnail=await new Promise(r=>{
+        const rd=new FileReader();
+        rd.onload=e=>{
+          const img=new Image();
+          img.onload=()=>{
+            const cv=document.createElement('canvas');
+            let w=img.width,h=img.height;const mx=100;
+            if(w>h){h=h*mx/w;w=mx}else{w=w*mx/h;h=mx}
+            cv.width=w;cv.height=h;
+            cv.getContext('2d').drawImage(img,0,0,w,h);
+            r(cv.toDataURL('image/jpeg',0.6));
+          };
+          img.src=e.target.result;
+        };
+        rd.readAsDataURL(file);
+      });
+      if(!firstOcrFile)firstOcrFile=file;
+    }else if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
+      if(!firstOcrFile)firstOcrFile=file;
+    }
+    // Upload to server
+    const result=await uploadContractFile(file,thumbnail);
+    if(result.id){
+      const fe={id:result.id,name:file.name,type:file.type,size:file.size,thumbnail:result.thumbnail||thumbnail};
+      if(!c.files)c.files=[];c.files.push(fe);
+    }
+  }
+  // 移除spinner
+  const spinnerEl=document.getElementById(spinnerId);if(spinnerEl)spinnerEl.remove();
+  saveContractsData(contracts);renderContractDetail(c);renderContractList();showToast(`已上传${fileList.length}个文件`,'success');
+  // Auto OCR for first file (image or PDF)
+  if(firstOcrFile)autoOcrFill(firstOcrFile);
+  // 如果有PDF文件，页面缩略图会在renderContractDetail中自动加载
+}
+async function reOcrContract(){
+  const c=contracts.find(x=>x.id===selectedContractId);if(!c||!c.files||c.files.length===0){showToast('没有合同文件可识别','error');return}
+  // 找第一个PDF或图片文件
+  const f=c.files.find(x=>(x.name||'').toLowerCase().endsWith('.pdf'))||c.files.find(x=>x.type&&x.type.startsWith('image/'))||c.files[0];
+  const status=document.getElementById('ocrStatus');
+  if(!status)return;
+  status.style.display='block';status.style.background='#e8f0fe';status.style.color='#1a73e8';
+  status.innerHTML='<div style="display:flex;align-items:center;gap:8px"><div class="upload-spinner" style="width:16px;height:16px;border-width:2px"></div><span>🔍 正在重新识别合同内容...</span></div>';
+  try{
+    // 从服务端获取文件数据再发送OCR
+    const fileUrl=await getContractFileUrl(f.id,f.name,f.type);
+    const resp=await fetch(fileUrl);
+    const blob=await resp.blob();
+    const file=new File([blob],f.name||'contract',{type:f.type||blob.type});
+    const fd=new FormData();fd.append('file',file);
+    const r=await fetch('/api/ocr',{method:'POST',body:fd});
+    const data=await r.json();
+    if(data.error){status.textContent='⚠ 识别失败: '+data.error;status.style.background='#fce8e6';status.style.color='#ea4335';return}
+    let filled=0;
+    const el=id=>document.getElementById(id);
+    const fill=(id,val)=>{if(val&&el(id)){el(id).value=val;filled++;return true}return false};
+    fill('cfName',data.name);fill('cfAmount',data.amount);fill('cfSignDate',data.signDate);
+    fill('cfPartyA',data.partyA);fill('cfPartyB',data.partyB);
+    fill('cfStartDate',data.startDate);fill('cfEndDate',data.endDate);
+    if(data.warrantyMonths&&el('cfWE')&&data.signDate){
+      const d=new Date(data.signDate);d.setMonth(d.getMonth()+data.warrantyMonths);
+      if(el('cfWS'))el('cfWS').value=data.signDate;
+      el('cfWE').value=d.toISOString().slice(0,10);filled++;
+    }
+    if(data.warrantyDeposit)fill('cfWA',String(data.warrantyDeposit));
+    if(data.warrantyDepositDate)fill('cfWPD',data.warrantyDepositDate);
+    const totalLines=data.ocrLines?data.ocrLines.length:0;
+    const rawBlock=document.getElementById('ocrRawBlock');
+    const rawText=document.getElementById('ocrRawText');
+    if(rawBlock&&rawText&&data.ocrLines&&data.ocrLines.length>0){
+      rawBlock.style.display='block';
+      rawText.textContent=data.ocrLines.map((l,i)=>(i+1)+': '+l).join('\n');
+    }
+    if(filled>0){
+      status.textContent=`✅ 重新识别完成！填充${filled}个字段（识别${totalLines}行）`;
+      status.style.background='#e6f4ea';status.style.color='#34a853';
+    }else{
+      status.textContent=`⚠ 识别了${totalLines}行文字，但未能匹配到合同字段，请查看下方原文`;
+      status.style.background='#fef7e0';status.style.color='#e37400';
+    }
+  }catch(e){status.textContent='⚠ 识别失败: '+e.message;status.style.background='#fce8e6';status.style.color='#ea4335'}
+}
+async function autoOcrFill(file){
+  const status=document.getElementById('ocrStatus');
+  if(!status)return;
+  status.style.display='block';status.style.background='#e8f0fe';status.style.color='#1a73e8';
+  status.innerHTML='<div style="display:flex;align-items:center;gap:8px"><div class="upload-spinner" style="width:16px;height:16px;border-width:2px"></div><span>🔍 正在识别合同内容...</span></div>';
+  try{
+    const fd=new FormData();fd.append('file',file);
+    const r=await fetch('/api/ocr',{method:'POST',body:fd});
+    const data=await r.json();
+    if(data.error){status.textContent='⚠ 识别失败: '+data.error;status.style.background='#fce8e6';status.style.color='#ea4335';return}
+    let filled=0;
+    const el=id=>document.getElementById(id);
+    const fill=(id,val)=>{if(val&&el(id)&&!el(id).value){el(id).value=val;filled++;return true}return false};
+    fill('cfName',data.name);
+    fill('cfAmount',data.amount);
+    fill('cfSignDate',data.signDate);
+    fill('cfPartyA',data.partyA);
+    fill('cfPartyB',data.partyB);
+    fill('cfStartDate',data.startDate);
+    fill('cfEndDate',data.endDate);
+    if(data.warrantyMonths&&el('cfWE')&&!el('cfWE').value&&data.signDate){
+      const d=new Date(data.signDate);d.setMonth(d.getMonth()+data.warrantyMonths);
+      if(el('cfWS'))el('cfWS').value=data.signDate;
+      el('cfWE').value=d.toISOString().slice(0,10);filled++;
+    }
+    if(data.warrantyDeposit)fill('cfWA',String(data.warrantyDeposit));
+    if(data.warrantyDepositDate)fill('cfWPD',data.warrantyDepositDate);
+    if(data.rawText&&el('cfNotes')&&!el('cfNotes').value){el('cfNotes').value=data.rawText.slice(0,500);filled++}
+    const totalLines=data.ocrLines?data.ocrLines.length:0;
+    // 显示OCR原文
+    const rawBlock=document.getElementById('ocrRawBlock');
+    const rawText=document.getElementById('ocrRawText');
+    if(rawBlock&&rawText&&data.ocrLines&&data.ocrLines.length>0){
+      rawBlock.style.display='block';
+      rawText.textContent=data.ocrLines.map((l,i)=>(i+1)+': '+l).join('\n');
+    }
+    if(filled>0){
+      status.textContent=`✅ 识别完成！自动填充${filled}个字段（识别${totalLines}行）`;
+      status.style.background='#e6f4ea';status.style.color='#34a853';
+    }else{
+      status.textContent=`⚠ 识别了${totalLines}行文字，但未能匹配到合同字段，请查看下方原文`;
+      status.style.background='#fef7e0';status.style.color='#e37400';
+    }
+  }catch(e){status.textContent='⚠ 识别失败: '+e.message;status.style.background='#fce8e6';status.style.color='#ea4335'}
+}
+function removeContractFile(cid,fid){
+  const c=contracts.find(x=>x.id===cid);if(!c)return;
+  c.files=(c.files||[]).filter(f=>f.id!==fid);deleteContractFile(fid).catch(()=>{});
+  saveContractsData(contracts);renderContractDetail(c);showToast('文件已移除','success');
+}
+async function viewContractFile(fid,name,type){
+  const url=await getContractFileUrl(fid,name,type);
+  if(type&&type.startsWith('image/')){
+    try{
+      const r=await fetch(url);const blob=await r.blob();
+      const objUrl=URL.createObjectURL(blob);
+      document.getElementById('overlayImg').src=objUrl;
+      document.getElementById('imgOverlay').classList.add('show');
+    }catch(e){showToast('文件加载失败','error')}
+  }else if(type==='application/pdf'||(name||'').toLowerCase().endsWith('.pdf')){
+    // PDF在浏览器新标签页直接打开预览
+    window.open(url,'_blank');
+  }else{
+    const a=document.createElement('a');a.href=url;a.download=name||'file';a.click();
+  }
+}
+function viewPdfPage(imgUrl){
+  document.getElementById('overlayImg').src=imgUrl;
+  document.getElementById('imgOverlay').classList.add('show');
+}
+
+// === 盖章功能 ===
+let _stampsList=[];
+let _selectedStampId='';
+
+function openStampModal(){
+  document.getElementById('stampModal').classList.add('show');
+  loadStamps();
+  populateStampFileSelect();
+  // 盖章类型切换时显隐位置参数
+  document.getElementById('stampTypeSelect').onchange=function(){
+    const isSeal=this.value==='seal';
+    document.getElementById('stampPageRow').style.display=isSeal?'':'none';
+    document.getElementById('stampPosXRow').style.display=isSeal?'':'none';
+    document.getElementById('stampPosYRow').style.display=isSeal?'':'none';
+  };
+  // 滑块实时数值
+  document.getElementById('stampScale').oninput=function(){document.getElementById('stampScaleVal').textContent=this.value+'%'};
+  document.getElementById('stampPosX').oninput=function(){document.getElementById('stampPosXVal').textContent=this.value+'%'};
+  document.getElementById('stampPosY').oninput=function(){document.getElementById('stampPosYVal').textContent=this.value+'%'};
+}
+function closeStampModal(){document.getElementById('stampModal').classList.remove('show')}
+
+async function loadStamps(){
+  try{
+    const r=await fetch('/api/stamps');const d=await r.json();
+    _stampsList=d.stamps||[];
+    renderStampList();
+  }catch(e){showToast('加载印章失败','error')}
+}
+
+function renderStampList(){
+  const el=document.getElementById('stampList');
+  if(!_stampsList.length){el.innerHTML='<span style="font-size:12px;color:#aaa">暂无印章，请上传</span>';document.getElementById('stampAction').style.display='none';return}
+  el.innerHTML=_stampsList.map(s=>`
+    <div style="border:2px solid ${_selectedStampId===s.id?'#1a73e8':'#eee'};border-radius:8px;padding:6px;cursor:pointer;text-align:center;width:80px;position:relative" onclick="selectStamp('${s.id}')">
+      <img src="${s.url}" style="width:50px;height:50px;object-fit:contain;border-radius:4px">
+      <div style="font-size:10px;color:#555;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
+      <button style="position:absolute;top:-4px;right:-4px;background:#ea4335;color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;line-height:16px" onclick="event.stopPropagation();deleteStamp('${s.id}')">✕</button>
+    </div>`).join('');
+  if(!_selectedStampId && _stampsList.length) selectStamp(_stampsList[0].id);
+}
+
+function selectStamp(id){
+  _selectedStampId=id;
+  document.getElementById('stampAction').style.display='';
+  renderStampList();
+}
+
+async function deleteStamp(id){
+  if(!confirm('确定删除该印章？'))return;
+  try{await fetch('/api/stamps/'+encodeURIComponent(id),{method:'DELETE'});loadStamps()}catch(e){showToast('删除失败','error')}
+}
+
+async function uploadStamp(input){
+  if(!input.files.length)return;
+  const fd=new FormData();fd.append('file',input.files[0]);
+  fd.append('name',input.files[0].name.replace(/\.[^.]+$/,''));
+  try{
+    const r=await fetch('/api/stamps/upload',{method:'POST',body:fd});const d=await r.json();
+    if(d.ok){showToast('印章上传成功','success');loadStamps()}else{showToast(d.error||'上传失败','error')}
+  }catch(e){showToast('上传失败','error')}
+  input.value='';
+}
+
+function populateStampFileSelect(){
+  const sel=document.getElementById('stampFileSelect');
+  const c=contracts.find(x=>x.id===selectedContractId);
+  if(!c||!c.files||!c.files.length){sel.innerHTML='<option>无文件</option>';return}
+  sel.innerHTML=c.files.filter(f=>f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf')).map(f=>`<option value="${f.id}">${f.name||f.id}</option>`).join('');
+  if(!sel.options.length) sel.innerHTML='<option>无PDF文件</option>';
+}
+
+async function applyStamp(){
+  if(!_selectedStampId){showToast('请先选择印章','error');return}
+  const fid=document.getElementById('stampFileSelect').value;
+  if(!fid){showToast('请选择盖章文件','error');return}
+  const type=document.getElementById('stampTypeSelect').value;
+  const page=parseInt(document.getElementById('stampPage').value)||1;
+  const scale=parseInt(document.getElementById('stampScale').value)/100;
+  const x=parseInt(document.getElementById('stampPosX').value)/100;
+  const y=parseInt(document.getElementById('stampPosY').value)/100;
+  // 获取原文件名用于生成新文件名
+  const c=contracts.find(x=>x.id===selectedContractId);
+  const fObj=c&&c.files?c.files.find(f=>f.id===fid):null;
+  const fileName=fObj?fObj.name:fid;
+  
+  showToast('正在盖章...','info');
+  try{
+    const r=await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fid,stampId:_selectedStampId,type,page,x,y,scale,fileName})});
+    const d=await r.json();
+    if(d.ok){
+      showToast(`盖章成功！已生成新文件：${d.newName}`,'success');
+      // 将新文件添加到合同
+      if(c){
+        c.files.push({id:d.newFid,name:d.newName,type:'application/pdf',size:d.size});
+        saveContractsData(contracts);renderContractDetail(c);
+      }
+      closeStampModal();
+    }else{
+      showToast(d.error||'盖章失败','error');
+    }
+  }catch(e){showToast('盖章请求失败','error')}
+}
+
+function renderAll(){renderHeader();renderTodayList();renderAllList();renderTemplates();refreshStats();renderContractList();renderContractAlerts();espRefreshFileList();espLoadStamps();renderMaint()}
+
+// === 维保日程提醒 ===
+let _maintCalYear=new Date().getFullYear();
+let _maintCalMonth=new Date().getMonth();
+let _maintView='timeline';
+
+function getMaintEvents(){
+  const now=new Date().toISOString().slice(0,10);
+  const wk7=new Date(Date.now()+7*864e5).toISOString().slice(0,10);
+  const mo30=new Date(Date.now()+30*864e5).toISOString().slice(0,10);
+  const events=[];
+  contracts.forEach(c=>{
+    // 质保到期
+    if(c.warrantyEnd&&c.warrantyAmount&&!c.warrantyPaidDate){
+      let severity='info';
+      if(c.warrantyEnd<now) severity='urgent';
+      else if(c.warrantyEnd<=mo30) severity='warning';
+      events.push({type:'warranty',date:c.warrantyEnd,severity,contractId:c.id,
+        title:`质保到期 - ${c.name||'未命名'}`,
+        desc:`质保金 ¥${(c.warrantyAmount||0).toLocaleString()}，质保至 ${c.warrantyEnd}`});
+    }
+    // 付款提醒
+    if(c.payments){
+      c.payments.forEach((p,i)=>{
+        if(p.paidDate||!p.date)return;
+        let severity='info';
+        if(p.date<now) severity='urgent';
+        else if(p.date<=wk7) severity='warning';
+        events.push({type:'payment',date:p.date,severity,contractId:c.id,
+          title:`${p.name||'付款'+(i+1)} - ${c.name||'未命名'}`,
+          desc:`应收 ¥${(p.amount||0).toLocaleString()}，到期日 ${p.date}`});
+      });
+    }
+    // 合同到期
+    if(c.endDate){
+      let severity='info';
+      if(c.endDate<now) severity='urgent';
+      else if(c.endDate<=mo30) severity='warning';
+      events.push({type:'contract_end',date:c.endDate,severity,contractId:c.id,
+        title:`合同到期 - ${c.name||'未命名'}`,
+        desc:`合同期 ${c.startDate||'?'} ~ ${c.endDate}，金额 ¥${(c.amount||0).toLocaleString()}`});
+    }
+  });
+  // 自定义维保日程
+  maintItems.forEach(m=>{
+    let severity=m.done?'done':'info';
+    if(!m.done){
+      if(m.date<now) severity='urgent';
+      else if(m.date<=mo30) severity='warning';
+    }
+    events.push({type:m.type,date:m.date,severity,contractId:m.contractId||'',itemId:m.id,
+      title:m.title,desc:m.note||'',done:!!m.done});
+  });
+  events.sort((a,b)=>a.date.localeCompare(b.date));
+  return events;
+}
+
+function renderMaint(){
+  const events=getMaintEvents();
+  const typeFilter=document.getElementById('maintFilterType').value;
+  const statusFilter=document.getElementById('maintFilterStatus').value;
+  const search=document.getElementById('maintSearch').value.trim().toLowerCase();
+  let filtered=events;
+  if(typeFilter!=='all') filtered=filtered.filter(e=>e.type===typeFilter);
+  if(statusFilter!=='all') filtered=filtered.filter(e=>e.severity===statusFilter);
+  if(search) filtered=filtered.filter(e=>e.title.toLowerCase().includes(search)||e.desc.toLowerCase().includes(search));
+  // Stats
+  const urgentCount=events.filter(e=>e.severity==='urgent').length;
+  const warningCount=events.filter(e=>e.severity==='warning').length;
+  const doneCount=events.filter(e=>e.severity==='done').length;
+  const totalCount=events.length;
+  const warrantyCount=events.filter(e=>e.type==='warranty').length;
+  document.getElementById('maintStats').innerHTML=`
+    <div class="maint-stat-card urgent"><div class="num">${urgentCount}</div><div class="label">🔴 逾期</div></div>
+    <div class="maint-stat-card warning"><div class="num">${warningCount}</div><div class="label">🟠 即将到期</div></div>
+    <div class="maint-stat-card"><div class="num">${totalCount-urgentCount-warningCount-doneCount}</div><div class="label">🔵 未来</div></div>
+    <div class="maint-stat-card ok"><div class="num">${doneCount}</div><div class="label">✅ 已完成</div></div>
+    <div class="maint-stat-card"><div class="num">${warrantyCount}</div><div class="label">🛡️ 质保提醒</div></div>
+  `;
+  // Timeline
+  renderMaintTimeline(filtered);
+  // Calendar
+  renderMaintCalendar(events);
+  // Populate contract dropdown in add form
+  const sel=document.getElementById('maintAddContract');
+  const curVal=sel.value;
+  sel.innerHTML='<option value="">无</option>'+contracts.map(c=>`<option value="${c.id}">${c.name||'未命名'}</option>`).join('');
+  sel.value=curVal;
+}
+
+function renderMaintTimeline(events){
+  const el=document.getElementById('maintTimeline');
+  if(!events.length){
+    el.innerHTML='<div class="maint-empty">🎉 暂无维保日程提醒</div>';
+    return;
+  }
+  // Group by month
+  const groups={};
+  events.forEach(e=>{
+    const ym=e.date.slice(0,7);
+    if(!groups[ym]) groups[ym]=[];
+    groups[ym].push(e);
+  });
+  const typeIcon={warranty:'🛡️',payment:'💰',contract_end:'📋',custom:'📌',inspection:'🔍',renewal:'🔄'};
+  const sevBadge={urgent:'b-urgent',warning:'b-warning',info:'b-info',done:'b-ok'};
+  const sevLabel={urgent:'逾期',warning:'即将到期',info:'未来',done:'已完成'};
+  let html='';
+  Object.keys(groups).sort().forEach(ym=>{
+    const [y,m]=ym.split('-');
+    html+=`<div class="maint-month-header">${y}年${parseInt(m)}月</div>`;
+    groups[ym].forEach(e=>{
+      const isDone=e.severity==='done';
+      const actions=e.itemId?`<span style="margin-left:6px;font-size:11px;white-space:nowrap">${isDone?`<a href="javascript:void(0)" onclick="undoMaintItem('${e.itemId}')" style="color:#1a73e8">撤销</a>`:`<a href="javascript:void(0)" onclick="completeMaintItem('${e.itemId}')" style="color:#34a853">✅ 完成</a>`} <a href="javascript:void(0)" onclick="deleteMaintItem('${e.itemId}')" style="color:#ea4335">删除</a></span>`:'';
+      const contractLink=e.contractId?`<span class="maint-item-contract" onclick="goToContract('${e.contractId}')">📄 查看合同 →</span>`:'';
+      html+=`<div class="maint-item ${e.severity}" style="${isDone?'opacity:.6':''}">
+        <div class="maint-item-top">
+          <span class="maint-item-badge ${sevBadge[e.severity]}">${sevLabel[e.severity]}</span>
+          <span class="maint-item-title" style="${isDone?'text-decoration:line-through':''}">${typeIcon[e.type]||'📌'} ${e.title}</span>
+          <span class="maint-item-date">${e.date}</span>
+          ${actions}
+        </div>
+        ${e.desc?`<div class="maint-item-desc">${e.desc}</div>`:''}
+        ${contractLink}
+      </div>`;
+    });
+  });
+  el.innerHTML=html;
+}
+
+function goToContract(cid){
+  // Switch to contract tab and select
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-tab="contract"]').classList.add('active');
+  document.getElementById('panel-contract').classList.add('active');
+  if(typeof selectContract==='function') selectContract(cid);
+}
+
+function switchMaintView(view){
+  _maintView=view;
+  document.getElementById('maintViewTimeline').classList.toggle('active',view==='timeline');
+  document.getElementById('maintViewCalendar').classList.toggle('active',view==='calendar');
+  document.getElementById('maintTimelineView').style.display=view==='timeline'?'':'none';
+  document.getElementById('maintCalendarView').style.display=view==='calendar'?'':'none';
+}
+
+function renderMaintCalendar(events){
+  const y=_maintCalYear,m=_maintCalMonth;
+  document.getElementById('maintCalTitle').textContent=`${y}年${m+1}月`;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysInPrev=new Date(y,m,0).getDate();
+  const now=new Date();
+  const todayStr=now.toISOString().slice(0,10);
+  // Events map: date -> [{severity}]
+  const dayMap={};
+  events.forEach(e=>{
+    if(e.severity==='done')return; // 已完成不在日历显示
+    if(!dayMap[e.date]) dayMap[e.date]=[];
+    dayMap[e.date].push(e.severity);
+  });
+  let html='';
+  ['日','一','二','三','四','五','六'].forEach(d=>{
+    html+=`<div class="maint-cal-header">${d}</div>`;
+  });
+  // Prev month
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div class="maint-cal-day other-month">${daysInPrev-i}</div>`;
+  }
+  // Current month
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===todayStr;
+    const evts=dayMap[ds]||[];
+    const cls=['maint-cal-day'];
+    if(isToday) cls.push('today');
+    if(evts.length){
+      cls.push('has-event');
+      if(evts.includes('urgent')) cls.push('has-urgent');
+      else if(evts.includes('warning')) cls.push('has-warning');
+      else cls.push('has-info');
+    }
+    html+=`<div class="${cls.join(' ')}" onclick="showMaintCalDay('${ds}')">${d}</div>`;
+  }
+  // Next month
+  const totalCells=firstDay+daysInMonth;
+  const remaining=7-totalCells%7;
+  if(remaining<7){
+    for(let i=1;i<=remaining;i++){
+      html+=`<div class="maint-cal-day other-month">${i}</div>`;
+    }
+  }
+  document.getElementById('maintCalendar').innerHTML=html;
+}
+
+function showMaintCalDay(dateStr){
+  const events=getMaintEvents().filter(e=>e.date===dateStr);
+  const el=document.getElementById('maintCalDetail');
+  if(!events.length){
+    el.innerHTML=`<div style="font-size:12px;color:#888;padding:8px">${dateStr} 无日程</div>`;
+    return;
+  }
+  const typeIcon={warranty:'🛡️',payment:'💰',contract_end:'📋',custom:'📌',inspection:'🔍',renewal:'🔄'};
+  const sevBadge={urgent:'b-urgent',warning:'b-warning',info:'b-info',done:'b-ok'};
+  const sevLabel={urgent:'逾期',warning:'即将到期',info:'未来',done:'已完成'};
+  el.innerHTML=events.map(e=>{
+    const isDone=e.severity==='done';
+    const actions=e.itemId?`<span style="margin-left:6px;font-size:11px">${isDone?`<a href="javascript:void(0)" onclick="undoMaintItem('${e.itemId}')" style="color:#1a73e8">撤销</a>`:`<a href="javascript:void(0)" onclick="completeMaintItem('${e.itemId}')" style="color:#34a853">✅</a>`} <a href="javascript:void(0)" onclick="deleteMaintItem('${e.itemId}')" style="color:#ea4335">删除</a></span>`:'';
+    return`<div class="maint-item ${e.severity}" style="margin-bottom:6px;${isDone?'opacity:.6':''}">
+    <div class="maint-item-top">
+      <span class="maint-item-badge ${sevBadge[e.severity]}">${sevLabel[e.severity]}</span>
+      <span class="maint-item-title" style="${isDone?'text-decoration:line-through':''}">${typeIcon[e.type]||'📌'} ${e.title}</span>
+      ${actions}
+    </div>
+    ${e.desc?`<div class="maint-item-desc">${e.desc}</div>`:''}
+  </div>`}).join('');
+}
+
+function maintCalPrev(){
+  _maintCalMonth--;
+  if(_maintCalMonth<0){_maintCalMonth=11;_maintCalYear--}
+  renderMaint();
+}
+function maintCalNext(){
+  _maintCalMonth++;
+  if(_maintCalMonth>11){_maintCalMonth=0;_maintCalYear++}
+  renderMaint();
+}
+
+function toggleMaintAddForm(){
+  const f=document.getElementById('maintAddForm');
+  f.style.display=f.style.display==='none'?'':'none';
+  if(f.style.display!=='none'){
+    document.getElementById('maintAddTitle').value='';
+    document.getElementById('maintAddType').value='custom';
+    document.getElementById('maintAddDate').value='';
+    document.getElementById('maintAddContract').value='';
+    document.getElementById('maintAddNote').value='';
+    document.getElementById('maintAddTitle').focus();
+  }
+}
+
+function addMaintItem(){
+  const title=document.getElementById('maintAddTitle').value.trim();
+  const type=document.getElementById('maintAddType').value;
+  const date=document.getElementById('maintAddDate').value;
+  const contractId=document.getElementById('maintAddContract').value;
+  const note=document.getElementById('maintAddNote').value.trim();
+  if(!title){showToast('请输入标题','error');return}
+  if(!date){showToast('请选择日期','error');return}
+  const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title,type,date,contractId,note,done:false,createdAt:new Date().toISOString()};
+  maintItems.push(item);
+  saveMaintItems(maintItems);
+  toggleMaintAddForm();
+  renderMaint();
+  showToast('日程已添加','success');
+}
+
+function completeMaintItem(id){
+  const m=maintItems.find(x=>x.id===id);
+  if(m){m.done=true;saveMaintItems(maintItems);renderMaint();showToast('已标记完成','success')}
+}
+function undoMaintItem(id){
+  const m=maintItems.find(x=>x.id===id);
+  if(m){m.done=false;saveMaintItems(maintItems);renderMaint();showToast('已撤销完成','info')}
+}
+function deleteMaintItem(id){
+  maintItems=maintItems.filter(x=>x.id!==id);
+  saveMaintItems(maintItems);
+  renderMaint();
+  showToast('日程已删除','success');
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+})});
+
+const ia=document.getElementById('importArea');
+ia.addEventListener('click',()=>document.getElementById('fileInput').click());
+ia.addEventListener('dragover',e=>{e.preventDefault();ia.classList.add('dragover')});
+ia.addEventListener('dragleave',()=>ia.classList.remove('dragover'));
+ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover');if(e.dataTransfer.files[0]){document.getElementById('fileInput').files=e.dataTransfer.files;handleFileImport(document.getElementById('fileInput'))}});
+
+// === 异步初始化 ===
+async function initApp(){
+  try{
+    const [cData,cfgData,tplData,conData,mData]=await Promise.all([
+      loadData(),loadConfig(),loadTemplates(),loadContracts(),loadMaintItems()
+    ]);
+    customers=cData||[];
+    config=cfgData||{dailyLimit:25,retryDays:3,myTitle:'悦动双成-展厅中控'};
+    templates=tplData||[];
+    contracts=conData||[];
+    maintItems=mData||[];
+  }catch(e){
+    console.error('初始化失败:',e);
+  }
+  document.getElementById('cfgLimit').value=config.dailyLimit;
+  document.getElementById('cfgRetry').value=config.retryDays;
+  document.getElementById('cfgTitle').value=config.myTitle;
+  renderAll();
+  // 进入合同管理页面时弹窗提醒（延迟1秒，避免初始化时阻塞）
+  setTimeout(()=>{
+    if(contracts.length>0)showContractAlertsModal();
+  },1000);
+}
+initApp();
+
+// 安全追加新客户：只新增不覆盖，按手机号/公司名去重，保留已有标注
+async function mergeNewCustomers(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      let newCustomers=[];
+      const text=e.target.result;
+      if(file.name.endsWith('.json')){
+        const data=JSON.parse(text);
+        newCustomers=data.customers||data;if(!Array.isArray(newCustomers)){showToast('JSON格式不正确，需要客户数组','error');return}
+      }else{
+        // CSV/TXT格式：每行一个客户，用逗号/制表符分隔
+        const lines=text.split(/\r?\n/).filter(l=>l.trim());
+        for(const line of lines){
+          const parts=line.split(/[,\t;]/).map(s=>s.trim());
+          if(parts.length<1||!parts[0])continue;
+          const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:parts[0]||'',company:parts[1]||'',phone:parts[2]||'',source:parts[3]||'',industry:parts[4]||'',status:0,remark:'',greeting:''};
+          newCustomers.push(c);
+        }
+      }
+      if(!newCustomers.length){showToast('未找到客户数据','error');return}
+      // 去重：已有客户按手机号+公司名匹配
+      const existPhones=new Set(customers.filter(c=>c.phone).map(c=>c.phone));
+      const existCompanies=new Set(customers.filter(c=>c.company).map(c=>c.company.toLowerCase()));
+      let added=0,skipped=0;
+      for(const nc of newCustomers){
+        const phoneMatch=nc.phone&&existPhones.has(nc.phone);
+        const companyMatch=nc.company&&existCompanies.has(nc.company.toLowerCase());
+        if(phoneMatch||companyMatch){skipped++;continue}
+        if(!nc.id)nc.id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+        if(!nc.status)nc.status=0;
+        if(!nc.remark)nc.remark='';
+        if(!nc.greeting)nc.greeting='';
+        customers.push(nc);
+        if(nc.phone)existPhones.add(nc.phone);
+        if(nc.company)existCompanies.add(nc.company.toLowerCase());
+        added++;
+      }
+      saveData(customers);renderAll();
+      showToast(`追加完成！新增${added}条，跳过${skipped}条重复`,'success');
+    }catch(err){showToast('追加失败：'+err.message,'error')}
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// === 合同电子章面板（esp = electronic stamp panel） ===
+let _espStamps = [];
+let _espSelectedStamp = '';
+let _espCurrentFid = '';
+let _espUploadedFid = '';  // 直接上传的PDF（不关联合同）
+let _espUploadedName = '';
+let _espCurrentPage = 1;
+let _espTotalPages = 1;
+let _espStampX = 0.72;  // 归一化位置
+let _espStampY = 0.82;
+let _espDragging = false;
+let _espDragOffset = {x:0,y:0};
+
+// 刷新PDF文件列表
+function espRefreshFileList(){
+  const sel = document.getElementById('espFileSelect');
+  if(!sel) return;
+  const opts = ['<option value="">-- 选择合同PDF --</option>'];
+  contracts.forEach(c => {
+    if(c.files && c.files.length){
+      c.files.forEach(f => {
+        const isPdf = f.type==='application/pdf' || (f.name||'').toLowerCase().endsWith('.pdf');
+        if(isPdf){
+          opts.push(`<option value="${f.id}" data-cid="${c.id}" data-fname="${f.name||f.id}">${c.name||'未命名合同'} - ${f.name||f.id}</option>`);
+        }
+      });
+    }
+  });
+  sel.innerHTML = opts.join('');
+}
+
+// 加载印章列表
+async function espLoadStamps(){
+  try{
+    const r = await fetch('/api/stamps');
+    const d = await r.json();
+    _espStamps = d.stamps || [];
+    espRenderStampList();
+  }catch(e){ console.error('加载印章失败', e) }
+}
+
+function espRenderStampList(){
+  const el = document.getElementById('espStampList');
+  if(!el) return;
+  if(!_espStamps.length){
+    el.innerHTML = '<div style="font-size:12px;color:#aaa;padding:4px">暂无印章，请上传</div>';
+    return;
+  }
+  el.innerHTML = _espStamps.map(s => `
+    <div class="stamp-item ${_espSelectedStamp===s.id?'selected':''}" onclick="espSelectStamp('${s.id}')">
+      <img src="${s.url}">
+      <span class="s-name">${s.name||s.id}</span>
+      <button class="s-del" onclick="event.stopPropagation();espDeleteStamp('${s.id}')">✕</button>
+    </div>`).join('');
+}
+
+function espSelectStamp(id){
+  _espSelectedStamp = id;
+  espRenderStampList();
+  espUpdateOverlay();
+}
+
+async function espDeleteStamp(id){
+  if(!confirm('确定删除该印章？')) return;
+  try{
+    await fetch('/api/stamps/'+encodeURIComponent(id),{method:'DELETE'});
+    if(_espSelectedStamp===id) _espSelectedStamp='';
+    espLoadStamps();
+  }catch(e){ showToast('删除失败','error') }
+}
+
+async function espUploadStamp(input){
+  if(!input.files.length) return;
+  const fd = new FormData();
+  fd.append('file', input.files[0]);
+  fd.append('name', input.files[0].name.replace(/\.[^.]+$/,''));
+  try{
+    const r = await fetch('/api/stamps/upload',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.ok){ showToast('印章上传成功','success'); espLoadStamps(); }
+    else{ showToast(d.error||'上传失败','error') }
+  }catch(e){ showToast('上传失败','error') }
+  input.value = '';
+}
+
+// 直接上传PDF文件到盖章面板
+async function espUploadPdf(input){
+  if(!input.files.length) return;
+  const file = input.files[0];
+  if(!file.name.toLowerCase().endsWith('.pdf')){
+    showToast('请上传PDF文件','error'); input.value=''; return;
+  }
+  showToast('正在上传PDF...','info');
+  try{
+    const fd = new FormData(); fd.append('file', file);
+    const r = await fetch('/api/files/upload',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.id){
+      showToast('PDF上传成功','success');
+      _espCurrentFid = d.id;
+      _espUploadedFid = d.id;  // 标记为直接上传的文件
+      _espUploadedName = file.name;
+      _espCurrentPage = 1;
+      // 获取页数
+      try{
+        const pr = await fetch('/api/pdf-pages/'+d.id);
+        const pd = await pr.json();
+        _espTotalPages = pd.total || 1;
+      }catch(e){ _espTotalPages = 1; }
+      // 不关联合同，直接设置下拉框
+      document.getElementById('espFileSelect').value = '';
+      espRenderPreview();
+    } else {
+      showToast(d.error||'上传失败','error');
+    }
+  }catch(e){ showToast('上传失败','error') }
+  input.value = '';
+}
+
+// 选择文件时加载预览
+async function espOnFileChange(){
+  const sel = document.getElementById('espFileSelect');
+  const opt = sel.options[sel.selectedIndex];
+  _espCurrentFid = sel.value;
+  _espCurrentPage = 1;
+  _espTotalPages = 1;
+  
+  if(!_espCurrentFid){
+    document.getElementById('espPreviewContainer').innerHTML = '<div style="color:#aaa;font-size:14px;text-align:center;padding:40px">← 请先选择PDF文件和印章</div>';
+    document.getElementById('espPageNav').style.display = 'none';
+    return;
+  }
+  
+  // 获取PDF总页数
+  try{
+    const r = await fetch('/api/pdf-pages/'+_espCurrentFid);
+    const d = await r.json();
+    _espTotalPages = d.total || 1;
+  }catch(e){ _espTotalPages = 1; }
+  
+  espRenderPreview();
+}
+
+// 渲染PDF预览+印章拖拽层
+function espRenderPreview(){
+  if(!_espCurrentFid) return;
+  const container = document.getElementById('espPreviewContainer');
+  const stampType = document.getElementById('espStampType').value;
+  
+  // 公章或公章+骑缝章模式显示翻页和拖拽
+  const needSeal = (stampType === 'seal' || stampType === 'both');
+  document.getElementById('espPageNav').style.display = needSeal ? '' : 'none';
+  
+  // 更新页码信息
+  document.getElementById('espPageInfo').textContent = `${_espCurrentPage} / ${_espTotalPages}`;
+  document.getElementById('espPageLabel').textContent = `第 ${_espCurrentPage} 页 / 共 ${_espTotalPages} 页`;
+  
+  // PDF页面预览图
+  const imgUrl = `/api/pdf-page-preview/${_espCurrentFid}/${_espCurrentPage}`;
+  
+  // 印章覆盖层HTML（公章或both模式）
+  let stampHtml = '';
+  if(needSeal && _espSelectedStamp){
+    const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
+    if(stampObj){
+      stampHtml = `<div class="stamp-overlay" id="espStampOverlay" style="display:none">
+        <img src="${stampObj.url}" onerror="this.parentElement.style.display='none'">
+      </div>`;
+    }
+  }
+  
+  container.innerHTML = `<img id="espPdfImg" src="${imgUrl}" onload="espOnPdfLoaded()" onerror="this.parentElement.innerHTML='<div style=\\'color:#ea4335;padding:40px\\'>PDF预览加载失败</div>'">${stampHtml}`;
+  
+  // 绑定拖拽事件
+  const overlay = document.getElementById('espStampOverlay');
+  if(overlay){
+    overlay.addEventListener('mousedown', espDragStart);
+    overlay.addEventListener('touchstart', espTouchStart, {passive:false});
+  }
+}
+
+// PDF图片加载完成后，定位印章覆盖层
+function espOnPdfLoaded(){
+  const overlay = document.getElementById('espStampOverlay');
+  if(!overlay) return;
+  espPositionStamp();
+  overlay.style.display = '';
+}
+
+// 根据归一化坐标定位印章
+function espPositionStamp(){
+  const container = document.getElementById('espPreviewContainer');
+  const overlay = document.getElementById('espStampOverlay');
+  const pdfImg = document.getElementById('espPdfImg');
+  if(!overlay || !pdfImg || !pdfImg.naturalWidth) return;
+  
+  const scaleVal = parseInt(document.getElementById('espStampScale').value) / 100;
+  
+  // 计算PDF图片在容器中的实际显示尺寸
+  const contW = container.clientWidth;
+  const contH = container.clientHeight;
+  const imgRatio = pdfImg.naturalWidth / pdfImg.naturalHeight;
+  const contRatio = contW / contH;
+  
+  let dispW, dispH, offsetX, offsetY;
+  if(imgRatio > contRatio){
+    dispW = contW;
+    dispH = contW / imgRatio;
+    offsetX = 0;
+    offsetY = (contH - dispH) / 2;
+  } else {
+    dispH = contH;
+    dispW = contH * imgRatio;
+    offsetX = (contW - dispW) / 2;
+    offsetY = 0;
+  }
+  
+  // 印章尺寸
+  const stampW = dispW * scaleVal;
+  // 假设印章宽高比1:1，如需更精确可以加载印章图片获取实际比例
+  const stampH = stampW; // 简化处理
+  
+  // 印章位置
+  const stampLeft = offsetX + dispW * _espStampX - stampW / 2;
+  const stampTop = offsetY + dispH * _espStampY - stampH / 2;
+  
+  overlay.style.width = stampW + 'px';
+  overlay.style.height = stampH + 'px';
+  overlay.style.left = stampLeft + 'px';
+  overlay.style.top = stampTop + 'px';
+}
+
+// 更新覆盖层（大小变化时）
+function espUpdateOverlay(){
+  document.getElementById('espScaleVal').textContent = document.getElementById('espStampScale').value + '%';
+  espPositionStamp();
+}
+
+// 鼠标拖拽
+function espDragStart(e){
+  e.preventDefault();
+  _espDragging = true;
+  const overlay = document.getElementById('espStampOverlay');
+  overlay.classList.add('dragging');
+  const rect = overlay.getBoundingClientRect();
+  _espDragOffset.x = e.clientX - rect.left;
+  _espDragOffset.y = e.clientY - rect.top;
+  
+  document.addEventListener('mousemove', espDragMove);
+  document.addEventListener('mouseup', espDragEnd);
+}
+
+function espDragMove(e){
+  if(!_espDragging) return;
+  const container = document.getElementById('espPreviewContainer');
+  const overlay = document.getElementById('espStampOverlay');
+  const contRect = container.getBoundingClientRect();
+  
+  const newLeft = e.clientX - contRect.left - _espDragOffset.x;
+  const newTop = e.clientY - contRect.top - _espDragOffset.y;
+  
+  overlay.style.left = newLeft + 'px';
+  overlay.style.top = newTop + 'px';
+}
+
+function espDragEnd(e){
+  if(!_espDragging) return;
+  _espDragging = false;
+  const overlay = document.getElementById('espStampOverlay');
+  overlay.classList.remove('dragging');
+  document.removeEventListener('mousemove', espDragMove);
+  document.removeEventListener('mouseup', espDragEnd);
+  
+  // 计算归一化位置
+  espCalcNormalizedPos();
+}
+
+// 触摸拖拽
+function espTouchStart(e){
+  e.preventDefault();
+  _espDragging = true;
+  const overlay = document.getElementById('espStampOverlay');
+  overlay.classList.add('dragging');
+  const rect = overlay.getBoundingClientRect();
+  const touch = e.touches[0];
+  _espDragOffset.x = touch.clientX - rect.left;
+  _espDragOffset.y = touch.clientY - rect.top;
+  
+  document.addEventListener('touchmove', espTouchMove, {passive:false});
+  document.addEventListener('touchend', espTouchEnd);
+}
+
+function espTouchMove(e){
+  if(!_espDragging) return;
+  e.preventDefault();
+  const container = document.getElementById('espPreviewContainer');
+  const overlay = document.getElementById('espStampOverlay');
+  const contRect = container.getBoundingClientRect();
+  const touch = e.touches[0];
+  
+  const newLeft = touch.clientX - contRect.left - _espDragOffset.x;
+  const newTop = touch.clientY - contRect.top - _espDragOffset.y;
+  
+  overlay.style.left = newLeft + 'px';
+  overlay.style.top = newTop + 'px';
+}
+
+function espTouchEnd(){
+  _espDragging = false;
+  const overlay = document.getElementById('espStampOverlay');
+  overlay.classList.remove('dragging');
+  document.removeEventListener('touchmove', espTouchMove);
+  document.removeEventListener('touchend', espTouchEnd);
+  espCalcNormalizedPos();
+}
+
+// 从像素位置计算归一化坐标
+function espCalcNormalizedPos(){
+  const container = document.getElementById('espPreviewContainer');
+  const overlay = document.getElementById('espStampOverlay');
+  const pdfImg = document.getElementById('espPdfImg');
+  if(!container || !overlay || !pdfImg || !pdfImg.naturalWidth) return;
+  
+  const contW = container.clientWidth;
+  const contH = container.clientHeight;
+  const imgRatio = pdfImg.naturalWidth / pdfImg.naturalHeight;
+  const contRatio = contW / contH;
+  
+  let dispW, dispH, offsetX, offsetY;
+  if(imgRatio > contRatio){
+    dispW = contW; dispH = contW / imgRatio;
+    offsetX = 0; offsetY = (contH - dispH) / 2;
+  } else {
+    dispH = contH; dispW = contH * imgRatio;
+    offsetX = (contW - dispW) / 2; offsetY = 0;
+  }
+  
+  const overlayRect = overlay.getBoundingClientRect();
+  const contRect = container.getBoundingClientRect();
+  const pixLeft = overlayRect.left - contRect.left;
+  const pixTop = overlayRect.top - contRect.top;
+  const stampW = overlayRect.width;
+  const stampH = overlayRect.height;
+  
+  // 归一化到PDF图片区域
+  _espStampX = Math.max(0, Math.min(1, (pixLeft + stampW/2 - offsetX) / dispW));
+  _espStampY = Math.max(0, Math.min(1, (pixTop + stampH/2 - offsetY) / dispH));
+}
+
+// 翻页
+function espPrevPage(){
+  if(_espCurrentPage > 1){ _espCurrentPage--; espRenderPreview(); }
+}
+function espNextPage(){
+  if(_espCurrentPage < _espTotalPages){ _espCurrentPage++; espRenderPreview(); }
+}
+
+// 盖章类型切换
+function espOnTypeChange(){
+  const type = document.getElementById('espStampType').value;
+  document.getElementById('espSealSettings').style.display = (type==='seal'||type==='both') ? '' : 'none';
+  document.getElementById('espCrossHint').style.display = type==='cross' ? '' : 'none';
+  document.getElementById('espBothHint').style.display = type==='both' ? '' : 'none';
+  espRenderPreview();
+}
+
+// 执行盖章
+async function espApply(){
+  if(!_espSelectedStamp){ showToast('请先选择印章','error'); return }
+  if(!_espCurrentFid){ showToast('请先选择PDF文件','error'); return }
+  
+  const type = document.getElementById('espStampType').value;
+  const scale = parseInt(document.getElementById('espStampScale').value) / 100;
+  const sel = document.getElementById('espFileSelect');
+  const opt = sel.options[sel.selectedIndex];
+  // 优先使用上传的文件名，否则用下拉框的文件名
+  const fileName = _espUploadedFid === _espCurrentFid ? _espUploadedName : (opt ? opt.getAttribute('data-fname') || _espCurrentFid : _espCurrentFid);
+  
+  if(type === 'both'){
+    // 公章+骑缝章：先盖公章，再在公章结果上盖骑缝章
+    showToast('正在盖公章...','info');
+    const sealParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'seal', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY};
+    try{
+      let r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sealParams)});
+      let d = await r.json();
+      if(!d.ok){ showToast(d.error||'公章盖章失败','error'); return }
+      showToast('公章完成，正在盖骑缝章...','info');
+      // 在公章结果上盖骑缝章
+      const crossParams = {fid:d.newFid, stampId:_espSelectedStamp, type:'cross', scale, fileName:d.newName};
+      r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(crossParams)});
+      const d2 = await r.json();
+      if(d2.ok){
+        showToast(`盖章成功！已生成：${d2.newName}`,'success');
+        espAddFileToContract(d2, opt);
+        // 删除中间文件（只有公章的那份）
+        try{ await fetch('/api/files/'+encodeURIComponent(d.newFid),{method:'DELETE'}); }catch(e){}
+        espRefreshFileList();
+      } else {
+        // 骑缝章失败但公章成功，保留公章结果
+        showToast(`公章成功，骑缝章失败：${d2.error}`,'error');
+        espAddFileToContract(d, opt);
+        espRefreshFileList();
+      }
+    }catch(e){ showToast('盖章请求失败','error') }
+    return;
+  }
+  
+  let params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type, scale, fileName};
+  
+  if(type === 'seal'){
+    params.page = _espCurrentPage;
+    params.x = _espStampX;
+    params.y = _espStampY;
+  }
+  
+  showToast('正在盖章...','info');
+  try{
+    const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
+    const d = await r.json();
+    if(d.ok){
+      showToast(`盖章成功！已生成：${d.newName}`,'success');
+      espAddFileToContract(d, opt);
+      espRefreshFileList();
+    } else {
+      showToast(d.error||'盖章失败','error');
+    }
+  }catch(e){ showToast('盖章请求失败','error') }
+}
+
+// 将盖章结果文件添加到对应合同
+function espAddFileToContract(d, opt){
+  const cid = opt ? opt.getAttribute('data-cid') : '';
+  if(cid){
+    const c = contracts.find(x => x.id === cid);
+    if(c){
+      if(!c.files) c.files = [];
+      c.files.push({id:d.newFid, name:d.newName, type:'application/pdf', size:d.size});
+      saveContractsData(contracts);
+      renderContractList();
+    }
+  }
+}
+</script>
+</body>
+</html>
