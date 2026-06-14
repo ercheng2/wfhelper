@@ -1272,32 +1272,53 @@ class Handler(BaseHTTPRequestHandler):
                     rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
                     page.insert_image(rect, filename=stamp_img, overlay=True)
                 elif stamp_type == 'cross':
-                    # 骑缝章：每两页一组，右半盖左页右边缘，左半盖右页左边缘
-                    # 奇数页时最后一页单独处理
-                    for i in range(0, total_pages - 1, 2):
-                        left_page = doc[i]
-                        right_page = doc[i + 1]
-                        lw, lh = left_page.rect.width, left_page.rect.height
-                        # 印章总宽度
-                        total_sw = lw * stamp_scale
-                        stamp_doc = fitz.open(stamp_img)
-                        stamp_pix = stamp_doc[0].get_pixmap(dpi=150, alpha=True)
-                        stamp_doc.close()
-                        total_sh = total_sw * (stamp_pix.height / stamp_pix.width) if stamp_pix.width > 0 else total_sw
-                        half_w = total_sw / 2
-                        # 骑缝章竖向居中
-                        stamp_y = lh * 0.5 - total_sh / 2
-                        # 左页右半部分：印章右半
-                        left_rect = fitz.Rect(lw - half_w, stamp_y, lw, stamp_y + total_sh)
-                        # 用clip方式裁切右半
-                        left_page.insert_image(left_rect, filename=stamp_img, overlay=True,
-                                              clip=fitz.IRect(stamp_pix.width//2, 0, stamp_pix.width, stamp_pix.height))
-                        # 右页左半部分：印章左半
-                        rh = right_page.rect.height
-                        stamp_y_r = rh * 0.5 - total_sh / 2
-                        right_rect = fitz.Rect(0, stamp_y_r, half_w, stamp_y_r + total_sh)
-                        right_page.insert_image(right_rect, filename=stamp_img, overlay=True,
-                                               clip=fitz.IRect(0, 0, stamp_pix.width//2, stamp_pix.height))
+                    # 骑缝章：每个相邻页对之间盖骑缝章
+                    # 用PIL预先裁切印章左半和右半（PyMuPDF insert_image不支持clip参数）
+                    from PIL import Image as PILImage
+                    import tempfile
+                    pil_img = PILImage.open(stamp_img)
+                    w, h = pil_img.size
+                    # 裁切左半和右半
+                    left_half = pil_img.crop((0, 0, w // 2, h))
+                    right_half = pil_img.crop((w // 2, 0, w, h))
+                    # 保存为临时文件
+                    tmp_left = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                    tmp_right = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                    left_half.save(tmp_left.name, 'PNG')
+                    right_half.save(tmp_right.name, 'PNG')
+                    tmp_left.close()
+                    tmp_right.close()
+                    try:
+                        for i in range(total_pages - 1):
+                            left_page = doc[i]
+                            right_page = doc[i + 1]
+                            lw, lh = left_page.rect.width, left_page.rect.height
+                            # 印章总宽度（半边宽度）
+                            total_sw = lw * stamp_scale
+                            # 获取印章比例
+                            stamp_doc_tmp = fitz.open(stamp_img)
+                            stamp_pix = stamp_doc_tmp[0].get_pixmap(dpi=150, alpha=True)
+                            stamp_doc_tmp.close()
+                            ratio = stamp_pix.height / stamp_pix.width if stamp_pix.width > 0 else 1
+                            total_sh = total_sw * ratio
+                            half_w = total_sw / 2
+                            # 骑缝章竖向居中
+                            stamp_y = lh * 0.5 - total_sh / 2
+                            # 左页右边缘：印章右半
+                            left_rect = fitz.Rect(lw - half_w, stamp_y, lw, stamp_y + total_sh)
+                            left_page.insert_image(left_rect, filename=tmp_right.name, overlay=True)
+                            # 右页左边缘：印章左半
+                            rh = right_page.rect.height
+                            stamp_y_r = rh * 0.5 - total_sh / 2
+                            right_rect = fitz.Rect(0, stamp_y_r, half_w, stamp_y_r + total_sh)
+                            right_page.insert_image(right_rect, filename=tmp_left.name, overlay=True)
+                    finally:
+                        # 清理临时文件
+                        import os as _os
+                        try: _os.unlink(tmp_left.name)
+                        except: pass
+                        try: _os.unlink(tmp_right.name)
+                        except: pass
                 
                 # 保存为新文件（不覆盖原文件）
                 # 文件名格式：原文件名_YYYYMMDD_HHMM【盖章.pdf
