@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyinstaller pymupdf Pillow pdf2image pystray
+          pip install pyinstaller pymupdf>=1.24.0 Pillow pdf2image pystray
 
       - name: Build EXE
         working-directory: server
@@ -34,7 +34,11 @@ jobs:
       - name: Create release package
         working-directory: server/dist
         run: |
-          Compress-Archive -Path * -DestinationPath wfhelper_v2.zip
+          # 只打包exe和config.json，不打包data目录（防止覆盖用户数据）
+          New-Item -ItemType Directory -Force -Path package
+          Copy-Item "微信好友助手.exe" package/
+          Copy-Item "config.json" package/
+          Compress-Archive -Path package/* -DestinationPath wfhelper_v2.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

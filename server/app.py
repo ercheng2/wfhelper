@@ -747,6 +747,32 @@ os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(FILES_DIR, exist_ok=True)
 os.makedirs(STAMPS_DIR, exist_ok=True)
 
+# === 印章PNG处理辅助 ===
+def _prepare_stamp_image(stamp_path):
+    """将印章图片转为PyMuPDF可可靠插入的格式。
+    策略：PIL统一转RGBA PNG，再用BytesIO输出bytes。
+    返回 (png_bytes, img_width, img_height)
+    """
+    from PIL import Image as _PIL
+    import io as _io
+    pil = _PIL.open(stamp_path).convert('RGBA')
+    buf = _io.BytesIO()
+    pil.save(buf, 'PNG')
+    buf.seek(0)
+    png_bytes = buf.read()
+    return png_bytes, pil.size[0], pil.size[1]
+
+def _prepare_stamp_strip(pil_img, x0, x1):
+    """将印章裁切条转为PyMuPDF可可靠插入的格式。
+    返回 png_bytes
+    """
+    import io as _io
+    strip = pil_img.crop((x0, 0, x1, pil_img.size[1]))
+    buf = _io.BytesIO()
+    strip.save(buf, 'PNG')
+    buf.seek(0)
+    return buf.read()
+
 # === 数据库 ===
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -813,6 +839,17 @@ def init_db():
     if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_contracts'").fetchone():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_contracts', '[]'))
+    
+    # Initialize empty maint records
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_maint_items'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_maint_items', '[]'))
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_maint_records'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_maint_records', '[]'))
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_maint_notes'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_maint_notes', '[]'))
     
     conn.commit()
     conn.close()
@@ -1039,7 +1076,7 @@ class Handler(BaseHTTPRequestHandler):
         
         # API: GET /api/stamp-img/<filename> - 返回印章图片
         if path.startswith('/api/stamp-img/'):
-            fn = path[len('/api/stamp-img/'):]
+            fn = urllib.parse.unquote(path[len('/api/stamp-img/'):])
             if '/' in fn or '\\' in fn or fn.startswith('.'):
                 self.send_json({'error': 'Invalid'}, 400); return
             img_path = os.path.join(STAMPS_DIR, fn)
@@ -1265,54 +1302,35 @@ class Handler(BaseHTTPRequestHandler):
                     pg = min(int(page_num) - 1, total_pages - 1)
                     page = doc[pg]
                     pw, ph = page.rect.width, page.rect.height
-                    # 印章尺寸
                     sw = pw * stamp_scale
-                    # 用PIL转标准RGBA PNG，用stream方式插入避免格式兼容问题
-                    from PIL import Image as PILImageNorm
-                    import io as _io_seal
-                    _pil_s = PILImageNorm.open(stamp_img).convert('RGBA')
-                    _buf_s = _io_seal.BytesIO()
-                    _pil_s.save(_buf_s, 'PNG')
-                    _buf_s.seek(0)
-                    _png_bytes_s = _buf_s.read()
-                    _img_w_s, _img_h_s = _pil_s.size
-                    sh = sw * (_img_h_s / _img_w_s) if _img_w_s > 0 else sw
+                    _png_bytes, _img_w, _img_h = _prepare_stamp_image(stamp_img)
+                    sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
                     sx = pw * pos_x - sw / 2
                     sy = ph * pos_y - sh / 2
                     rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, stream=_png_bytes_s, overlay=True)
+                    page.insert_image(rect, stream=_png_bytes, overlay=True)
                 elif stamp_type == 'cross':
                     # 骑缝章：完整印章按页数等分，每页右边缘放一片
                     # 所有页的片拼在一起才是完整的章，防止抽换页面
                     if total_pages < 2:
                         self.send_json({'error': '骑缝章至少需要2页'}, 400); return
                     from PIL import Image as PILImage
-                    import io as _io_cross2
-                    pil_img = PILImage.open(stamp_img)
-                    sw, sh_img = pil_img.size
-                    # 按页数从左到右等分印章
-                    strip_w = sw // total_pages
+                    pil_img = PILImage.open(stamp_img).convert('RGBA')
+                    img_w, img_h = pil_img.size
+                    strip_w = img_w // total_pages
                     for i in range(total_pages):
                         x0 = i * strip_w
-                        x1 = (i + 1) * strip_w if i < total_pages - 1 else sw
-                        strip = pil_img.crop((x0, 0, x1, sh_img))
-                        _buf_c2 = _io_cross2.BytesIO()
-                        strip.save(_buf_c2, 'PNG')
-                        _buf_c2.seek(0)
-                        _strip_bytes2 = _buf_c2.read()
-                        # 在第i页右边缘放第i片
+                        x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
+                        _strip_bytes = _prepare_stamp_strip(pil_img, x0, x1)
                         page = doc[i]
                         pw, ph = page.rect.width, page.rect.height
-                        # 印章完整尺寸
                         full_stamp_w = pw * stamp_scale
-                        full_stamp_h = full_stamp_w * (sh_img / sw) if sw > 0 else full_stamp_w
-                        # 这一页的条宽
+                        full_stamp_h = full_stamp_w * (img_h / img_w) if img_w > 0 else full_stamp_w
                         page_strip_w = full_stamp_w / total_pages
-                        # 竖向居中，水平靠右边缘
                         stamp_y = ph * 0.5 - full_stamp_h / 2
                         stamp_x = pw - page_strip_w
                         rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
-                        page.insert_image(rect, stream=_strip_bytes2, overlay=True)
+                        page.insert_image(rect, stream=_strip_bytes, overlay=True)
                 elif stamp_type == 'both':
                     # 公章+骑缝章：先盖公章，再盖骑缝章，一次生成一个文件
                     # 1. 公章
@@ -1320,34 +1338,22 @@ class Handler(BaseHTTPRequestHandler):
                     page = doc[pg]
                     pw, ph = page.rect.width, page.rect.height
                     sw = pw * stamp_scale
-                    from PIL import Image as PILImageNorm2
-                    import io as _io_seal2
-                    _pil_s2 = PILImageNorm2.open(stamp_img).convert('RGBA')
-                    _buf_s2 = _io_seal2.BytesIO()
-                    _pil_s2.save(_buf_s2, 'PNG')
-                    _buf_s2.seek(0)
-                    _png_bytes_s2 = _buf_s2.read()
-                    _img_w_s2, _img_h_s2 = _pil_s2.size
-                    sh = sw * (_img_h_s2 / _img_w_s2) if _img_w_s2 > 0 else sw
+                    _png_bytes, _img_w, _img_h = _prepare_stamp_image(stamp_img)
+                    sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
                     sx = pw * pos_x - sw / 2
                     sy = ph * pos_y - sh / 2
                     rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, stream=_png_bytes_s2, overlay=True)
+                    page.insert_image(rect, stream=_png_bytes, overlay=True)
                     # 2. 骑缝章（所有页右边缘等分印章）
                     if total_pages >= 2:
                         from PIL import Image as PILImage
-                        import io as _io_cross
-                        pil_img = PILImage.open(stamp_img)
+                        pil_img = PILImage.open(stamp_img).convert('RGBA')
                         img_w, img_h = pil_img.size
                         strip_w = img_w // total_pages
                         for i in range(total_pages):
                             x0 = i * strip_w
                             x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
-                            strip = pil_img.crop((x0, 0, x1, img_h))
-                            _buf_c = _io_cross.BytesIO()
-                            strip.save(_buf_c, 'PNG')
-                            _buf_c.seek(0)
-                            _strip_bytes = _buf_c.read()
+                            _strip_bytes = _prepare_stamp_strip(pil_img, x0, x1)
                             p = doc[i]
                             ppw, pph = p.rect.width, p.rect.height
                             full_stamp_w = ppw * stamp_scale
@@ -1634,7 +1640,7 @@ class Handler(BaseHTTPRequestHandler):
         
         # API: DELETE /api/stamps/<filename>
         if path.startswith('/api/stamps/'):
-            fn = path[len('/api/stamps/'):]
+            fn = urllib.parse.unquote(path[len('/api/stamps/'):])
             if '/' in fn or '\\' in fn or fn.startswith('.'):
                 self.send_json({'error': 'Invalid'}, 400); return
             fp = os.path.join(STAMPS_DIR, fn)
