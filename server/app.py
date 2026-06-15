@@ -787,8 +787,16 @@ def init_db():
         value TEXT NOT NULL
     )''')
     
-    # Seed preset customers on first run
-    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_preset_loaded'").fetchone():
+    # Seed preset customers — 首次运行 或 数据丢失时自动恢复
+    _need_preset = not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_preset_loaded'").fetchone()
+    if not _need_preset:
+        # 标记存在但数据为空→也重新加载（防止覆盖安装后数据丢失）
+        _row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
+        if not _row or not json.loads(_row['value']):
+            _need_preset = True
+            conn.execute("DELETE FROM kv_store WHERE key='wfhelper_preset_loaded'")
+            conn.execute("DELETE FROM kv_store WHERE key='wfhelper_extra_loaded'")
+    if _need_preset:
         preset_path = os.path.join(_BUNDLE_DIR, 'preset_customers.json')
         if os.path.exists(preset_path):
             with open(preset_path, 'r', encoding='utf-8') as f:
@@ -798,8 +806,9 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_preset_loaded', '"v2"'))
     
-    # Seed extra customers on first run
-    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_extra_loaded'").fetchone():
+    # Seed extra customers — 同样做完整性检查
+    _need_extra = not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_extra_loaded'").fetchone()
+    if _need_extra:
         extra_path = os.path.join(_BUNDLE_DIR, 'extra_customers.json')
         if os.path.exists(extra_path):
             with open(extra_path, 'r', encoding='utf-8') as f:

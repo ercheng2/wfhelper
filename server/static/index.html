@@ -221,6 +221,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .stamp-overlay:hover{opacity:.9;border-color:#1a73e8;box-shadow:0 0 8px rgba(26,115,232,.4)}
 .stamp-overlay img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 .stamp-overlay.dragging{opacity:.6;outline:2px dashed #1a73e8;border-color:#1a73e8;box-shadow:0 0 12px rgba(26,115,232,.6)}
+.cross-stamp-strip{position:absolute;right:0;opacity:.55;pointer-events:none;z-index:99;border-left:1px dashed #ea4335;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(234,67,53,.15) 4px,rgba(234,67,53,.15) 8px)}
 .stamp-page-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:#fafafa;border-top:1px solid #eee;border-radius:0 0 8px 8px}
 .stamp-page-nav button{padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:12px}
 .stamp-page-nav button:hover{background:#f0f0f0}
@@ -2562,31 +2563,50 @@ function _espUpdateStampOverlay(needSeal){
   // 移除旧覆盖层
   const oldOverlay = document.getElementById('espStampOverlay');
   if(oldOverlay) oldOverlay.remove();
+  const oldCross = document.getElementById('espCrossStrip');
+  if(oldCross) oldCross.remove();
   
   if(!needSeal || !_espSelectedStamp) return;
   
   const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
   if(!stampObj) return;
   
-  // 创建新覆盖层
-  const overlay = document.createElement('div');
-  overlay.className = 'stamp-overlay';
-  overlay.id = 'espStampOverlay';
-  overlay.style.display = 'none';
-  overlay.style.zIndex = '100';
-  overlay.style.pointerEvents = 'auto';
-  overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'">`;
-  container.appendChild(overlay);
+  const stampType = document.getElementById('espStampType').value;
   
-  // 绑定拖拽事件
-  overlay.addEventListener('mousedown', espDragStart);
-  overlay.addEventListener('touchstart', espTouchStart, {passive:false});
+  // 骑缝章条形预览（both或cross模式）
+  if(stampType === 'both' || stampType === 'cross'){
+    const crossStrip = document.createElement('div');
+    crossStrip.className = 'cross-stamp-strip';
+    crossStrip.id = 'espCrossStrip';
+    crossStrip.style.display = 'none';
+    // 骑缝章印章图片作为条形背景
+    crossStrip.innerHTML = `<img src="${stampObj.url}" style="width:100%;height:100%;object-fit:cover;opacity:.7" onerror="this.style.display='none'">`;
+    container.appendChild(crossStrip);
+  }
+  
+  // 公章覆盖层（seal或both模式）
+  if(stampType === 'seal' || stampType === 'both'){
+    const overlay = document.createElement('div');
+    overlay.className = 'stamp-overlay';
+    overlay.id = 'espStampOverlay';
+    overlay.style.display = 'none';
+    overlay.style.zIndex = '100';
+    overlay.style.pointerEvents = 'auto';
+    overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'">`;
+    container.appendChild(overlay);
+    // 绑定拖拽事件
+    overlay.addEventListener('mousedown', espDragStart);
+    overlay.addEventListener('touchstart', espTouchStart, {passive:false});
+  }
   
   // 如果PDF图片已加载，直接定位显示
   const pdfImg = document.getElementById('espPdfImg');
   if(pdfImg && pdfImg.complete && pdfImg.naturalWidth > 0){
     espPositionStamp();
-    overlay.style.display = '';
+    const ol = document.getElementById('espStampOverlay');
+    if(ol) ol.style.display = '';
+    const cs = document.getElementById('espCrossStrip');
+    if(cs) cs.style.display = '';
   }
   // 否则等 onload 回调 espOnPdfLoaded 来处理
 }
@@ -2594,9 +2614,9 @@ function _espUpdateStampOverlay(needSeal){
 // PDF图片加载完成后，定位印章覆盖层
 function espOnPdfLoaded(){
   const overlay = document.getElementById('espStampOverlay');
-  if(!overlay) return;
-  espPositionStamp();
-  overlay.style.display = '';
+  if(overlay){ espPositionStamp(); overlay.style.display = ''; }
+  const cs = document.getElementById('espCrossStrip');
+  if(cs){ espPositionStamp(); cs.style.display = ''; }
 }
 
 // 根据归一化坐标定位印章
@@ -2640,6 +2660,23 @@ function espPositionStamp(){
   overlay.style.height = stampH + 'px';
   overlay.style.left = stampLeft + 'px';
   overlay.style.top = stampTop + 'px';
+  
+  // 骑缝章条形预览定位
+  const crossStrip = document.getElementById('espCrossStrip');
+  if(crossStrip){
+    const scaleVal2 = parseInt(document.getElementById('espStampScale').value) / 100;
+    // 骑缝章：每页占完整印章宽度的 1/totalPages
+    const fullStampW = dispW * scaleVal2;
+    const stripW = fullStampW / _espTotalPages;
+    // 垂直居中，高度和完整章一样
+    const fullStampH = fullStampW; // 简化1:1
+    const stripTop = offsetY + dispH * 0.5 - fullStampH / 2;
+    const stripLeft = offsetX + dispW - stripW;
+    crossStrip.style.width = stripW + 'px';
+    crossStrip.style.height = fullStampH + 'px';
+    crossStrip.style.left = stripLeft + 'px';
+    crossStrip.style.top = stripTop + 'px';
+  }
 }
 
 // 更新覆盖层（大小变化时）
