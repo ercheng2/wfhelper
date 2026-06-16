@@ -828,7 +828,7 @@ function renderTodayList(){
   // 只在实际有状态变更时才保存，避免每次渲染都写库
   let _needSave = false;
   customers.forEach(c => { if(c._statusChanged){ _needSave=true; delete c._statusChanged; } });
-  if(_needSave) await saveData(customers);
+  if(_needSave) saveData(customers);
   const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
   const remaining=config.dailyLimit-todaySent;
   const list=customers.filter(c=>c.status===4||c.status===0).slice(0,Math.max(remaining,customers.filter(c=>c.status===4).length));
