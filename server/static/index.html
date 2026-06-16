@@ -221,8 +221,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .stamp-overlay:hover{opacity:.9;border-color:#1a73e8;box-shadow:0 0 8px rgba(26,115,232,.4)}
 .stamp-overlay img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 .stamp-overlay.dragging{opacity:.6;outline:2px dashed #1a73e8;border-color:#1a73e8;box-shadow:0 0 12px rgba(26,115,232,.6)}
-.cross-stamp-strip{position:absolute;pointer-events:none;z-index:99;background:rgba(234,67,53,.12);border-left:2px dashed #ea4335}
-.cross-stamp-strip .cross-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);font-size:10px;color:#ea4335;white-space:nowrap;font-weight:600;letter-spacing:1px}
+.cross-stamp-strip{position:absolute;pointer-events:auto;cursor:ns-resize;z-index:99;background:rgba(234,67,53,.12);border-left:2px dashed #ea4335;border-right:1px dashed #ea4335}
+.cross-stamp-strip:hover{background:rgba(234,67,53,.2)}
+.cross-stamp-strip.dragging{background:rgba(234,67,53,.25);outline:2px solid #ea4335}
+.cross-stamp-strip .cross-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);font-size:10px;color:#ea4335;white-space:nowrap;font-weight:600;letter-spacing:1px;pointer-events:none}
 .stamp-page-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:#fafafa;border-top:1px solid #eee;border-radius:0 0 8px 8px}
 .stamp-page-nav button{padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:12px}
 .stamp-page-nav button:hover{background:#f0f0f0}
@@ -1667,7 +1669,7 @@ async function applyStamp(){
     const r=await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fid,stampId:_selectedStampId,type,page,x,y,scale,fileName})});
     const d=await r.json();
     if(d.ok){
-      showToast(`盖章成功！已生成新文件：${d.newName}`,'success');
+      showToast(`盖章成功！已生成新文件：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : ''),'success');
       // 将新文件添加到合同
       if(c){
         c.files.push({id:d.newFid,name:d.newName,type:'application/pdf',size:d.size});
@@ -2371,6 +2373,7 @@ let _espCurrentPage = 1;
 let _espTotalPages = 1;
 let _espStampX = 0.72;  // 归一化位置
 let _espStampY = 0.82;
+let _espCrossY = 0.50;  // 骑缝章Y位置（默认居中）
 let _espDragging = false;
 let _espDragOffset = {x:0,y:0};
 let _espConfirming = false; // 是否在确认状态
@@ -2593,13 +2596,15 @@ function _espUpdateStampOverlay(needSeal){
   
   const stampType = document.getElementById('espStampType').value;
   
-  // 骑缝章条形预览标记（both或cross模式）—— 右边缘虚线标记
+  // 骑缝章条形预览标记（both或cross模式）—— 右边缘虚线标记，可上下拖拽
   if(stampType === 'both' || stampType === 'cross'){
     const crossStrip = document.createElement('div');
     crossStrip.className = 'cross-stamp-strip';
     crossStrip.id = 'espCrossStrip';
     crossStrip.style.display = 'none';
-    crossStrip.innerHTML = '<span class="cross-label">骑缝章</span>';
+    crossStrip.innerHTML = '<span class="cross-label">骑缝章 ↕</span>';
+    crossStrip.addEventListener('mousedown', espCrossDragStart);
+    crossStrip.addEventListener('touchstart', espCrossTouchStart, {passive:false});
     container.appendChild(crossStrip);
   }
   
@@ -2683,11 +2688,10 @@ function espPositionStamp(){
   const crossStrip = document.getElementById('espCrossStrip');
   if(crossStrip){
     const scaleVal2 = parseInt(document.getElementById('espStampScale').value) / 100;
-    // 骑缝章：完整印章高度的竖条，每页右边缘占 1/totalPages 宽
-    const fullStampH = dispW * scaleVal2; // 印章高度约等于宽度（1:1简化）
+    const fullStampH = dispW * scaleVal2;
     const fullStampW = dispW * scaleVal2;
-    const stripW = Math.max(fullStampW / _espTotalPages, 3); // 至少3px可见
-    const stripTop = offsetY + dispH * 0.5 - fullStampH / 2;
+    const stripW = Math.max(fullStampW / _espTotalPages, 3);
+    const stripTop = offsetY + dispH * _espCrossY - fullStampH / 2;
     const stripLeft = offsetX + dispW - stripW;
     crossStrip.style.width = stripW + 'px';
     crossStrip.style.height = fullStampH + 'px';
@@ -2832,6 +2836,105 @@ function espCalcNormalizedPos(){
   _espSyncSliders();
 }
 
+// === 骑缝章拖拽 ===
+let _espCrossDragging = false;
+let _espCrossDragOffsetY = 0;
+
+function espCrossDragStart(e){
+  e.preventDefault();
+  e.stopPropagation();
+  _espCrossDragging = true;
+  const strip = document.getElementById('espCrossStrip');
+  strip.classList.add('dragging');
+  const rect = strip.getBoundingClientRect();
+  _espCrossDragOffsetY = e.clientY - rect.top;
+  document.addEventListener('mousemove', espCrossDragMove);
+  document.addEventListener('mouseup', espCrossDragEnd);
+}
+
+function espCrossDragMove(e){
+  if(!_espCrossDragging) return;
+  const container = document.getElementById('espPreviewContainer');
+  const strip = document.getElementById('espCrossStrip');
+  const contRect = container.getBoundingClientRect();
+  const newTop = e.clientY - contRect.top - _espCrossDragOffsetY;
+  strip.style.top = newTop + 'px';
+}
+
+function espCrossDragEnd(e){
+  if(!_espCrossDragging) return;
+  _espCrossDragging = false;
+  const strip = document.getElementById('espCrossStrip');
+  strip.classList.remove('dragging');
+  document.removeEventListener('mousemove', espCrossDragMove);
+  document.removeEventListener('mouseup', espCrossDragEnd);
+  // 计算归一化Y位置
+  espCalcCrossY();
+}
+
+function espCrossTouchStart(e){
+  e.preventDefault();
+  e.stopPropagation();
+  _espCrossDragging = true;
+  const strip = document.getElementById('espCrossStrip');
+  strip.classList.add('dragging');
+  const rect = strip.getBoundingClientRect();
+  const touch = e.touches[0];
+  _espCrossDragOffsetY = touch.clientY - rect.top;
+  document.addEventListener('touchmove', espCrossTouchMove, {passive:false});
+  document.addEventListener('touchend', espCrossTouchEnd);
+}
+
+function espCrossTouchMove(e){
+  if(!_espCrossDragging) return;
+  e.preventDefault();
+  const container = document.getElementById('espPreviewContainer');
+  const strip = document.getElementById('espCrossStrip');
+  const contRect = container.getBoundingClientRect();
+  const touch = e.touches[0];
+  const newTop = touch.clientY - contRect.top - _espCrossDragOffsetY;
+  strip.style.top = newTop + 'px';
+}
+
+function espCrossTouchEnd(){
+  if(!_espCrossDragging) return;
+  _espCrossDragging = false;
+  const strip = document.getElementById('espCrossStrip');
+  strip.classList.remove('dragging');
+  document.removeEventListener('touchmove', espCrossTouchMove);
+  document.removeEventListener('touchend', espCrossTouchEnd);
+  espCalcCrossY();
+}
+
+// 计算骑缝章归一化Y坐标
+function espCalcCrossY(){
+  const container = document.getElementById('espPreviewContainer');
+  const strip = document.getElementById('espCrossStrip');
+  const pdfImg = document.getElementById('espPdfImg');
+  if(!container || !strip || !pdfImg || !pdfImg.naturalWidth) return;
+  
+  const contH = container.clientHeight;
+  const contW = container.clientWidth;
+  const imgRatio = pdfImg.naturalWidth / pdfImg.naturalHeight;
+  const contRatio = contW / contH;
+  let dispW, dispH, offsetX, offsetY;
+  if(imgRatio > contRatio){
+    dispW = contW; dispH = contW / imgRatio;
+    offsetX = 0; offsetY = (contH - dispH) / 2;
+  } else {
+    dispH = contH; dispW = contH * imgRatio;
+    offsetX = (contW - dispW) / 2; offsetY = 0;
+  }
+  
+  const stripRect = strip.getBoundingClientRect();
+  const contRect = container.getBoundingClientRect();
+  const pixTop = stripRect.top - contRect.top;
+  const stripH = stripRect.height;
+  
+  // 骑缝章中心Y归一化
+  _espCrossY = Math.max(0, Math.min(1, (pixTop + stripH/2 - offsetY) / dispH));
+}
+
 // 翻页
 function espPrevPage(){
   if(_espCurrentPage > 1){ _espCurrentPage--; espRenderThumbs(); espRenderPreview(); }
@@ -2915,12 +3018,12 @@ async function espDoApply(){
   if(type === 'both'){
     // 公章+骑缝章：一次请求，后端同时盖公章和骑缝章，生成一个文件
     showToast('正在盖章...','info');
-    const params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY, saveDir};
+    const params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY, crossY:_espCrossY, saveDir};
     try{
       const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
       const d = await r.json();
       if(d.ok){
-        let msg = `盖章成功！已生成：${d.newName}`;
+        let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
         if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
         showToast(msg,'success');
         espAddFileToContract(d, opt);
@@ -2939,13 +3042,16 @@ async function espDoApply(){
     params.x = _espStampX;
     params.y = _espStampY;
   }
+  if(type === 'cross'){
+    params.crossY = _espCrossY;
+  }
   
   showToast('正在盖章...','info');
   try{
     const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
     const d = await r.json();
     if(d.ok){
-      let msg = `盖章成功！已生成：${d.newName}`;
+      let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
       if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
       showToast(msg,'success');
       espAddFileToContract(d, opt);

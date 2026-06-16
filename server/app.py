@@ -762,6 +762,19 @@ def _prepare_stamp_image(stamp_path):
     png_bytes = buf.read()
     return png_bytes, pil.size[0], pil.size[1]
 
+def _generate_contract_no(conn):
+    """生成合同编号：YC-YYYYMMDD-序号（每日递增）"""
+    from datetime import datetime
+    today = datetime.now().strftime('%Y%m%d')
+    key = f'wfhelper_contract_no_{today}'
+    row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
+    seq = 1
+    if row:
+        seq = int(row['value']) + 1
+    conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, str(seq)))
+    conn.commit()
+    return f'YC-{today}-{seq:03d}'
+
 def _prepare_stamp_strip(pil_img, x0, x1):
     """将印章裁切条转为PyMuPDF可可靠插入的格式。
     返回 png_bytes
@@ -1339,6 +1352,7 @@ class Handler(BaseHTTPRequestHandler):
             pos_x = params.get('x', 0.72)  # 公章X位置
             pos_y = params.get('y', 0.82)  # 公章Y位置
             stamp_scale = params.get('scale', 0.18)  # 印章占页面宽度比例
+            cross_y = params.get('crossY', 0.5)  # 骑缝章Y位置（归一化0~1）
             if '/' in fid or '\\' in fid or fid.startswith('.'):
                 self.send_json({'error': 'Invalid fid'}, 400); return
             if '/' in stamp_id or '\\' in stamp_id or stamp_id.startswith('.'):
@@ -1401,7 +1415,7 @@ class Handler(BaseHTTPRequestHandler):
                         _strip_bytes = _prepare_stamp_strip(pil_img, px_x0, px_x1)
                         
                         # 条在PDF中的位置：右边缘，垂直居中
-                        stamp_y = ph * 0.5 - full_stamp_h / 2
+                        stamp_y = ph * cross_y - full_stamp_h / 2
                         stamp_x = pw - page_strip_w
                         rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
                         page.insert_image(rect, stream=_strip_bytes, overlay=True)
@@ -1433,10 +1447,28 @@ class Handler(BaseHTTPRequestHandler):
                             px_x0 = i * (img_w / total_pages)
                             px_x1 = (i + 1) * (img_w / total_pages)
                             _strip_bytes = _prepare_stamp_strip(pil_img, px_x0, px_x1)
-                            stamp_y = pph * 0.5 - full_stamp_h / 2
+                            stamp_y = pph * cross_y - full_stamp_h / 2
                             stamp_x = ppw - page_strip_w
                             r = fitz.Rect(stamp_x, stamp_y, ppw, stamp_y + full_stamp_h)
                             p.insert_image(r, stream=_strip_bytes, overlay=True)
+                
+                # 合同编号：左下角小字标识，代表本软件生成
+                _sconn = get_db()
+                contract_no = _generate_contract_no(_sconn)
+                _sconn.close()
+                last_page = doc[total_pages - 1]
+                lpw, lph = last_page.rect.width, last_page.rect.height
+                try:
+                    # 左下角，6pt极小字体，浅灰色
+                    last_page.insert_text(
+                        fitz.Point(20, lph - 12),
+                        contract_no,
+                        fontsize=6,
+                        color=(0.7, 0.7, 0.7),  # 浅灰色
+                        fontname="helv"
+                    )
+                except Exception:
+                    pass  # 编号插入失败不影响主流程
                 
                 # 保存为新文件（不覆盖原文件）
                 # 文件名格式：原文件名_YYYYMMDD_HHMM【盖章.pdf
@@ -1477,7 +1509,7 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception as e:
                         print(f'[盖章] 复制到保存路径失败: {e}')
                 
-                result = {'ok': True, 'newFid': new_fid, 'newName': new_fid, 'size': new_size, 'pages': total_pages}
+                result = {'ok': True, 'newFid': new_fid, 'newName': new_fid, 'size': new_size, 'pages': total_pages, 'contractNo': contract_no}
                 if copied_to:
                     result['copiedTo'] = copied_to
                 self.send_json(result)
