@@ -701,7 +701,7 @@ const STATUS_CLASS=['status-0','status-1','status-2','status-3','status-4'];
 // === API 数据层（替代 localStorage） ===
 async function apiGet(key){
   for(let i=0;i<2;i++){
-    try{const r=await fetch('/api/data/'+key);if(r.ok) return await r.json()}catch(e){if(i===0)continue;console.error('API GET failed:',key,e)}
+    try{const r=await fetch('/api/data/'+key,{cache:'no-store'});if(r.ok) return await r.json()}catch(e){if(i===0)continue;console.error('API GET failed:',key,e)}
   }
   return null
 }
@@ -1283,7 +1283,7 @@ async function loadAccordionPdfThumbs(c){
   for(const pf of pdfFiles){
     const loadingEl=document.getElementById('pdf-thumbs-loading-'+pf.id);
     try{
-      const r=await fetch('/api/pdf-pages/'+pf.id);
+      const r=await fetch('/api/pdf-pages/'+pf.id,{cache:'no-store'});
       const data=await r.json();
       if(data.error){
         if(loadingEl)loadingEl.innerHTML='📕 '+data.error;
@@ -1664,7 +1664,7 @@ function closeStampModal(){document.getElementById('stampModal').classList.remov
 
 async function loadStamps(){
   try{
-    const r=await fetch('/api/stamps');const d=await r.json();
+    const r=await fetch('/api/stamps',{cache:'no-store'});const d=await r.json();
     _stampsList=d.stamps||[];
     renderStampList();
   }catch(e){showToast('加载印章失败','error')}
@@ -2580,7 +2580,7 @@ function espRefreshFileList(){
 // 加载印章列表
 async function espLoadStamps(){
   try{
-    const r = await fetch('/api/stamps');
+    const r = await fetch('/api/stamps',{cache:'no-store'});
     const d = await r.json();
     _espStamps = d.stamps || [];
     // 恢复之前选中的印章（刷新后持久化）
@@ -2679,7 +2679,7 @@ async function espUploadPdf(input){
       _espLoadPageStamps();
       // 获取页数和缩略图
       try{
-        const pr = await fetch('/api/pdf-pages/'+d.id);
+        const pr = await fetch('/api/pdf-pages/'+d.id,{cache:'no-store'});
         const pd = await pr.json();
         _espTotalPages = pd.total || 1;
         _espPagesCache = pd.pages || [];
@@ -2717,7 +2717,7 @@ async function espOnFileChange(){
   
   // 获取PDF总页数和缩略图
   try{
-    const r = await fetch('/api/pdf-pages/'+_espCurrentFid);
+    const r = await fetch('/api/pdf-pages/'+_espCurrentFid,{cache:'no-store'});
     const d = await r.json();
     _espTotalPages = d.total || 1;
     _espPagesCache = d.pages || [];
