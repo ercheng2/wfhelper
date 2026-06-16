@@ -1452,23 +1452,24 @@ class Handler(BaseHTTPRequestHandler):
                             r = fitz.Rect(stamp_x, stamp_y, ppw, stamp_y + full_stamp_h)
                             p.insert_image(r, stream=_strip_bytes, overlay=True)
                 
-                # 合同编号：左下角小字标识，代表本软件生成
+                # 合同编号：每一页左下角小字标识，代表本软件生成
                 _sconn = get_db()
                 contract_no = _generate_contract_no(_sconn)
                 _sconn.close()
-                last_page = doc[total_pages - 1]
-                lpw, lph = last_page.rect.width, last_page.rect.height
-                try:
-                    # 左下角，6pt极小字体，浅灰色
-                    last_page.insert_text(
-                        fitz.Point(20, lph - 12),
-                        contract_no,
-                        fontsize=6,
-                        color=(0.7, 0.7, 0.7),  # 浅灰色
-                        fontname="helv"
-                    )
-                except Exception:
-                    pass  # 编号插入失败不影响主流程
+                for i in range(total_pages):
+                    p = doc[i]
+                    pw, ph = p.rect.width, p.rect.height
+                    try:
+                        # 左下角，6pt极小字体，浅灰色
+                        p.insert_text(
+                            fitz.Point(20, ph - 12),
+                            contract_no,
+                            fontsize=6,
+                            color=(0.7, 0.7, 0.7),  # 浅灰色
+                            fontname="helv"
+                        )
+                    except Exception:
+                        pass  # 编号插入失败不影响主流程
                 
                 # 保存为新文件（不覆盖原文件）
                 # 文件名格式：原文件名_YYYYMMDD_HHMM【盖章.pdf

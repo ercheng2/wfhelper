@@ -220,6 +220,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .stamp-overlay{position:absolute;cursor:move;opacity:.75;transition:opacity .15s;z-index:100;pointer-events:auto;border:2px solid transparent;border-radius:4px}
 .stamp-overlay:hover{opacity:.9;border-color:#1a73e8;box-shadow:0 0 8px rgba(26,115,232,.4)}
 .stamp-overlay img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.stamp-remove-btn{position:absolute;top:-8px;right:-8px;background:#ea4335;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0;z-index:101;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.stamp-remove-btn:hover{background:#c5221f}
 .stamp-overlay.dragging{opacity:.6;outline:2px dashed #1a73e8;border-color:#1a73e8;box-shadow:0 0 12px rgba(26,115,232,.6)}
 .cross-stamp-strip{position:absolute;pointer-events:auto;cursor:ns-resize;z-index:99;background:rgba(234,67,53,.12);border-left:2px dashed #ea4335;border-right:1px dashed #ea4335}
 .cross-stamp-strip:hover{background:rgba(234,67,53,.2)}
@@ -1061,8 +1063,8 @@ function copyText(taId,btn){
   navigator.clipboard.writeText(ta.value).then(()=>{btn.textContent='✅已复制';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋复制';btn.classList.remove('copied')},1500)});
 }
 
-function showToast(msg,type='info'){
-  const t=document.getElementById('toast');t.textContent=msg;t.className=`toast toast-${type} show`;setTimeout(()=>t.classList.remove('show'),2000);
+function showToast(msg,type='info',duration=2000){
+  const t=document.getElementById('toast');t.innerHTML=msg;t.className=`toast toast-${type} show`;setTimeout(()=>t.classList.remove('show'),duration);
 }
 
 // === 合同管理模块 ===
@@ -2278,6 +2280,8 @@ document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   tab.classList.add('active');document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  // 切换到盖章面板时重新加载印章列表
+  if(tab.dataset.tab==='stamp'){espLoadStamps();}
 })});
 
 const ia=document.getElementById('importArea');
@@ -2374,6 +2378,7 @@ let _espTotalPages = 1;
 let _espStampX = 0.72;  // 归一化位置
 let _espStampY = 0.82;
 let _espCrossY = 0.50;  // 骑缝章Y位置（默认居中）
+let _espSealPage = 1;   // 公章所在页码（both模式下记录用户点击执行盖章时的页面）
 let _espDragging = false;
 let _espDragOffset = {x:0,y:0};
 let _espConfirming = false; // 是否在确认状态
@@ -2403,6 +2408,14 @@ async function espLoadStamps(){
     const r = await fetch('/api/stamps');
     const d = await r.json();
     _espStamps = d.stamps || [];
+    // 恢复之前选中的印章（刷新后持久化）
+    if(!_espSelectedStamp){
+      try{const saved=localStorage.getItem('wfhelper_selected_stamp');if(saved)_espSelectedStamp=saved}catch(e){}
+    }
+    // 验证选中的印章是否仍在列表中
+    if(_espSelectedStamp && !_espStamps.find(s=>s.id===_espSelectedStamp)){
+      _espSelectedStamp = _espStamps.length ? _espStamps[0].id : '';
+    }
     espRenderStampList();
   }catch(e){ console.error('加载印章失败', e) }
 }
@@ -2424,6 +2437,8 @@ function espRenderStampList(){
 
 function espSelectStamp(id){
   _espSelectedStamp = id;
+  // 持久化选中的印章ID
+  try{localStorage.setItem('wfhelper_selected_stamp', id)}catch(e){}
   espRenderStampList();
   // 只更新印章覆盖层，不重建PDF
   const stampType = document.getElementById('espStampType').value;
@@ -2609,7 +2624,7 @@ function _espUpdateStampOverlay(needSeal){
   }
   
   // 公章覆盖层（seal模式 所有页显示；both模式 仅公章所在页显示）
-  const showSeal = (stampType === 'seal') || (stampType === 'both' && _espCurrentPage === parseInt(document.getElementById('stampPage')?.value || '1'));
+  const showSeal = (stampType === 'seal') || (stampType === 'both' && _espCurrentPage === _espSealPage);
   if(showSeal){
     const overlay = document.createElement('div');
     overlay.className = 'stamp-overlay';
@@ -2617,7 +2632,7 @@ function _espUpdateStampOverlay(needSeal){
     overlay.style.display = 'none';
     overlay.style.zIndex = '100';
     overlay.style.pointerEvents = 'auto';
-    overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'">`;
+    overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'"><button class="stamp-remove-btn" onclick="espRemoveStampOverlay(event)" title="移除印章">✕</button>`;
     container.appendChild(overlay);
     // 绑定拖拽事件
     overlay.addEventListener('mousedown', espDragStart);
@@ -2943,6 +2958,34 @@ function espNextPage(){
   if(_espCurrentPage < _espTotalPages){ _espCurrentPage++; espRenderThumbs(); espRenderPreview(); }
 }
 
+// 移除印章覆盖层（预览阶段，盖章前）
+function espRemoveStampOverlay(e){
+  e.stopPropagation();
+  e.preventDefault();
+  const overlay = document.getElementById('espStampOverlay');
+  if(overlay){ overlay.remove(); }
+}
+
+// 记录最近一次盖章结果，用于撤销
+let _espLastStampResult = null;
+
+// 撤销上次盖章（删除盖章生成的文件，恢复到盖章前）
+async function espUndoLastStamp(){
+  if(!_espLastStampResult){ showToast('没有可撤销的盖章操作','error'); return; }
+  const r = _espLastStampResult;
+  if(!confirm(`确定撤销盖章？将删除文件：${r.newName}`)) return;
+  try{
+    // 删除盖章生成的文件
+    await fetch('/api/files/'+encodeURIComponent(r.newFid),{method:'DELETE'});
+    showToast('已撤销盖章，文件已删除','success');
+    _espLastStampResult = null;
+    // 刷新文件列表
+    espRefreshFileList();
+  }catch(e){
+    showToast('撤销失败','error');
+  }
+}
+
 // 盖章类型切换
 function espOnTypeChange(){
   const type = document.getElementById('espStampType').value;
@@ -2957,6 +3000,8 @@ function espShowConfirm(){
   if(!_espCurrentFid){ showToast('请先选择PDF文件','error'); return }
   
   const type = document.getElementById('espStampType').value;
+  // 记录公章所在页码（锁定当前页）
+  _espSealPage = _espCurrentPage;
   const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
   const stampName = stampObj ? stampObj.name : _espSelectedStamp;
   const typeNames = {seal:'公章', both:'公章+骑缝章'};
@@ -3015,45 +3060,33 @@ async function espDoApply(){
   // 保存路径
   const saveDir = document.getElementById('espSaveDir').value.trim();
   
+  let applyParams = null;
+  
   if(type === 'both'){
     // 公章+骑缝章：一次请求，后端同时盖公章和骑缝章，生成一个文件
     showToast('正在盖章...','info');
-    const params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espCurrentPage, x:_espStampX, y:_espStampY, crossY:_espCrossY, saveDir};
-    try{
-      const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
-      const d = await r.json();
-      if(d.ok){
-        let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
-        if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
-        showToast(msg,'success');
-        espAddFileToContract(d, opt);
-        espRefreshFileList();
-      } else {
-        showToast(d.error||'盖章失败','error');
-      }
-    }catch(e){ showToast('盖章请求失败','error') }
-    return;
+    applyParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espSealPage, x:_espStampX, y:_espStampY, crossY:_espCrossY, saveDir};
+  } else {
+    applyParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type, scale, fileName, saveDir};
+    if(type === 'seal'){
+      applyParams.page = _espSealPage;
+      applyParams.x = _espStampX;
+      applyParams.y = _espStampY;
+    }
+    if(type === 'cross'){
+      applyParams.crossY = _espCrossY;
+    }
+    showToast('正在盖章...','info');
   }
   
-  let params = {fid:_espCurrentFid, stampId:_espSelectedStamp, type, scale, fileName, saveDir};
-  
-  if(type === 'seal'){
-    params.page = _espCurrentPage;
-    params.x = _espStampX;
-    params.y = _espStampY;
-  }
-  if(type === 'cross'){
-    params.crossY = _espCrossY;
-  }
-  
-  showToast('正在盖章...','info');
   try{
-    const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
+    const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(applyParams)});
     const d = await r.json();
     if(d.ok){
+      _espLastStampResult = d; // 记录用于撤销
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
       if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
-      showToast(msg,'success');
+      showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();
     } else {
