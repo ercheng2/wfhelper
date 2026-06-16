@@ -767,6 +767,11 @@ def _prepare_stamp_strip(pil_img, x0, x1):
     返回 png_bytes
     """
     import io as _io
+    # 确保裁切范围不超出图片
+    x0 = max(0, int(x0))
+    x1 = min(pil_img.size[0], int(x1))
+    if x0 >= x1:
+        x0 = max(0, x1 - 1)
     strip = pil_img.crop((x0, 0, x1, pil_img.size[1]))
     buf = _io.BytesIO()
     strip.save(buf, 'PNG')
@@ -1367,23 +1372,35 @@ class Handler(BaseHTTPRequestHandler):
                     rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
                     page.insert_image(rect, stream=_png_bytes, overlay=True)
                 elif stamp_type == 'cross':
-                    # 骑缝章：完整印章按页数等分，每页右边缘放一片
-                    # 所有页的片拼在一起才是完整的章，防止抽换页面
+                    # 骑缝章：模拟真实骑缝章
+                    # 真实骑缝章：文件错开排列，公章盖在最后一页上并跨压缝隙，
+                    # 每页都留有印章的一部分，防抽换
+                    # 电子实现：完整印章按页数等分为N个竖条，每页右边缘放对应条
+                    # 条宽 = max(完整印章宽度/页数, 页面宽度*2%)，确保可见
                     if total_pages < 2:
                         self.send_json({'error': '骑缝章至少需要2页'}, 400); return
                     from PIL import Image as PILImage
                     pil_img = PILImage.open(stamp_img).convert('RGBA')
                     img_w, img_h = pil_img.size
-                    strip_w = img_w // total_pages
+                    
                     for i in range(total_pages):
-                        x0 = i * strip_w
-                        x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
-                        _strip_bytes = _prepare_stamp_strip(pil_img, x0, x1)
                         page = doc[i]
                         pw, ph = page.rect.width, page.rect.height
+                        
+                        # 完整印章在页面上的尺寸
                         full_stamp_w = pw * stamp_scale
                         full_stamp_h = full_stamp_w * (img_h / img_w) if img_w > 0 else full_stamp_w
-                        page_strip_w = full_stamp_w / total_pages
+                        
+                        # 每页条的实际宽度：取等分宽度和最小可见宽度的较大值
+                        min_visible_w = pw * 0.02  # 至少页面宽度的2%（A4约12pt≈4mm）
+                        page_strip_w = max(full_stamp_w / total_pages, min_visible_w)
+                        
+                        # 该条在完整印章中的像素范围（等分）
+                        px_x0 = i * (img_w / total_pages)
+                        px_x1 = (i + 1) * (img_w / total_pages)
+                        _strip_bytes = _prepare_stamp_strip(pil_img, px_x0, px_x1)
+                        
+                        # 条在PDF中的位置：右边缘，垂直居中
                         stamp_y = ph * 0.5 - full_stamp_h / 2
                         stamp_x = pw - page_strip_w
                         rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
@@ -1401,21 +1418,21 @@ class Handler(BaseHTTPRequestHandler):
                     sy = ph * pos_y - sh / 2
                     rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
                     page.insert_image(rect, stream=_png_bytes, overlay=True)
-                    # 2. 骑缝章（所有页右边缘等分印章）
+                    # 2. 骑缝章（与cross模式逻辑一致）
                     if total_pages >= 2:
                         from PIL import Image as PILImage
                         pil_img = PILImage.open(stamp_img).convert('RGBA')
                         img_w, img_h = pil_img.size
-                        strip_w = img_w // total_pages
                         for i in range(total_pages):
-                            x0 = i * strip_w
-                            x1 = (i + 1) * strip_w if i < total_pages - 1 else img_w
-                            _strip_bytes = _prepare_stamp_strip(pil_img, x0, x1)
                             p = doc[i]
                             ppw, pph = p.rect.width, p.rect.height
                             full_stamp_w = ppw * stamp_scale
                             full_stamp_h = full_stamp_w * (img_h / img_w) if img_w > 0 else full_stamp_w
-                            page_strip_w = full_stamp_w / total_pages
+                            min_visible_w = ppw * 0.02
+                            page_strip_w = max(full_stamp_w / total_pages, min_visible_w)
+                            px_x0 = i * (img_w / total_pages)
+                            px_x1 = (i + 1) * (img_w / total_pages)
+                            _strip_bytes = _prepare_stamp_strip(pil_img, px_x0, px_x1)
                             stamp_y = pph * 0.5 - full_stamp_h / 2
                             stamp_x = ppw - page_strip_w
                             r = fitz.Rect(stamp_x, stamp_y, ppw, stamp_y + full_stamp_h)
