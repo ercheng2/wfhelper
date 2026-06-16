@@ -728,11 +728,17 @@ function _lsSave(key,data){
 }
 function _lsLoad(key){try{const v=localStorage.getItem(key);return v?JSON.parse(v):null}catch(e){return null}}
 
+// === 数据持久化诊断日志 ===
+let _saveCount=0, _lastSaveTime=0;
+function _diagLog(msg){console.log('[DIAG] '+new Date().toISOString().slice(11,19)+' '+msg)}
+
 async function saveData(d){
+  _saveCount++;
   if(d&&d.length) {
-    _lsSave(DB_KEY,d); // 立即写localStorage，同步操作，100%可靠
+    _lsSave(DB_KEY,d);
+    _diagLog('saveData#'+_saveCount+' 写localStorage成功, '+d.length+'条, size='+Math.round(JSON.stringify(d).length/1024)+'KB');
     const ok=await apiPut(DB_KEY,d);
-    if(ok) _lastSaveOk=Date.now();
+    if(ok){_lastSaveOk=Date.now();_lastSaveTime=Date.now();_diagLog('saveData#'+_saveCount+' API保存成功')}
     else console.error('[saveData] API保存失败，但localStorage已保存');
   } else if(d&&d.length===0&&_dataLoaded) {
     _lsSave(DB_KEY,d);
@@ -828,7 +834,7 @@ function renderTodayList(){
   // 只在实际有状态变更时才保存，避免每次渲染都写库
   let _needSave = false;
   customers.forEach(c => { if(c._statusChanged){ _needSave=true; delete c._statusChanged; } });
-  if(_needSave) saveData(customers);
+  if(_needSave) saveData(customers).catch(e=>console.error('[renderTodayList] saveData失败:',e));
   const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
   const remaining=config.dailyLimit-todaySent;
   const list=customers.filter(c=>c.status===4||c.status===0).slice(0,Math.max(remaining,customers.filter(c=>c.status===4).length));
@@ -851,7 +857,7 @@ function renderAllList(){
 
 function renderDetail(c,cid){
   if(!c){document.getElementById(cid).innerHTML='<div class="detail-empty">← 选择客户查看详情</div>';return}
-  if(c.remark===undefined||c.greeting===undefined){const g=generateGreeting(c);if(c.remark===undefined)c.remark=g.remark;if(c.greeting===undefined)c.greeting=g.greeting;saveData(customers)}
+  if(c.remark===undefined||c.greeting===undefined){const g=generateGreeting(c);if(c.remark===undefined)c.remark=g.remark;if(c.greeting===undefined)c.greeting=g.greeting;saveData(customers).catch(e=>console.error('[renderDetail] saveData失败:',e))}
   document.getElementById(cid).innerHTML=`
     <div class="detail-info"><div class="name">${c.name}</div><div class="meta"><span>📱 ${c.phone}</span><span>🏢 ${c.company||'-'}</span><span>🏭 ${c.industry||'-'}</span><span>📌 ${c.source||'-'}</span></div>${c.companyStatus&&c.companyStatus!=='未核查'?'<div class="meta" style="margin-top:4px"><span style="font-weight:600">公司状态：</span><span style="color:'+(c.companyStatus==='注销'||c.companyStatus==='吊销'?'#ea4335':'#34a853')+'">'+c.companyStatus+'</span>'+(c.businessScope?'<span style="margin-left:10px;font-weight:600">业务：</span><span>'+c.businessScope+'</span>':'')+(c.related===false?'<span style="margin-left:10px;color:#e37400">⚠️ 非展厅相关</span>':'')+'</div>':''}</div>
     <div class="copy-section"><label>添加备注</label><div class="copy-box"><textarea id="remarkArea" onblur="saveRemarkGreeting('${c.id}')">${c.remark}</textarea><button class="copy-btn" onclick="copyText('remarkArea',this)">📋复制</button></div></div>
@@ -2346,14 +2352,17 @@ ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover'
 
 // === 异步初始化 ===
 async function initApp(){
+  _diagLog('initApp开始');
   // 独立加载每个数据源，避免单个失败导致全部丢失
   // 优先从API加载，API失败时从localStorage兜底
   try{
     const d=await loadData();
+    _diagLog('API加载客户数据: '+(d?d.length:'null')+'条');
     if(d&&d.length){customers=d;_dataLoaded=true}
     else{
       // API没有数据，尝试localStorage兜底
       const ls=_lsLoad(DB_KEY);
+      _diagLog('localStorage兜底: '+(ls?ls.length:'null')+'条');
       if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API无数据，从localStorage恢复',ls.length,'条')}
       else console.warn('[initApp] 客户数据为空');
     }
@@ -2361,6 +2370,7 @@ async function initApp(){
     console.error('加载客户数据失败:',e);
     // API异常，尝试localStorage
     const ls=_lsLoad(DB_KEY);
+    _diagLog('API异常, localStorage兜底: '+(ls?ls.length:'null')+'条');
     if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API异常，从localStorage恢复',ls.length,'条')}
   }
   try{
@@ -2383,20 +2393,38 @@ async function initApp(){
   document.getElementById('espSaveDir').value=config.stampSaveDir||'';
   document.getElementById('cfgMaintInterval').value=config.maintInterval||3;
   renderAll();
+  _diagLog('initApp完成, customers='+customers.length+'条, _dataLoaded='+_dataLoaded);
+  // 数据恢复保护：如果渲染后customers为空但localStorage有数据，立即恢复
+  if(customers.length===0){
+    const ls=_lsLoad(DB_KEY);
+    if(ls&&ls.length){customers=ls;_dataLoaded=true;renderAll();_diagLog('数据恢复保护触发！从localStorage恢复'+ls.length+'条')}
+  }
   // 进入合同管理页面时弹窗提醒（延迟1秒，避免初始化时阻塞）
   setTimeout(()=>{
     if(contracts.length>0)showContractAlertsModal();
   },1000);
 }
+// 全局错误捕获——防止任何未处理的Promise rejection
+window.addEventListener('unhandledrejection',e=>{console.error('[全局] 未处理的Promise rejection:',e.reason)});
+
 initApp();
 
-// === 定时自动保存（兜底机制：每60秒检查一次，距上次成功保存超过60秒才重试） ===
+// === 定时自动保存（兜底机制：每30秒检查一次，距上次成功保存超过30秒才重试） ===
 let _lastSaveOk=Date.now();
 setInterval(async ()=>{
-  if(!_dataLoaded||Date.now()-_lastSaveOk<60000)return;
+  if(!_dataLoaded||Date.now()-_lastSaveOk<30000)return;
   if(customers.length){await saveData(customers);_lastSaveOk=Date.now()}
   if(config){await saveConfigToStorage(config);_lastSaveOk=Date.now()}
-},60000);
+},30000);
+
+// 切换标签页时保存（额外保护）
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&_dataLoaded){
+    if(customers.length)_lsSave(DB_KEY,customers);
+    if(config)_lsSave(CFG_KEY,config);
+    _diagLog('页面隐藏，已同步写localStorage, customers='+customers.length+'条');
+  }
+});
 
 // 页面关闭/刷新前保存未提交的备注和设置
 window.addEventListener('beforeunload', function(){
