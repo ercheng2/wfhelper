@@ -700,15 +700,18 @@ const STATUS_CLASS=['status-0','status-1','status-2','status-3','status-4'];
 
 // === API 数据层（替代 localStorage） ===
 async function apiGet(key){
-  try{const r=await fetch('/api/data/'+key);return await r.json()}catch(e){console.error('API GET failed:',key,e);return null}
+  for(let i=0;i<2;i++){
+    try{const r=await fetch('/api/data/'+key);if(r.ok) return await r.json()}catch(e){if(i===0)continue;console.error('API GET failed:',key,e)}
+  }
+  return null
 }
 async function apiPut(key,data){
   try{await fetch('/api/data/'+key,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}catch(e){console.error('API PUT failed:',key,e)}
 }
 function loadData(){return apiGet(DB_KEY)}
-function saveData(d){apiPut(DB_KEY,d)}
+function saveData(d){if(d&&d.length) apiPut(DB_KEY,d); else console.warn('[saveData] 拒绝保存空客户数据，防止覆盖')}
 function loadConfig(){return apiGet(CFG_KEY)}
-function saveConfigToStorage(c){apiPut(CFG_KEY,c)}
+function saveConfigToStorage(c){if(c) apiPut(CFG_KEY,c)}
 async function loadTemplates(){
   let t=await apiGet(TPL_KEY);
   if(!t||!t.length){
@@ -783,11 +786,15 @@ function renderTodayList(){
   customers.forEach(c=>{
     if(c.status===3&&c.sentAt){
       if(now-new Date(c.sentAt)>=retryMs&&(c.retryCount||0)<(c.maxRetry||3)){
-        c.status=4;c.retryCount=(c.retryCount||0)+1;
+        c.status=4;c.retryCount=(c.retryCount||0)+1;c._statusChanged=true;
         const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
       }
     }
-  });saveData(customers);
+  });
+  // 只在实际有状态变更时才保存，避免每次渲染都写库
+  let _needSave = false;
+  customers.forEach(c => { if(c._statusChanged){ _needSave=true; delete c._statusChanged; } });
+  if(_needSave) saveData(customers);
   const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
   const remaining=config.dailyLimit-todaySent;
   const list=customers.filter(c=>c.status===4||c.status===0).slice(0,Math.max(remaining,customers.filter(c=>c.status===4).length));
@@ -2292,20 +2299,14 @@ ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover'
 
 // === 异步初始化 ===
 async function initApp(){
-  try{
-    const [cData,cfgData,tplData,conData,mData,mrData,mnData]=await Promise.all([
-      loadData(),loadConfig(),loadTemplates(),loadContracts(),loadMaintItems(),loadMaintRecords(),loadMaintNotes()
-    ]);
-    customers=cData||[];
-    config=cfgData||{dailyLimit:25,retryDays:3,myTitle:'悦动双成-展厅中控'};
-    templates=tplData||[];
-    contracts=conData||[];
-    maintItems=mData||[];
-    maintRecords=mrData||[];
-    maintNotes=mnData||[];
-  }catch(e){
-    console.error('初始化失败:',e);
-  }
+  // 独立加载每个数据源，避免单个失败导致全部丢失
+  try{ const d=await loadData(); if(d&&d.length) customers=d; }catch(e){ console.error('加载客户数据失败:',e) }
+  try{ const d=await loadConfig(); if(d) config=d; }catch(e){ console.error('加载配置失败:',e) }
+  try{ const d=await loadTemplates(); if(d&&d.length) templates=d; }catch(e){ console.error('加载模板失败:',e) }
+  try{ const d=await loadContracts(); if(d) contracts=d; }catch(e){ console.error('加载合同失败:',e) }
+  try{ const d=await loadMaintItems(); if(d) maintItems=d; }catch(e){ console.error('加载维保项失败:',e) }
+  try{ const d=await loadMaintRecords(); if(d) maintRecords=d; }catch(e){ console.error('加载维保记录失败:',e) }
+  try{ const d=await loadMaintNotes(); if(d) maintNotes=d; }catch(e){ console.error('加载维保备注失败:',e) }
   document.getElementById('cfgLimit').value=config.dailyLimit;
   document.getElementById('cfgRetry').value=config.retryDays;
   document.getElementById('cfgTitle').value=config.myTitle;
@@ -2390,15 +2391,22 @@ let _espStampScale = 0.18; // 当前缩放
 
 // 持久化/恢复每页印章标注
 function _espSavePageStamps(){
-  try{ localStorage.setItem('wfhelper_page_stamps', JSON.stringify({fid:_espCurrentFid, stamps:_espPageStamps})) }catch(e){}
+  if(!_espCurrentFid) return;
+  try{ localStorage.setItem('wfhelper_page_stamps_'+_espCurrentFid, JSON.stringify(_espPageStamps)) }catch(e){}
 }
 function _espLoadPageStamps(){
+  _espPageStamps = {};
+  if(!_espCurrentFid) return;
   try{
-    const raw = localStorage.getItem('wfhelper_page_stamps');
-    if(!raw) return;
-    const d = JSON.parse(raw);
-    if(d.fid === _espCurrentFid){ _espPageStamps = d.stamps || {}; }
-    else { _espPageStamps = {}; }
+    // 优先按文件ID独立读取
+    const raw = localStorage.getItem('wfhelper_page_stamps_'+_espCurrentFid);
+    if(raw){ _espPageStamps = JSON.parse(raw) || {}; return; }
+    // 兼容旧格式
+    const old = localStorage.getItem('wfhelper_page_stamps');
+    if(old){
+      const d = JSON.parse(old);
+      if(d.fid === _espCurrentFid){ _espPageStamps = d.stamps || {}; }
+    }
   }catch(e){ _espPageStamps = {}; }
 }
 
@@ -2468,6 +2476,7 @@ function espSelectStamp(id){
     _espStampScale = scale;
     _espPageStamps[_espCurrentPage] = { stampId:id, x:_espStampX, y:_espStampY, scale:scale, confirmed:false };
     _espSavePageStamps();
+    espRenderThumbs();  // 更新缩略图红点标记
   }
   // 更新印章覆盖层
   const stampType = document.getElementById('espStampType').value;
@@ -2585,7 +2594,7 @@ function espRenderThumbs(){
     const active = i === _espCurrentPage ? 'active' : '';
     // 已标注印章的页显示小标记
     const ps = _espPageStamps[i];
-    const stampMark = ps && ps.stampId ? (ps.confirmed ? '<div style="position:absolute;top:2px;right:2px;background:#34a853;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;text-align:center;line-height:14px">✓</div>' : '<div style="position:absolute;top:2px;right:2px;background:#ea4335;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;text-align:center;line-height:14px">●</div>') : '';
+    const stampMark = ps && ps.stampId ? (ps.confirmed ? '<div style="position:absolute;top:1px;right:1px;background:#34a853;color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;text-align:center;line-height:18px;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)">✓</div>' : '<div style="position:absolute;top:1px;right:1px;background:#ea4335;color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;text-align:center;line-height:18px;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.3)">●</div>') : '';
     html += `<div class="thumb-item ${active}" onclick="espGotoPage(${i})">
       <img src="${thumbUrl}" loading="lazy">
       <div class="page-num">${i}</div>
@@ -3050,6 +3059,8 @@ function espRemoveStampOverlay(e){
   _espSavePageStamps();
   const overlay = document.getElementById('espStampOverlay');
   if(overlay){ overlay.remove(); }
+  // 更新缩略图标记（移除红点）
+  espRenderThumbs();
 }
 
 // 记录最近一次盖章结果，用于撤销
@@ -3166,7 +3177,8 @@ async function espDoApply(){
       // 将所有已盖章页标记为 confirmed
       stampedPages.forEach(k => { _espPageStamps[k].confirmed = true; });
       _espSavePageStamps();
-      // 刷新预览显示绿色✓
+      // 刷新缩略图（红点→绿勾）和预览
+      espRenderThumbs();
       espRenderPreview();
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
       if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
