@@ -431,10 +431,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 <div class="settings-panel">
 <h3>⚙️ 基本设置</h3>
 <div class="settings-content">
-<div class="form-row"><label>每日添加上限</label><input type="number" id="cfgLimit" min="5" max="100" value="25"></div>
-<div class="form-row"><label>重试间隔（天）</label><input type="number" id="cfgRetry" min="1" max="14" value="3"></div>
-<div class="form-row"><label>我的称呼</label><input type="text" id="cfgTitle" value="悦动双成-展厅中控" style="flex:1"></div>
-<div class="form-row"><label>盖章保存路径</label><input type="text" id="cfgStampSaveDir" placeholder="如 D:\盖章文件" style="flex:1"></div>
+<div class="form-row"><label>每日添加上限</label><input type="number" id="cfgLimit" min="5" max="100" value="25" onblur="saveConfig()"></div>
+<div class="form-row"><label>重试间隔（天）</label><input type="number" id="cfgRetry" min="1" max="14" value="3" onblur="saveConfig()"></div>
+<div class="form-row"><label>我的称呼</label><input type="text" id="cfgTitle" value="悦动双成-展厅中控" style="flex:1" onblur="saveConfig()"></div>
+<div class="form-row"><label>盖章保存路径</label><input type="text" id="cfgStampSaveDir" placeholder="如 D:\盖章文件" style="flex:1" onblur="saveConfig()"></div>
 <div class="form-row"><label></label><button class="btn btn-primary" onclick="saveConfig()">💾 保存设置</button></div>
 <h3>📊 统计概览</h3>
 <div class="stats-box" id="statsBox"></div>
@@ -820,8 +820,8 @@ function renderDetail(c,cid){
   if(!c.remark||!c.greeting){const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;saveData(customers)}
   document.getElementById(cid).innerHTML=`
     <div class="detail-info"><div class="name">${c.name}</div><div class="meta"><span>📱 ${c.phone}</span><span>🏢 ${c.company||'-'}</span><span>🏭 ${c.industry||'-'}</span><span>📌 ${c.source||'-'}</span></div>${c.companyStatus&&c.companyStatus!=='未核查'?'<div class="meta" style="margin-top:4px"><span style="font-weight:600">公司状态：</span><span style="color:'+(c.companyStatus==='注销'||c.companyStatus==='吊销'?'#ea4335':'#34a853')+'">'+c.companyStatus+'</span>'+(c.businessScope?'<span style="margin-left:10px;font-weight:600">业务：</span><span>'+c.businessScope+'</span>':'')+(c.related===false?'<span style="margin-left:10px;color:#e37400">⚠️ 非展厅相关</span>':'')+'</div>':''}</div>
-    <div class="copy-section"><label>添加备注</label><div class="copy-box"><textarea id="remarkArea">${c.remark}</textarea><button class="copy-btn" onclick="copyText('remarkArea',this)">📋复制</button></div></div>
-    <div class="copy-section"><label>打招呼话术</label><div class="copy-box"><textarea id="greetingArea">${c.greeting}</textarea><button class="copy-btn" onclick="copyText('greetingArea',this)">📋复制</button></div></div>
+    <div class="copy-section"><label>添加备注</label><div class="copy-box"><textarea id="remarkArea" onblur="saveRemarkGreeting('${c.id}')">${c.remark}</textarea><button class="copy-btn" onclick="copyText('remarkArea',this)">📋复制</button></div></div>
+    <div class="copy-section"><label>打招呼话术</label><div class="copy-box"><textarea id="greetingArea" onblur="saveRemarkGreeting('${c.id}')">${c.greeting}</textarea><button class="copy-btn" onclick="copyText('greetingArea',this)">📋复制</button></div></div>
     <div class="quick-actions">
       <button class="btn btn-warning" onclick="setStatus('${c.id}',1)">标记已发送</button>
       <button class="btn btn-success" onclick="setStatus('${c.id}',2)">✅ 已通过</button>
@@ -880,6 +880,15 @@ function setStatus(id,status){
   if(status===1)c.sentAt=new Date().toISOString();
   if(status===2)c.acceptedAt=new Date().toISOString();
   saveData(customers);selectedId=id;renderAll();showToast(STATUS[status],'success');
+}
+
+// 保存备注和话术的实时编辑（textarea onblur触发）
+function saveRemarkGreeting(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const rEl=document.getElementById('remarkArea'),gEl=document.getElementById('greetingArea');
+  if(rEl&&rEl.value!==c.remark){c.remark=rEl.value}
+  if(gEl&&gEl.value!==c.greeting){c.greeting=gEl.value}
+  saveData(customers);
 }
 
 function regenGreeting(id){
@@ -967,10 +976,14 @@ async function restorePresetData(){
     const d=await r.json();
     if(d.ok){
       showToast(`恢复成功！共 ${d.count} 条客户（新增 ${d.added} 条）`,'success');
-      // 重新加载前端数据
+      // 重新加载前端数据（保护：空数据不覆盖）
       const cData=await loadData();
-      customers=cData||[];
-      renderAll();
+      if(cData&&cData.length){
+        customers=cData;
+        renderAll();
+      }else{
+        console.error('恢复后重新加载数据为空，保留当前前端数据');
+      }
     }else{
       showToast(d.error||'恢复失败','error');
     }
@@ -2320,6 +2333,36 @@ async function initApp(){
   },1000);
 }
 initApp();
+
+// 页面关闭/刷新前保存未提交的备注和设置
+window.addEventListener('beforeunload', function(){
+  // 保存当前正在编辑的备注/话术
+  if(selectedId){
+    const c=customers.find(x=>x.id===selectedId);
+    if(c){
+      const rEl=document.getElementById('remarkArea'),gEl=document.getElementById('greetingArea');
+      if(rEl) c.remark=rEl.value;
+      if(gEl) c.greeting=gEl.value;
+    }
+  }
+  // 同步保存（用同步XHR确保数据不丢）
+  if(customers.length){
+    try{
+      const xhr=new XMLHttpRequest();
+      xhr.open('PUT','/api/data/'+DB_KEY,false); // false=同步
+      xhr.setRequestHeader('Content-Type','application/json');
+      xhr.send(JSON.stringify(customers));
+    }catch(e){}
+  }
+  if(config){
+    try{
+      const xhr=new XMLHttpRequest();
+      xhr.open('PUT','/api/data/'+CFG_KEY,false);
+      xhr.setRequestHeader('Content-Type','application/json');
+      xhr.send(JSON.stringify(config));
+    }catch(e){}
+  }
+});
 
 // 安全追加新客户：只新增不覆盖，按手机号/公司名去重，保留已有标注
 async function mergeNewCustomers(event){
