@@ -1347,12 +1347,14 @@ class Handler(BaseHTTPRequestHandler):
             fid = params.get('fid', '')
             stamp_id = params.get('stampId', '')
             stamp_type = params.get('type', 'seal')  # seal=公章, cross=骑缝章
-            page_num = params.get('page', 1)  # 公章盖在哪一页
-            # 位置参数（归一化0~1）
-            pos_x = params.get('x', 0.72)  # 公章X位置
-            pos_y = params.get('y', 0.82)  # 公章Y位置
-            stamp_scale = params.get('scale', 0.18)  # 印章占页面宽度比例
-            cross_y = params.get('crossY', 0.5)  # 骑缝章Y位置（归一化0~1）
+            # 支持多页公章：pages=[{page:1, x:0.72, y:0.82, scale:0.18}, ...]
+            stamp_pages = params.get('pages', [])
+            page_num = params.get('page', 1)  # 兼容旧的单页参数
+            # 位置参数（归一化0~1，兼容旧参数）
+            pos_x = params.get('x', 0.72)
+            pos_y = params.get('y', 0.82)
+            stamp_scale = params.get('scale', 0.18)
+            cross_y = params.get('crossY', 0.5)
             if '/' in fid or '\\' in fid or fid.startswith('.'):
                 self.send_json({'error': 'Invalid fid'}, 400); return
             if '/' in stamp_id or '\\' in stamp_id or stamp_id.startswith('.'):
@@ -1374,17 +1376,21 @@ class Handler(BaseHTTPRequestHandler):
                 total_pages = len(doc)
                 
                 if stamp_type == 'seal':
-                    # 公章：盖在指定页面的指定位置
-                    pg = min(int(page_num) - 1, total_pages - 1)
-                    page = doc[pg]
-                    pw, ph = page.rect.width, page.rect.height
-                    sw = pw * stamp_scale
+                    # 公章：支持多页，每页可独立位置和缩放
                     _png_bytes, _img_w, _img_h = _prepare_stamp_image(stamp_img)
-                    sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
-                    sx = pw * pos_x - sw / 2
-                    sy = ph * pos_y - sh / 2
-                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, stream=_png_bytes, overlay=True)
+                    # 如果传了pages数组，用多页模式；否则用旧的单页模式
+                    seal_list = stamp_pages if stamp_pages else [{'page': page_num, 'x': pos_x, 'y': pos_y, 'scale': stamp_scale}]
+                    for sp in seal_list:
+                        pg = min(int(sp.get('page', 1)) - 1, total_pages - 1)
+                        page = doc[pg]
+                        pw, ph = page.rect.width, page.rect.height
+                        sc = sp.get('scale', stamp_scale)
+                        sw = pw * sc
+                        sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
+                        sx = pw * sp.get('x', pos_x) - sw / 2
+                        sy = ph * sp.get('y', pos_y) - sh / 2
+                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                        page.insert_image(rect, stream=_png_bytes, overlay=True)
                 elif stamp_type == 'cross':
                     # 骑缝章：模拟真实骑缝章
                     # 真实骑缝章：文件错开排列，公章盖在最后一页上并跨压缝隙，
@@ -1420,18 +1426,21 @@ class Handler(BaseHTTPRequestHandler):
                         rect = fitz.Rect(stamp_x, stamp_y, pw, stamp_y + full_stamp_h)
                         page.insert_image(rect, stream=_strip_bytes, overlay=True)
                 elif stamp_type == 'both':
-                    # 公章+骑缝章：先盖公章，再盖骑缝章，一次生成一个文件
-                    # 1. 公章
-                    pg = min(int(page_num) - 1, total_pages - 1)
-                    page = doc[pg]
-                    pw, ph = page.rect.width, page.rect.height
-                    sw = pw * stamp_scale
+                    # 公章+骑缝章：先盖公章（支持多页），再盖骑缝章，一次生成一个文件
+                    # 1. 公章（多页）
                     _png_bytes, _img_w, _img_h = _prepare_stamp_image(stamp_img)
-                    sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
-                    sx = pw * pos_x - sw / 2
-                    sy = ph * pos_y - sh / 2
-                    rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
-                    page.insert_image(rect, stream=_png_bytes, overlay=True)
+                    seal_list = stamp_pages if stamp_pages else [{'page': page_num, 'x': pos_x, 'y': pos_y, 'scale': stamp_scale}]
+                    for sp in seal_list:
+                        pg = min(int(sp.get('page', 1)) - 1, total_pages - 1)
+                        page = doc[pg]
+                        pw, ph = page.rect.width, page.rect.height
+                        sc = sp.get('scale', stamp_scale)
+                        sw = pw * sc
+                        sh = sw * (_img_h / _img_w) if _img_w > 0 else sw
+                        sx = pw * sp.get('x', pos_x) - sw / 2
+                        sy = ph * sp.get('y', pos_y) - sh / 2
+                        rect = fitz.Rect(sx, sy, sx + sw, sy + sh)
+                        page.insert_image(rect, stream=_png_bytes, overlay=True)
                     # 2. 骑缝章（与cross模式逻辑一致）
                     if total_pages >= 2:
                         from PIL import Image as PILImage

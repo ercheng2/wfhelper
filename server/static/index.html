@@ -494,7 +494,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
           <div class="form-row"><label>大小</label><input type="range" id="espStampScale" min="5" max="40" value="18" oninput="espUpdateOverlay()" style="flex:1"><span id="espScaleVal" style="font-size:11px;width:32px;text-align:right">18%</span></div>
           <div class="form-row"><label>X位置</label><input type="range" id="espStampX" min="5" max="95" value="72" oninput="espUpdateOverlay()" style="flex:1"><span id="espStampXVal" style="font-size:11px;width:32px;text-align:right">72%</span></div>
           <div class="form-row"><label>Y位置</label><input type="range" id="espStampY" min="5" max="95" value="82" oninput="espUpdateOverlay()" style="flex:1"><span id="espStampYVal" style="font-size:11px;width:32px;text-align:right">82%</span></div>
-          <div style="font-size:10px;color:#888;margin-top:2px">💡 点击缩略图选页 → 点击印章 → 拖拽调整位置 → 执行盖章</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">💡 点击缩略图选页 → 点击印章放到当前页 → 翻页再放 → 执行盖章</div>
         </div>
         <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：在指定页盖公章（可拖拽定位），同时在所有页右边缘盖骑缝章</div>
         <button class="btn btn-primary" onclick="espShowConfirm()" style="width:100%;margin-top:8px;padding:8px">✅ 执行盖章</button>
@@ -2375,14 +2375,32 @@ let _espUploadedFid = '';  // 直接上传的PDF（不关联合同）
 let _espUploadedName = '';
 let _espCurrentPage = 1;
 let _espTotalPages = 1;
-let _espStampX = 0.72;  // 归一化位置
+let _espStampX = 0.72;  // 归一化位置（当前拖拽的默认值）
 let _espStampY = 0.82;
 let _espCrossY = 0.50;  // 骑缝章Y位置（默认居中）
-let _espSealPage = 1;   // 公章所在页码（both模式下记录用户点击执行盖章时的页面）
 let _espDragging = false;
 let _espDragOffset = {x:0,y:0};
 let _espConfirming = false; // 是否在确认状态
 let _espPagesCache = []; // 缩略图缓存
+
+// 每页印章标注状态：{ pageNum: { stampId, x, y, scale, confirmed } }
+// confirmed=true 表示已执行盖章
+let _espPageStamps = {};
+let _espStampScale = 0.18; // 当前缩放
+
+// 持久化/恢复每页印章标注
+function _espSavePageStamps(){
+  try{ localStorage.setItem('wfhelper_page_stamps', JSON.stringify({fid:_espCurrentFid, stamps:_espPageStamps})) }catch(e){}
+}
+function _espLoadPageStamps(){
+  try{
+    const raw = localStorage.getItem('wfhelper_page_stamps');
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d.fid === _espCurrentFid){ _espPageStamps = d.stamps || {}; }
+    else { _espPageStamps = {}; }
+  }catch(e){ _espPageStamps = {}; }
+}
 
 // 刷新PDF文件列表
 function espRefreshFileList(){
@@ -2417,6 +2435,10 @@ async function espLoadStamps(){
       _espSelectedStamp = _espStamps.length ? _espStamps[0].id : '';
     }
     espRenderStampList();
+    // 恢复印章标注
+    _espLoadPageStamps();
+    // 如果有当前文件，刷新预览
+    if(_espCurrentFid) espRenderPreview();
   }catch(e){ console.error('加载印章失败', e) }
 }
 
@@ -2440,7 +2462,14 @@ function espSelectStamp(id){
   // 持久化选中的印章ID
   try{localStorage.setItem('wfhelper_selected_stamp', id)}catch(e){}
   espRenderStampList();
-  // 只更新印章覆盖层，不重建PDF
+  // 点击印章=给当前页添加印章标注
+  if(id && _espCurrentFid){
+    const scale = parseInt(document.getElementById('espStampScale').value) / 100;
+    _espStampScale = scale;
+    _espPageStamps[_espCurrentPage] = { stampId:id, x:_espStampX, y:_espStampY, scale:scale, confirmed:false };
+    _espSavePageStamps();
+  }
+  // 更新印章覆盖层
   const stampType = document.getElementById('espStampType').value;
   const needSeal = (stampType === 'seal' || stampType === 'both');
   _espUpdateStampOverlay(needSeal);
@@ -2488,6 +2517,8 @@ async function espUploadPdf(input){
       _espUploadedName = file.name;
       _espCurrentPage = 1;
       _espPagesCache = [];
+      _espPageStamps = {};
+      _espLoadPageStamps();
       // 获取页数和缩略图
       try{
         const pr = await fetch('/api/pdf-pages/'+d.id);
@@ -2514,6 +2545,7 @@ async function espOnFileChange(){
   _espCurrentPage = 1;
   _espTotalPages = 1;
   _espPagesCache = [];
+  _espPageStamps = {};
   
   if(!_espCurrentFid){
     document.getElementById('espPreviewContainer').innerHTML = '<div style="color:#aaa;font-size:14px;text-align:center;padding:40px">← 请先选择PDF文件和印章</div>';
@@ -2521,6 +2553,9 @@ async function espOnFileChange(){
     document.getElementById('espThumbsBar').style.display = 'none';
     return;
   }
+  
+  // 恢复该文件的印章标注
+  _espLoadPageStamps();
   
   // 获取PDF总页数和缩略图
   try{
@@ -2545,13 +2580,16 @@ function espRenderThumbs(){
   bar.style.display = '';
   let html = '';
   for(let i = 1; i <= _espTotalPages; i++){
-    // 优先用缓存缩略图，否则用预览API
     const cached = _espPagesCache.find(p => p.page === i);
     const thumbUrl = cached ? cached.url : `/api/pdf-page-preview/${_espCurrentFid}/${i}`;
     const active = i === _espCurrentPage ? 'active' : '';
+    // 已标注印章的页显示小标记
+    const ps = _espPageStamps[i];
+    const stampMark = ps && ps.stampId ? (ps.confirmed ? '<div style="position:absolute;top:2px;right:2px;background:#34a853;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;text-align:center;line-height:14px">✓</div>' : '<div style="position:absolute;top:2px;right:2px;background:#ea4335;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;text-align:center;line-height:14px">●</div>') : '';
     html += `<div class="thumb-item ${active}" onclick="espGotoPage(${i})">
       <img src="${thumbUrl}" loading="lazy">
       <div class="page-num">${i}</div>
+      ${stampMark}
     </div>`;
   }
   bar.innerHTML = html;
@@ -2560,6 +2598,22 @@ function espRenderThumbs(){
 // 跳转到指定页
 function espGotoPage(page){
   _espCurrentPage = page;
+  // 同步滑条到当前页标注的位置
+  const ps = _espPageStamps[page];
+  if(ps){
+    _espStampX = ps.x;
+    _espStampY = ps.y;
+    _espStampScale = ps.scale;
+    _espSyncSliders();
+    const scaleEl = document.getElementById('espStampScale');
+    if(scaleEl){ scaleEl.value = Math.round(ps.scale * 100); document.getElementById('espScaleVal').textContent = Math.round(ps.scale * 100) + '%'; }
+    // 同步选中印章
+    if(ps.stampId && _espSelectedStamp !== ps.stampId){
+      _espSelectedStamp = ps.stampId;
+      try{localStorage.setItem('wfhelper_selected_stamp', ps.stampId)}catch(e){}
+      espRenderStampList();
+    }
+  }
   espRenderThumbs();
   espRenderPreview();
 }
@@ -2604,10 +2658,7 @@ function _espUpdateStampOverlay(needSeal){
   const oldCross = document.getElementById('espCrossStrip');
   if(oldCross) oldCross.remove();
   
-  if(!needSeal || !_espSelectedStamp) return;
-  
-  const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
-  if(!stampObj) return;
+  if(!needSeal) return;
   
   const stampType = document.getElementById('espStampType').value;
   
@@ -2623,7 +2674,14 @@ function _espUpdateStampOverlay(needSeal){
     container.appendChild(crossStrip);
   }
   
-  // 公章覆盖层：始终显示在当前页，点击"执行盖章"时锁定页码
+  // 从 _espPageStamps 读取当前页的印章标注
+  const pageStamp = _espPageStamps[_espCurrentPage];
+  if(!pageStamp || !pageStamp.stampId) return;
+  
+  const stampObj = _espStamps.find(s => s.id === pageStamp.stampId);
+  if(!stampObj) return;
+  
+  // 公章覆盖层
   const showSeal = (stampType === 'seal' || stampType === 'both');
   if(showSeal){
     const overlay = document.createElement('div');
@@ -2632,11 +2690,18 @@ function _espUpdateStampOverlay(needSeal){
     overlay.style.display = 'none';
     overlay.style.zIndex = '100';
     overlay.style.pointerEvents = 'auto';
-    overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'"><button class="stamp-remove-btn" onclick="espRemoveStampOverlay(event)" title="移除印章">✕</button>`;
+    // 已确认盖章→绿色✅，未确认→红色✕
+    const btnClass = pageStamp.confirmed ? 'stamp-confirm-btn' : 'stamp-remove-btn';
+    const btnIcon = pageStamp.confirmed ? '✓' : '✕';
+    const btnTitle = pageStamp.confirmed ? '已盖章' : '移除印章';
+    const btnStyle = pageStamp.confirmed ? 'background:#34a853;cursor:default' : '';
+    overlay.innerHTML = `<img src="${stampObj.url}" onerror="this.style.display='none'"><button class="${btnClass}" style="${btnStyle}" onclick="espRemoveStampOverlay(event)" title="${btnTitle}">${btnIcon}</button>`;
     container.appendChild(overlay);
-    // 绑定拖拽事件
-    overlay.addEventListener('mousedown', espDragStart);
-    overlay.addEventListener('touchstart', espTouchStart, {passive:false});
+    // 已确认的不再绑定拖拽
+    if(!pageStamp.confirmed){
+      overlay.addEventListener('mousedown', espDragStart);
+      overlay.addEventListener('touchstart', espTouchStart, {passive:false});
+    }
   }
   
   // 如果PDF图片已加载，直接定位显示
@@ -2648,7 +2713,6 @@ function _espUpdateStampOverlay(needSeal){
     const cs = document.getElementById('espCrossStrip');
     if(cs) cs.style.display = '';
   }
-  // 否则等 onload 回调 espOnPdfLoaded 来处理
 }
 
 // PDF图片加载完成后，定位印章覆盖层
@@ -2666,7 +2730,11 @@ function espPositionStamp(){
   const pdfImg = document.getElementById('espPdfImg');
   if(!pdfImg || !pdfImg.naturalWidth) return;
   
-  const scaleVal = parseInt(document.getElementById('espStampScale').value) / 100;
+  // 从当前页标注读取位置和缩放
+  const pageStamp = _espPageStamps[_espCurrentPage];
+  const scaleVal = pageStamp ? pageStamp.scale : (parseInt(document.getElementById('espStampScale').value) / 100);
+  const stampX = pageStamp ? pageStamp.x : _espStampX;
+  const stampY = pageStamp ? pageStamp.y : _espStampY;
   
   // 计算PDF图片在容器中的实际显示尺寸
   const contW = container.clientWidth;
@@ -2687,12 +2755,12 @@ function espPositionStamp(){
     offsetY = 0;
   }
   
-  // 公章覆盖层定位（如果当前页有公章）
+  // 公章覆盖层定位
   if(overlay){
     const stampW = dispW * scaleVal;
-    const stampH = stampW; // 简化1:1
-    const stampLeft = offsetX + dispW * _espStampX - stampW / 2;
-    const stampTop = offsetY + dispH * _espStampY - stampH / 2;
+    const stampH = stampW;
+    const stampLeft = offsetX + dispW * stampX - stampW / 2;
+    const stampTop = offsetY + dispH * stampY - stampH / 2;
     overlay.style.width = stampW + 'px';
     overlay.style.height = stampH + 'px';
     overlay.style.left = stampLeft + 'px';
@@ -2702,9 +2770,8 @@ function espPositionStamp(){
   // 骑缝章条形预览标记定位
   const crossStrip = document.getElementById('espCrossStrip');
   if(crossStrip){
-    const scaleVal2 = parseInt(document.getElementById('espStampScale').value) / 100;
-    const fullStampH = dispW * scaleVal2;
-    const fullStampW = dispW * scaleVal2;
+    const fullStampH = dispW * scaleVal;
+    const fullStampW = dispW * scaleVal;
     const stripW = Math.max(fullStampW / _espTotalPages, 3);
     const stripTop = offsetY + dispH * _espCrossY - fullStampH / 2;
     const stripLeft = offsetX + dispW - stripW;
@@ -2717,7 +2784,6 @@ function espPositionStamp(){
 
 // 更新覆盖层（大小变化时）
 function espUpdateOverlay(){
-  // 从滑条读取值
   const scaleEl = document.getElementById('espStampScale');
   const xEl = document.getElementById('espStampX');
   const yEl = document.getElementById('espStampY');
@@ -2727,6 +2793,14 @@ function espUpdateOverlay(){
   // 同步到归一化坐标
   _espStampX = parseInt(xEl.value) / 100;
   _espStampY = parseInt(yEl.value) / 100;
+  _espStampScale = parseInt(scaleEl.value) / 100;
+  // 更新当前页标注
+  if(_espPageStamps[_espCurrentPage]){
+    _espPageStamps[_espCurrentPage].x = _espStampX;
+    _espPageStamps[_espCurrentPage].y = _espStampY;
+    _espPageStamps[_espCurrentPage].scale = _espStampScale;
+    _espSavePageStamps();
+  }
   espPositionStamp();
 }
 
@@ -2849,6 +2923,12 @@ function espCalcNormalizedPos(){
   _espStampY = Math.max(0, Math.min(1, (pixTop + stampH/2 - offsetY) / dispH));
   // 同步滑条
   _espSyncSliders();
+  // 保存到当前页标注
+  if(_espPageStamps[_espCurrentPage]){
+    _espPageStamps[_espCurrentPage].x = _espStampX;
+    _espPageStamps[_espCurrentPage].y = _espStampY;
+    _espSavePageStamps();
+  }
 }
 
 // === 骑缝章拖拽 ===
@@ -2962,10 +3042,12 @@ function espNextPage(){
 function espRemoveStampOverlay(e){
   e.stopPropagation();
   e.preventDefault();
-  // 取消选中印章（选错页面时删除，导航到正确页面后重新点击印章即可）
-  _espSelectedStamp = '';
-  try{localStorage.removeItem('wfhelper_selected_stamp')}catch(e2){}
-  espRenderStampList();
+  // 如果已确认盖章，不允许删除
+  const pageStamp = _espPageStamps[_espCurrentPage];
+  if(pageStamp && pageStamp.confirmed) return;
+  // 删除当前页的印章标注
+  delete _espPageStamps[_espCurrentPage];
+  _espSavePageStamps();
   const overlay = document.getElementById('espStampOverlay');
   if(overlay){ overlay.remove(); }
 }
@@ -2979,11 +3061,16 @@ async function espUndoLastStamp(){
   const r = _espLastStampResult;
   if(!confirm(`确定撤销盖章？将删除文件：${r.newName}`)) return;
   try{
-    // 删除盖章生成的文件
     await fetch('/api/files/'+encodeURIComponent(r.newFid),{method:'DELETE'});
     showToast('已撤销盖章，文件已删除','success');
     _espLastStampResult = null;
-    // 刷新文件列表
+    // 清除所有页的confirmed状态
+    Object.keys(_espPageStamps).forEach(k => {
+      if(_espPageStamps[k]) _espPageStamps[k].confirmed = false;
+    });
+    _espSavePageStamps();
+    espRenderThumbs();
+    espRenderPreview();
     espRefreshFileList();
   }catch(e){
     showToast('撤销失败','error');
@@ -3000,42 +3087,28 @@ function espOnTypeChange(){
 
 // 显示盖章确认栏
 function espShowConfirm(){
-  if(!_espSelectedStamp){ showToast('请先选择印章','error'); return }
+  // 检查是否有任何页有印章标注
+  const stampedPages = Object.keys(_espPageStamps).filter(k => _espPageStamps[k] && _espPageStamps[k].stampId);
+  if(!stampedPages.length){ showToast('请先在页面上放置印章（点击缩略图选页→点击印章）','error'); return }
   if(!_espCurrentFid){ showToast('请先选择PDF文件','error'); return }
   
   const type = document.getElementById('espStampType').value;
-  // 记录公章所在页码（锁定当前页）
-  _espSealPage = _espCurrentPage;
   const stampObj = _espStamps.find(s => s.id === _espSelectedStamp);
   const stampName = stampObj ? stampObj.name : _espSelectedStamp;
   const typeNames = {seal:'公章', both:'公章+骑缝章'};
   
-  let info = `印章：<strong>${stampName}</strong> | 类型：<strong>${typeNames[type]}</strong>`;
-  if(type === 'seal' || type === 'both'){
-    info += ` | 第 <strong>${_espCurrentPage}</strong> 页`;
-  }
+  const pages = stampedPages.sort((a,b)=>a-b).join(', ');
+  let info = `印章：<strong>${stampName}</strong> | 类型：<strong>${typeNames[type]}</strong> | 盖章页：<strong>${pages}</strong>`;
   
   document.getElementById('espConfirmInfo').innerHTML = info;
   document.getElementById('espConfirmBar').style.display = 'flex';
   _espConfirming = true;
-  
-  // 在公章模式下让印章覆盖层更明显
-  const overlay = document.getElementById('espStampOverlay');
-  if(overlay){
-    overlay.style.opacity = '0.85';
-    overlay.style.outline = '2px solid #1a73e8';
-  }
 }
 
 // 取消盖章确认
 function espCancelConfirm(){
   document.getElementById('espConfirmBar').style.display = 'none';
   _espConfirming = false;
-  const overlay = document.getElementById('espStampOverlay');
-  if(overlay){
-    overlay.style.opacity = '';
-    overlay.style.outline = '';
-  }
 }
 
 // 执行盖章（确认后）
@@ -3049,7 +3122,9 @@ function espSaveStampDir(){
 }
 
 async function espDoApply(){
-  if(!_espSelectedStamp){ showToast('请先选择印章','error'); return }
+  // 检查是否有印章标注
+  const stampedPages = Object.keys(_espPageStamps).filter(k => _espPageStamps[k] && _espPageStamps[k].stampId);
+  if(!stampedPages.length){ showToast('请先在页面上放置印章','error'); return }
   if(!_espCurrentFid){ showToast('请先选择PDF文件','error'); return }
   
   // 隐藏确认栏
@@ -3059,35 +3134,40 @@ async function espDoApply(){
   const scale = parseInt(document.getElementById('espStampScale').value) / 100;
   const sel = document.getElementById('espFileSelect');
   const opt = sel.options[sel.selectedIndex];
-  // 优先使用上传的文件名，否则用下拉框的文件名
   const fileName = _espUploadedFid === _espCurrentFid ? _espUploadedName : (opt ? opt.getAttribute('data-fname') || _espCurrentFid : _espCurrentFid);
-  // 保存路径
   const saveDir = document.getElementById('espSaveDir').value.trim();
   
-  let applyParams = null;
+  // 构建多页公章参数
+  const pages = stampedPages.map(k => ({
+    page: parseInt(k),
+    x: _espPageStamps[k].x,
+    y: _espPageStamps[k].y,
+    scale: _espPageStamps[k].scale
+  }));
   
-  if(type === 'both'){
-    // 公章+骑缝章：一次请求，后端同时盖公章和骑缝章，生成一个文件
-    showToast('正在盖章...','info');
-    applyParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type:'both', scale, fileName, page:_espSealPage, x:_espStampX, y:_espStampY, crossY:_espCrossY, saveDir};
-  } else {
-    applyParams = {fid:_espCurrentFid, stampId:_espSelectedStamp, type, scale, fileName, saveDir};
-    if(type === 'seal'){
-      applyParams.page = _espSealPage;
-      applyParams.x = _espStampX;
-      applyParams.y = _espStampY;
-    }
-    if(type === 'cross'){
-      applyParams.crossY = _espCrossY;
-    }
-    showToast('正在盖章...','info');
-  }
+  let applyParams = {
+    fid: _espCurrentFid,
+    stampId: _espSelectedStamp,
+    type,
+    scale,
+    fileName,
+    saveDir,
+    pages,
+    crossY: _espCrossY
+  };
+  
+  showToast('正在盖章...','info');
   
   try{
     const r = await fetch('/api/stamp-apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(applyParams)});
     const d = await r.json();
     if(d.ok){
-      _espLastStampResult = d; // 记录用于撤销
+      _espLastStampResult = d;
+      // 将所有已盖章页标记为 confirmed
+      stampedPages.forEach(k => { _espPageStamps[k].confirmed = true; });
+      _espSavePageStamps();
+      // 刷新预览显示绿色✓
+      espRenderPreview();
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
       if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
