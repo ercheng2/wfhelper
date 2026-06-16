@@ -706,12 +706,45 @@ async function apiGet(key){
   return null
 }
 async function apiPut(key,data){
-  try{await fetch('/api/data/'+key,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})}catch(e){console.error('API PUT failed:',key,e)}
+  try{
+    const r=await fetch('/api/data/'+key,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok) console.error('API PUT failed:',key,r.status);
+    return r.ok;
+  }catch(e){console.error('API PUT failed:',key,e);return false}
 }
 function loadData(){return apiGet(DB_KEY)}
-function saveData(d){if(d&&d.length) apiPut(DB_KEY,d); else console.warn('[saveData] 拒绝保存空客户数据，防止覆盖')}
+// localStorage 双写缓存——API为主，localStorage为兜底
+function _lsSave(key,data){
+  try{
+    // 客户数据缓存时去掉avatarData（base64图片太大），头像只存API
+    let toSave=data;
+    if(key===DB_KEY&&Array.isArray(data)){
+      toSave=data.map(c=>{const{avatarData,...rest}=c;return rest});
+    }
+    const json=JSON.stringify(toSave);
+    if(json.length>4*1024*1024){console.warn('[localStorage] 数据过大('+Math.round(json.length/1024)+'KB)，跳过缓存:',key);return}
+    localStorage.setItem(key,json);
+  }catch(e){console.warn('localStorage写入失败:',key,e)}
+}
+function _lsLoad(key){try{const v=localStorage.getItem(key);return v?JSON.parse(v):null}catch(e){return null}}
+
+async function saveData(d){
+  if(d&&d.length) {
+    _lsSave(DB_KEY,d); // 立即写localStorage，同步操作，100%可靠
+    const ok=await apiPut(DB_KEY,d);
+    if(ok) _lastSaveOk=Date.now();
+    else console.error('[saveData] API保存失败，但localStorage已保存');
+  } else if(d&&d.length===0&&_dataLoaded) {
+    _lsSave(DB_KEY,d);
+    const ok=await apiPut(DB_KEY,d);
+    if(ok) _lastSaveOk=Date.now();
+    else console.error('[saveData] 保存空客户数据失败！');
+  } else {
+    console.warn('[saveData] 拒绝保存空客户数据，防止覆盖（_dataLoaded='+_dataLoaded+')');
+  }
+}
 function loadConfig(){return apiGet(CFG_KEY)}
-function saveConfigToStorage(c){if(c) apiPut(CFG_KEY,c)}
+async function saveConfigToStorage(c){if(c){_lsSave(CFG_KEY,c);await apiPut(CFG_KEY,c)}}
 async function loadTemplates(){
   let t=await apiGet(TPL_KEY);
   if(!t||!t.length){
@@ -752,6 +785,7 @@ async function deleteContractFile(fid){
 }
 
 let customers=[],config={dailyLimit:25,retryDays:3,myTitle:'悦动双成-展厅中控'},templates=[],contracts=[],maintItems=[],maintRecords=[],maintNotes=[],selectedId=null,selectedContractId=null;
+let _dataLoaded=false; // 标记是否成功加载过客户数据
 
 function generateGreeting(c){
   let m=templates.find(t=>t.source===c.source&&t.industry&&t.industry===c.industry)
@@ -794,7 +828,7 @@ function renderTodayList(){
   // 只在实际有状态变更时才保存，避免每次渲染都写库
   let _needSave = false;
   customers.forEach(c => { if(c._statusChanged){ _needSave=true; delete c._statusChanged; } });
-  if(_needSave) saveData(customers);
+  if(_needSave) await saveData(customers);
   const todaySent=customers.filter(c=>c.sentAt&&c.sentAt.startsWith(todayStr())).length;
   const remaining=config.dailyLimit-todaySent;
   const list=customers.filter(c=>c.status===4||c.status===0).slice(0,Math.max(remaining,customers.filter(c=>c.status===4).length));
@@ -817,7 +851,7 @@ function renderAllList(){
 
 function renderDetail(c,cid){
   if(!c){document.getElementById(cid).innerHTML='<div class="detail-empty">← 选择客户查看详情</div>';return}
-  if(!c.remark||!c.greeting){const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;saveData(customers)}
+  if(c.remark===undefined||c.greeting===undefined){const g=generateGreeting(c);if(c.remark===undefined)c.remark=g.remark;if(c.greeting===undefined)c.greeting=g.greeting;saveData(customers)}
   document.getElementById(cid).innerHTML=`
     <div class="detail-info"><div class="name">${c.name}</div><div class="meta"><span>📱 ${c.phone}</span><span>🏢 ${c.company||'-'}</span><span>🏭 ${c.industry||'-'}</span><span>📌 ${c.source||'-'}</span></div>${c.companyStatus&&c.companyStatus!=='未核查'?'<div class="meta" style="margin-top:4px"><span style="font-weight:600">公司状态：</span><span style="color:'+(c.companyStatus==='注销'||c.companyStatus==='吊销'?'#ea4335':'#34a853')+'">'+c.companyStatus+'</span>'+(c.businessScope?'<span style="margin-left:10px;font-weight:600">业务：</span><span>'+c.businessScope+'</span>':'')+(c.related===false?'<span style="margin-left:10px;color:#e37400">⚠️ 非展厅相关</span>':'')+'</div>':''}</div>
     <div class="copy-section"><label>添加备注</label><div class="copy-box"><textarea id="remarkArea" onblur="saveRemarkGreeting('${c.id}')">${c.remark}</textarea><button class="copy-btn" onclick="copyText('remarkArea',this)">📋复制</button></div></div>
@@ -874,44 +908,44 @@ function selectCustomer(id){
   renderTodayList();renderAllList();
 }
 
-function setStatus(id,status){
+async function setStatus(id,status){
   const c=customers.find(x=>x.id===id);if(!c)return;
   c.status=status;
   if(status===1)c.sentAt=new Date().toISOString();
   if(status===2)c.acceptedAt=new Date().toISOString();
-  saveData(customers);selectedId=id;renderAll();showToast(STATUS[status],'success');
+  await saveData(customers);selectedId=id;renderAll();showToast(STATUS[status],'success');
 }
 
 // 保存备注和话术的实时编辑（textarea onblur触发）
-function saveRemarkGreeting(id){
+async function saveRemarkGreeting(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const rEl=document.getElementById('remarkArea'),gEl=document.getElementById('greetingArea');
   if(rEl&&rEl.value!==c.remark){c.remark=rEl.value}
   if(gEl&&gEl.value!==c.greeting){c.greeting=gEl.value}
-  saveData(customers);
+  await saveData(customers);
 }
 
-function regenGreeting(id){
+async function regenGreeting(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
-  saveData(customers);renderAll();showToast('话术已重新生成','info');
+  await saveData(customers);renderAll();showToast('话术已重新生成','info');
 }
 
-function deleteSelected(){
+async function deleteSelected(){
   if(!selectedId){showToast('请先选择客户','error');return}
   const c=customers.find(x=>x.id===selectedId);if(!c)return;
   if(!confirm(`确定删除客户「${c.name}」？`))return;
   customers=customers.filter(x=>x.id!==selectedId);selectedId=null;
-  saveData(customers);renderAll();showToast('已删除','success');
+  await saveData(customers);renderAll();showToast('已删除','success');
 }
 
-function addManual(){
+async function addManual(){
   const name=document.getElementById('mfName').value.trim(),phone=document.getElementById('mfPhone').value.trim();
   if(!name||!phone){showToast('姓名和手机号必填','error');return}
   if(customers.some(c=>c.phone===phone)){showToast('该手机号已存在','error');return}
   const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,phone,company:document.getElementById('mfCompany').value.trim(),industry:document.getElementById('mfIndustry').value,source:document.getElementById('mfSource').value,status:0,retryCount:0,maxRetry:3,createdAt:new Date().toISOString()};
   const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
-  customers.unshift(c);saveData(customers);
+  customers.unshift(c);await saveData(customers);
   ['mfName','mfPhone','mfCompany'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('mfIndustry').value='';document.getElementById('mfSource').value='';
   renderAll();showToast('添加成功','success');
@@ -931,7 +965,7 @@ function handleFileImport(input){
       const c={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6)+imported,name,phone,company:parts[2]||'',industry:parts[3]||'',source:parts[4]||'',status:0,retryCount:0,maxRetry:3,createdAt:new Date().toISOString()};
       const g=generateGreeting(c);c.remark=g.remark;c.greeting=g.greeting;
       customers.push(c);imported++;
-    });saveData(customers);renderAll();showToast(`导入完成！成功${imported}条，跳过${skipped}条`,'success');
+    });(async()=>{await saveData(customers);renderAll();showToast(`导入完成！成功${imported}条，跳过${skipped}条`,'success')})();
   };reader.readAsText(file,'UTF-8');
 }
 
@@ -958,7 +992,7 @@ function addTemplate(){
 
 function delTemplate(i){templates.splice(i,1);saveTemplates(templates);renderTemplates()}
 
-function saveConfig(){
+async function saveConfig(){
   config.dailyLimit=parseInt(document.getElementById('cfgLimit').value)||25;
   config.retryDays=parseInt(document.getElementById('cfgRetry').value)||3;
   config.myTitle=document.getElementById('cfgTitle').value.trim()||'悦动双成-展厅中控';
@@ -966,7 +1000,7 @@ function saveConfig(){
   config.maintInterval=parseInt(document.getElementById('cfgMaintInterval').value)||3;
   // 同步到盖章面板
   document.getElementById('espSaveDir').value=config.stampSaveDir||'';
-  saveConfigToStorage(config);renderAll();showToast('设置已保存','success');
+  await saveConfigToStorage(config);renderAll();showToast('设置已保存','success');
 }
 
 async function restorePresetData(){
@@ -979,7 +1013,7 @@ async function restorePresetData(){
       // 重新加载前端数据（保护：空数据不覆盖）
       const cData=await loadData();
       if(cData&&cData.length){
-        customers=cData;
+        customers=cData;_dataLoaded=true;
         renderAll();
       }else{
         console.error('恢复后重新加载数据为空，保留当前前端数据');
@@ -1009,7 +1043,7 @@ async function importData(event){
           return c;
         });
         merged=merged.concat(customers.filter(c=>!data.customers.find(d=>d.id===c.id)));
-        customers=merged;saveData(customers);
+        customers=merged;await saveData(customers);
         if(data.config){Object.assign(config,data.config);saveConfigToStorage(config);}
         if(data.templates){templates=data.templates;saveTemplates(templates);}
         if(data.contracts&&data.contracts.length){
@@ -1054,7 +1088,7 @@ function handleAvatarPaste(event,customerId){
     const reader=new FileReader();
     reader.onload=e=>{
       const img=new Image();
-      img.onload=()=>{
+      img.onload=async ()=>{
         const maxW=300,maxH=300;
         let w=img.width,h=img.height;
         if(w>maxW){h=h*maxW/w;w=maxW}
@@ -1065,7 +1099,7 @@ function handleAvatarPaste(event,customerId){
         ctx.drawImage(img,0,0,w,h);
         const dataUrl=canvas.toDataURL('image/png');
         const c=customers.find(x=>x.id===customerId);
-        if(c){c.avatarData=dataUrl;saveData(customers);renderAll();showToast('图片已保存','success')}
+        if(c){c.avatarData=dataUrl;await saveData(customers);renderAll();showToast('图片已保存','success')}
       };
       img.src=e.target.result;
     };
@@ -1074,9 +1108,9 @@ function handleAvatarPaste(event,customerId){
   }
   showToast('未检测到图片，请先截图再粘贴','error');
 }
-function removeAvatar(customerId){
+async function removeAvatar(customerId){
   const c=customers.find(x=>x.id===customerId);
-  if(c){delete c.avatarData;saveData(customers);renderAll();showToast('头像已移除','success')}
+  if(c){delete c.avatarData;await saveData(customers);renderAll();showToast('头像已移除','success')}
 }
 function copyText(taId,btn){
   const ta=document.getElementById(taId);
@@ -2313,8 +2347,30 @@ ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover'
 // === 异步初始化 ===
 async function initApp(){
   // 独立加载每个数据源，避免单个失败导致全部丢失
-  try{ const d=await loadData(); if(d&&d.length) customers=d; }catch(e){ console.error('加载客户数据失败:',e) }
-  try{ const d=await loadConfig(); if(d) config=d; }catch(e){ console.error('加载配置失败:',e) }
+  // 优先从API加载，API失败时从localStorage兜底
+  try{
+    const d=await loadData();
+    if(d&&d.length){customers=d;_dataLoaded=true}
+    else{
+      // API没有数据，尝试localStorage兜底
+      const ls=_lsLoad(DB_KEY);
+      if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API无数据，从localStorage恢复',ls.length,'条')}
+      else console.warn('[initApp] 客户数据为空');
+    }
+  }catch(e){
+    console.error('加载客户数据失败:',e);
+    // API异常，尝试localStorage
+    const ls=_lsLoad(DB_KEY);
+    if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API异常，从localStorage恢复',ls.length,'条')}
+  }
+  try{
+    const d=await loadConfig();
+    if(d) config=d;
+    else{const ls=_lsLoad(CFG_KEY);if(ls)config=ls}
+  }catch(e){
+    console.error('加载配置失败:',e);
+    const ls=_lsLoad(CFG_KEY);if(ls)config=ls;
+  }
   try{ const d=await loadTemplates(); if(d&&d.length) templates=d; }catch(e){ console.error('加载模板失败:',e) }
   try{ const d=await loadContracts(); if(d) contracts=d; }catch(e){ console.error('加载合同失败:',e) }
   try{ const d=await loadMaintItems(); if(d) maintItems=d; }catch(e){ console.error('加载维保项失败:',e) }
@@ -2334,6 +2390,14 @@ async function initApp(){
 }
 initApp();
 
+// === 定时自动保存（兜底机制：每60秒检查一次，距上次成功保存超过60秒才重试） ===
+let _lastSaveOk=Date.now();
+setInterval(async ()=>{
+  if(!_dataLoaded||Date.now()-_lastSaveOk<60000)return;
+  if(customers.length){await saveData(customers);_lastSaveOk=Date.now()}
+  if(config){await saveConfigToStorage(config);_lastSaveOk=Date.now()}
+},60000);
+
 // 页面关闭/刷新前保存未提交的备注和设置
 window.addEventListener('beforeunload', function(){
   // 保存当前正在编辑的备注/话术
@@ -2345,22 +2409,36 @@ window.addEventListener('beforeunload', function(){
       if(gEl) c.greeting=gEl.value;
     }
   }
-  // 同步保存（用同步XHR确保数据不丢）
+  // 第1道保险：立即同步写localStorage（100%可靠，不依赖HTTP）
+  if(customers.length) _lsSave(DB_KEY,customers);
+  if(config) _lsSave(CFG_KEY,config);
+  // 第2道保险：sendBeacon发POST到本地后端
   if(customers.length){
     try{
-      const xhr=new XMLHttpRequest();
-      xhr.open('PUT','/api/data/'+DB_KEY,false); // false=同步
-      xhr.setRequestHeader('Content-Type','application/json');
-      xhr.send(JSON.stringify(customers));
-    }catch(e){}
+      const blob=new Blob([JSON.stringify(customers)],{type:'application/json'});
+      navigator.sendBeacon('/api/beacon/'+DB_KEY, blob);
+    }catch(e){
+      // fallback: 同步XHR
+      try{
+        const xhr=new XMLHttpRequest();
+        xhr.open('PUT','/api/data/'+DB_KEY,false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify(customers));
+      }catch(e2){}
+    }
   }
   if(config){
     try{
-      const xhr=new XMLHttpRequest();
-      xhr.open('PUT','/api/data/'+CFG_KEY,false);
-      xhr.setRequestHeader('Content-Type','application/json');
-      xhr.send(JSON.stringify(config));
-    }catch(e){}
+      const blob=new Blob([JSON.stringify(config)],{type:'application/json'});
+      navigator.sendBeacon('/api/beacon/'+CFG_KEY, blob);
+    }catch(e){
+      try{
+        const xhr=new XMLHttpRequest();
+        xhr.open('PUT','/api/data/'+CFG_KEY,false);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.send(JSON.stringify(config));
+      }catch(e2){}
+    }
   }
 });
 
@@ -2403,7 +2481,7 @@ async function mergeNewCustomers(event){
         if(nc.company)existCompanies.add(nc.company.toLowerCase());
         added++;
       }
-      saveData(customers);renderAll();
+      await saveData(customers);renderAll();
       showToast(`追加完成！新增${added}条，跳过${skipped}条重复`,'success');
     }catch(err){showToast('追加失败：'+err.message,'error')}
   };

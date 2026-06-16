@@ -1158,6 +1158,17 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
         
+        # API: POST /api/beacon/<key> — navigator.sendBeacon 专用（替代同步XHR）
+        if path.startswith('/api/beacon/'):
+            key = path[len('/api/beacon/'):]
+            body = self.read_body().decode('utf-8')
+            conn = get_db()
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, body))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
         # API: POST /api/files/upload
         if path == '/api/files/upload':
             content_type = self.headers.get('Content-Type', '')
