@@ -438,6 +438,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 <h3 style="margin-top:16px">📦 数据迁移</h3>
 <p style="font-size:12px;color:#888;margin-bottom:8px">从旧版本导出数据后，在此导入即可恢复所有编辑记录</p>
 <div class="form-row"><label></label><button class="btn btn-primary" onclick="exportData()">📤 导出数据</button> <button class="btn" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button> <button class="btn btn-success" onclick="document.getElementById('mergeFileInput').click()">📋 追加新客户</button><input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)"><input type="file" id="mergeFileInput" accept=".json,.csv,.txt" style="display:none" onchange="mergeNewCustomers(event)"></div>
+<h3 style="margin-top:16px">🔄 恢复预设数据</h3>
+<p style="font-size:12px;color:#888;margin-bottom:8px">如果客户数据丢失或为空，点击恢复554条预设客户（246+308去重）</p>
+<div class="form-row"><label></label><button class="btn btn-warning" onclick="restorePresetData()">🔄 恢复预设客户数据</button></div>
 </div>
 </div>
 </div>
@@ -945,6 +948,22 @@ function saveConfig(){
   saveConfigToStorage(config);renderAll();showToast('设置已保存','success');
 }
 
+async function restorePresetData(){
+  if(!confirm('将重新加载预设客户数据（554条），已有客户数据不会被删除，只会补充缺失的。确定？'))return;
+  try{
+    const r=await fetch('/api/restore-preset',{method:'POST'});
+    const d=await r.json();
+    if(d.ok){
+      showToast(`恢复成功！共 ${d.count} 条客户（新增 ${d.added} 条）`,'success');
+      // 重新加载前端数据
+      const cData=await loadData();
+      customers=cData||[];
+      renderAll();
+    }else{
+      showToast(d.error||'恢复失败','error');
+    }
+  }catch(e){showToast('恢复请求失败','error')}
+}
 async function exportData(){
   const data={customers:customers,config:config,templates:templates,contracts:contracts,maintItems:maintItems,maintRecords:maintRecords,maintNotes:maintNotes};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -2584,8 +2603,9 @@ function _espUpdateStampOverlay(needSeal){
     container.appendChild(crossStrip);
   }
   
-  // 公章覆盖层（seal或both模式）
-  if(stampType === 'seal' || stampType === 'both'){
+  // 公章覆盖层（seal模式 所有页显示；both模式 仅公章所在页显示）
+  const showSeal = (stampType === 'seal') || (stampType === 'both' && _espCurrentPage === parseInt(document.getElementById('stampPage')?.value || '1'));
+  if(showSeal){
     const overlay = document.createElement('div');
     overlay.className = 'stamp-overlay';
     overlay.id = 'espStampOverlay';

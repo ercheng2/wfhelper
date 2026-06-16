@@ -1271,6 +1271,54 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True, 'id': save_fn, 'name': stamp_name, 'url': f'/api/stamp-img/{save_fn}'})
             return
         
+        # API: POST /api/restore-preset - 手动恢复预设客户数据（合并，不覆盖已有）
+        if path == '/api/restore-preset':
+            try:
+                conn = get_db()
+                # 读取已有客户数据
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
+                existing = json.loads(row['value']) if row else []
+                exist_phones = {c.get('phone','') for c in existing}
+                exist_ids = {c.get('id','') for c in existing}
+                
+                # 加载preset
+                preset_path = os.path.join(_BUNDLE_DIR, 'preset_customers.json')
+                added = 0
+                if os.path.exists(preset_path):
+                    with open(preset_path, 'r', encoding='utf-8') as f:
+                        preset = json.load(f)
+                    for c in preset:
+                        if c.get('phone','') not in exist_phones and c.get('id','') not in exist_ids:
+                            existing.append(c)
+                            exist_phones.add(c.get('phone',''))
+                            exist_ids.add(c.get('id',''))
+                            added += 1
+                
+                # 加载extra
+                extra_path = os.path.join(_BUNDLE_DIR, 'extra_customers.json')
+                if os.path.exists(extra_path):
+                    with open(extra_path, 'r', encoding='utf-8') as f:
+                        extra = json.load(f)
+                    for c in extra:
+                        if c.get('phone','') not in exist_phones and c.get('id','') not in exist_ids:
+                            existing.append(c)
+                            exist_phones.add(c.get('phone',''))
+                            exist_ids.add(c.get('id',''))
+                            added += 1
+                
+                conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                            ('wfhelper_data', json.dumps(existing, ensure_ascii=False)))
+                # 设置标记以防init_db重复加载
+                conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                            ('wfhelper_preset_loaded', '"v2"'))
+                conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                            ('wfhelper_extra_loaded', '"v2"'))
+                conn.commit()
+                self.send_json({'ok': True, 'count': len(existing), 'added': added})
+            except Exception as e:
+                self.send_json({'ok': False, 'error': str(e)}, 500)
+            return
+
         # API: POST /api/stamp-apply - 给PDF盖公章或骑缝章
         if path == '/api/stamp-apply':
             body = self.read_body().decode('utf-8')
