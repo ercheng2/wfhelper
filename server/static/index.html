@@ -494,7 +494,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
           <div class="form-row"><label>大小</label><input type="range" id="espStampScale" min="5" max="40" value="18" oninput="espUpdateOverlay()" style="flex:1"><span id="espScaleVal" style="font-size:11px;width:32px;text-align:right">18%</span></div>
           <div class="form-row"><label>X位置</label><input type="range" id="espStampX" min="5" max="95" value="72" oninput="espUpdateOverlay()" style="flex:1"><span id="espStampXVal" style="font-size:11px;width:32px;text-align:right">72%</span></div>
           <div class="form-row"><label>Y位置</label><input type="range" id="espStampY" min="5" max="95" value="82" oninput="espUpdateOverlay()" style="flex:1"><span id="espStampYVal" style="font-size:11px;width:32px;text-align:right">82%</span></div>
-          <div style="font-size:10px;color:#888;margin-top:2px">💡 拖拽印章或用滑条调整位置</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">💡 点击缩略图选页 → 点击印章 → 拖拽调整位置 → 执行盖章</div>
         </div>
         <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：在指定页盖公章（可拖拽定位），同时在所有页右边缘盖骑缝章</div>
         <button class="btn btn-primary" onclick="espShowConfirm()" style="width:100%;margin-top:8px;padding:8px">✅ 执行盖章</button>
@@ -2623,8 +2623,8 @@ function _espUpdateStampOverlay(needSeal){
     container.appendChild(crossStrip);
   }
   
-  // 公章覆盖层（seal模式 所有页显示；both模式 仅公章所在页显示）
-  const showSeal = (stampType === 'seal') || (stampType === 'both' && _espCurrentPage === _espSealPage);
+  // 公章覆盖层：始终显示在当前页，点击"执行盖章"时锁定页码
+  const showSeal = (stampType === 'seal' || stampType === 'both');
   if(showSeal){
     const overlay = document.createElement('div');
     overlay.className = 'stamp-overlay';
@@ -2962,6 +2962,10 @@ function espNextPage(){
 function espRemoveStampOverlay(e){
   e.stopPropagation();
   e.preventDefault();
+  // 取消选中印章（选错页面时删除，导航到正确页面后重新点击印章即可）
+  _espSelectedStamp = '';
+  try{localStorage.removeItem('wfhelper_selected_stamp')}catch(e2){}
+  espRenderStampList();
   const overlay = document.getElementById('espStampOverlay');
   if(overlay){ overlay.remove(); }
 }
