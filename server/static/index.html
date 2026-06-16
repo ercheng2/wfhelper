@@ -221,7 +221,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .stamp-overlay:hover{opacity:.9;border-color:#1a73e8;box-shadow:0 0 8px rgba(26,115,232,.4)}
 .stamp-overlay img{width:100%;height:100%;object-fit:contain;pointer-events:none}
 .stamp-overlay.dragging{opacity:.6;outline:2px dashed #1a73e8;border-color:#1a73e8;box-shadow:0 0 12px rgba(26,115,232,.6)}
-.cross-stamp-strip{position:absolute;right:0;opacity:.55;pointer-events:none;z-index:99;border-left:1px dashed #ea4335;background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(234,67,53,.15) 4px,rgba(234,67,53,.15) 8px)}
+.cross-stamp-strip{position:absolute;pointer-events:none;z-index:99;background:rgba(234,67,53,.12);border-left:2px dashed #ea4335}
+.cross-stamp-strip .cross-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);font-size:10px;color:#ea4335;white-space:nowrap;font-weight:600;letter-spacing:1px}
 .stamp-page-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:#fafafa;border-top:1px solid #eee;border-radius:0 0 8px 8px}
 .stamp-page-nav button{padding:4px 12px;border:1px solid #ddd;border-radius:4px;cursor:pointer;background:#fff;font-size:12px}
 .stamp-page-nav button:hover{background:#f0f0f0}
@@ -2592,14 +2593,13 @@ function _espUpdateStampOverlay(needSeal){
   
   const stampType = document.getElementById('espStampType').value;
   
-  // 骑缝章条形预览（both或cross模式）
+  // 骑缝章条形预览标记（both或cross模式）—— 右边缘虚线标记
   if(stampType === 'both' || stampType === 'cross'){
     const crossStrip = document.createElement('div');
     crossStrip.className = 'cross-stamp-strip';
     crossStrip.id = 'espCrossStrip';
     crossStrip.style.display = 'none';
-    // 骑缝章印章图片作为条形背景
-    crossStrip.innerHTML = `<img src="${stampObj.url}" style="width:100%;height:100%;object-fit:cover;opacity:.7" onerror="this.style.display='none'">`;
+    crossStrip.innerHTML = '<span class="cross-label">骑缝章</span>';
     container.appendChild(crossStrip);
   }
   
@@ -2644,7 +2644,7 @@ function espPositionStamp(){
   const container = document.getElementById('espPreviewContainer');
   const overlay = document.getElementById('espStampOverlay');
   const pdfImg = document.getElementById('espPdfImg');
-  if(!overlay || !pdfImg || !pdfImg.naturalWidth) return;
+  if(!pdfImg || !pdfImg.naturalWidth) return;
   
   const scaleVal = parseInt(document.getElementById('espStampScale').value) / 100;
   
@@ -2667,29 +2667,26 @@ function espPositionStamp(){
     offsetY = 0;
   }
   
-  // 印章尺寸
-  const stampW = dispW * scaleVal;
-  // 假设印章宽高比1:1，如需更精确可以加载印章图片获取实际比例
-  const stampH = stampW; // 简化处理
+  // 公章覆盖层定位（如果当前页有公章）
+  if(overlay){
+    const stampW = dispW * scaleVal;
+    const stampH = stampW; // 简化1:1
+    const stampLeft = offsetX + dispW * _espStampX - stampW / 2;
+    const stampTop = offsetY + dispH * _espStampY - stampH / 2;
+    overlay.style.width = stampW + 'px';
+    overlay.style.height = stampH + 'px';
+    overlay.style.left = stampLeft + 'px';
+    overlay.style.top = stampTop + 'px';
+  }
   
-  // 印章位置
-  const stampLeft = offsetX + dispW * _espStampX - stampW / 2;
-  const stampTop = offsetY + dispH * _espStampY - stampH / 2;
-  
-  overlay.style.width = stampW + 'px';
-  overlay.style.height = stampH + 'px';
-  overlay.style.left = stampLeft + 'px';
-  overlay.style.top = stampTop + 'px';
-  
-  // 骑缝章条形预览定位
+  // 骑缝章条形预览标记定位
   const crossStrip = document.getElementById('espCrossStrip');
   if(crossStrip){
     const scaleVal2 = parseInt(document.getElementById('espStampScale').value) / 100;
-    // 骑缝章：每页占完整印章宽度的 1/totalPages
+    // 骑缝章：完整印章高度的竖条，每页右边缘占 1/totalPages 宽
+    const fullStampH = dispW * scaleVal2; // 印章高度约等于宽度（1:1简化）
     const fullStampW = dispW * scaleVal2;
-    const stripW = fullStampW / _espTotalPages;
-    // 垂直居中，高度和完整章一样
-    const fullStampH = fullStampW; // 简化1:1
+    const stripW = Math.max(fullStampW / _espTotalPages, 3); // 至少3px可见
     const stripTop = offsetY + dispH * 0.5 - fullStampH / 2;
     const stripLeft = offsetX + dispW - stripW;
     crossStrip.style.width = stripW + 'px';
