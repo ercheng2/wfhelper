@@ -3355,7 +3355,9 @@ async function espDoApply(){
       espRenderThumbs();
       espRenderPreview();
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
-      if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
+      if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️保存路径失败：${d.copiedTo.slice(5)}）`;
+      else if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
+      else if(saveDir) msg += `（⚠️未复制到保存路径）`;
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();

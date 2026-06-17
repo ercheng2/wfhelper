@@ -1614,14 +1614,19 @@ class Handler(BaseHTTPRequestHandler):
                 # 复制到用户指定的保存路径
                 save_dir = params.get('saveDir', '').strip()
                 copied_to = ''
-                if save_dir and os.path.isdir(save_dir):
+                if save_dir:
                     try:
+                        # 自动创建目录（不存在时）
+                        if not os.path.isdir(save_dir):
+                            os.makedirs(save_dir, exist_ok=True)
                         import shutil
                         dest = os.path.join(save_dir, new_fid)
                         shutil.copy2(save_path, dest)
                         copied_to = save_dir
+                        print(f'[盖章] 已复制到: {dest}')
                     except Exception as e:
                         print(f'[盖章] 复制到保存路径失败: {e}')
+                        copied_to = f'FAIL:{e}'
                 
                 result = {'ok': True, 'newFid': new_fid, 'newName': new_fid, 'size': new_size, 'pages': total_pages, 'contractNo': contract_no}
                 if copied_to:
