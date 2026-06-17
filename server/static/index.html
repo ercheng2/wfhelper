@@ -734,20 +734,16 @@ function _diagLog(msg){console.log('[DIAG] '+new Date().toISOString().slice(11,1
 
 async function saveData(d){
   _saveCount++;
-  if(d&&d.length) {
-    _lsSave(DB_KEY,d);
-    _diagLog('saveData#'+_saveCount+' 写localStorage成功, '+d.length+'条, size='+Math.round(JSON.stringify(d).length/1024)+'KB');
-    const ok=await apiPut(DB_KEY,d);
-    if(ok){_lastSaveOk=Date.now();_lastSaveTime=Date.now();_diagLog('saveData#'+_saveCount+' API保存成功')}
-    else console.error('[saveData] API保存失败，但localStorage已保存');
-  } else if(d&&d.length===0&&_dataLoaded) {
-    _lsSave(DB_KEY,d);
-    const ok=await apiPut(DB_KEY,d);
-    if(ok) _lastSaveOk=Date.now();
-    else console.error('[saveData] 保存空客户数据失败！');
-  } else {
-    console.warn('[saveData] 拒绝保存空客户数据，防止覆盖（_dataLoaded='+_dataLoaded+')');
+  // 🔒 绝对禁止空数组写入SQLite——这是数据丢失的最后防线
+  if(!d||!d.length){
+    console.warn('[saveData] 拒绝保存空客户数据，防止覆盖（_dataLoaded='+_dataLoaded+', d='+JSON.stringify(d)+')');
+    return;
   }
+  _lsSave(DB_KEY,d);
+  _diagLog('saveData#'+_saveCount+' 写localStorage成功, '+d.length+'条, size='+Math.round(JSON.stringify(d).length/1024)+'KB');
+  const ok=await apiPut(DB_KEY,d);
+  if(ok){_lastSaveOk=Date.now();_lastSaveTime=Date.now();_diagLog('saveData#'+_saveCount+' API保存成功')}
+  else console.error('[saveData] API保存失败，但localStorage已保存');
 }
 function loadConfig(){return apiGet(CFG_KEY)}
 async function saveConfigToStorage(c){if(c){_lsSave(CFG_KEY,c);await apiPut(CFG_KEY,c)}}
@@ -2353,8 +2349,8 @@ ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover'
 // === 异步初始化 ===
 async function initApp(){
   _diagLog('initApp开始');
-  // 独立加载每个数据源，避免单个失败导致全部丢失
-  // 优先从API加载，API失败时从localStorage兜底
+  // === 第1步：加载客户数据（API → localStorage → 自动恢复预设） ===
+  let _needAutoRestore=false;
   try{
     const d=await loadData();
     _diagLog('API加载客户数据: '+(d?d.length:'null')+'条');
@@ -2364,15 +2360,30 @@ async function initApp(){
       const ls=_lsLoad(DB_KEY);
       _diagLog('localStorage兜底: '+(ls?ls.length:'null')+'条');
       if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API无数据，从localStorage恢复',ls.length,'条')}
-      else console.warn('[initApp] 客户数据为空');
+      else _needAutoRestore=true;
     }
   }catch(e){
     console.error('加载客户数据失败:',e);
-    // API异常，尝试localStorage
     const ls=_lsLoad(DB_KEY);
     _diagLog('API异常, localStorage兜底: '+(ls?ls.length:'null')+'条');
     if(ls&&ls.length){customers=ls;_dataLoaded=true;console.warn('[initApp] API异常，从localStorage恢复',ls.length,'条')}
+    else _needAutoRestore=true;
   }
+  // 🔒 自动恢复：数据为空时自动调用restore-preset，确保打开浏览器就有数据
+  if(_needAutoRestore||customers.length===0){
+    _diagLog('自动恢复预设数据触发...');
+    try{
+      const r=await fetch('/api/restore-preset',{method:'POST'});
+      const rd=await r.json();
+      _diagLog('自动恢复结果: '+JSON.stringify(rd));
+      if(rd.ok){
+        const d2=await loadData();
+        if(d2&&d2.length){customers=d2;_dataLoaded=true;_diagLog('自动恢复成功: '+d2.length+'条')}
+        else _diagLog('自动恢复后仍无数据！');
+      }
+    }catch(e2){console.error('[initApp] 自动恢复预设数据失败:',e2)}
+  }
+  // === 第2步：加载其他数据源 ===
   try{
     const d=await loadConfig();
     if(d) config=d;
@@ -2394,11 +2405,6 @@ async function initApp(){
   document.getElementById('cfgMaintInterval').value=config.maintInterval||3;
   renderAll();
   _diagLog('initApp完成, customers='+customers.length+'条, _dataLoaded='+_dataLoaded);
-  // 数据恢复保护：如果渲染后customers为空但localStorage有数据，立即恢复
-  if(customers.length===0){
-    const ls=_lsLoad(DB_KEY);
-    if(ls&&ls.length){customers=ls;_dataLoaded=true;renderAll();_diagLog('数据恢复保护触发！从localStorage恢复'+ls.length+'条')}
-  }
   // 进入合同管理页面时弹窗提醒（延迟1秒，避免初始化时阻塞）
   setTimeout(()=>{
     if(contracts.length>0)showContractAlertsModal();

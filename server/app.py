@@ -886,6 +886,38 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # Suppress default logging
     
+    def _auto_restore_preset(self):
+        """客户数据为空时自动恢复预设数据（不覆盖已有）"""
+        try:
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
+            existing = json.loads(row['value']) if row else []
+            exist_phones = {c.get('phone','') for c in existing}
+            exist_ids = {c.get('id','') for c in existing}
+            added = 0
+            for fname in ('preset_customers.json', 'extra_customers.json'):
+                fpath = os.path.join(_BUNDLE_DIR, fname)
+                if os.path.exists(fpath):
+                    with open(fpath, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    for c in data:
+                        if c.get('phone','') not in exist_phones and c.get('id','') not in exist_ids:
+                            existing.append(c)
+                            exist_phones.add(c.get('phone',''))
+                            exist_ids.add(c.get('id',''))
+                            added += 1
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_data', json.dumps(existing, ensure_ascii=False)))
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_preset_loaded', '"v2"'))
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_extra_loaded', '"v2"'))
+            conn.commit()
+            conn.close()
+            print(f'[数据保护] 自动恢复完成: 共{len(existing)}条, 新增{added}条')
+        except Exception as e:
+            print(f'[数据保护] 自动恢复失败: {e}')
+    
     def send_json(self, data, code=200):
         body = json.dumps(data, ensure_ascii=False).encode('utf-8')
         self.send_response(code)
@@ -944,6 +976,13 @@ class Handler(BaseHTTPRequestHandler):
             key = path[len('/api/data/'):]
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
+            # 🔒 数据完整性保护：客户数据为空时自动恢复预设
+            if key == 'wfhelper_data' and (not row or not json.loads(row['value'])):
+                conn.close()
+                print('[数据保护] 检测到客户数据为空，自动恢复预设数据...')
+                self._auto_restore_preset()
+                conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
             conn.close()
             if row:
                 self.send_text(row['value'], 'application/json; charset=utf-8')
@@ -1147,6 +1186,16 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith('/api/data/'):
             key = path[len('/api/data/'):]
             body = self.read_body().decode('utf-8')
+            # 🔒 后端防线：拒绝保存空客户数据
+            if key == 'wfhelper_data':
+                try:
+                    parsed_val = json.loads(body)
+                    if not parsed_val or (isinstance(parsed_val, list) and len(parsed_val) == 0):
+                        print(f'[数据保护] 拒绝PUT空客户数据，保持原有数据不变')
+                        self.send_json({'ok': False, 'error': 'empty data rejected'})
+                        return
+                except:
+                    pass
             conn = get_db()
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, body))
             conn.commit()
@@ -1164,6 +1213,16 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith('/api/beacon/'):
             key = path[len('/api/beacon/'):]
             body = self.read_body().decode('utf-8')
+            # 🔒 同样拒绝空客户数据
+            if key == 'wfhelper_data':
+                try:
+                    parsed_val = json.loads(body)
+                    if not parsed_val or (isinstance(parsed_val, list) and len(parsed_val) == 0):
+                        print(f'[数据保护] 拒绝beacon空客户数据')
+                        self.send_json({'ok': False, 'error': 'empty data rejected'})
+                        return
+                except:
+                    pass
             conn = get_db()
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, body))
             conn.commit()
