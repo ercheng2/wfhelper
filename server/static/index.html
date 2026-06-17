@@ -500,10 +500,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <div id="espBothHint" style="display:none;font-size:11px;color:#888;padding:6px 0">💡 公章+骑缝章：在指定页盖公章（可拖拽定位），同时在所有页右边缘盖骑缝章</div>
         <button class="btn btn-primary" onclick="espShowConfirm()" style="width:100%;margin-top:8px;padding:8px">✅ 执行盖章</button>
         <div style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px">
-          <div class="form-row"><label>保存路径</label><input type="text" id="espSaveDir" placeholder="留空=仅存服务器" style="flex:1;font-size:11px"></div>
+          <div class="form-row"><label>保存路径</label><input type="text" id="espSaveDir" placeholder="留空=仅存服务器" style="flex:1;font-size:11px" onchange="espSaveStampDir()"></div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
           <button class="btn btn-sm" onclick="espSaveStampDir()" style="font-size:11px">💾 保存路径</button>
-            <span style="font-size:10px;color:#aaa">盖章后自动下载到本机；此路径为服务器端额外备份</span>
+            <span style="font-size:10px;color:#aaa">设路径→文件直接存到该目录；留空→通过浏览器下载</span>
           </div>
         </div>
       </div>
@@ -3357,7 +3357,9 @@ async function espDoApply(){
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
       if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️服务器端保存失败：${d.copiedTo.slice(5)}）`;
       else if(d.copiedTo) msg += `（服务器端已保存到：${d.copiedTo}）`;
-      // 自动下载盖章后的PDF到当前操作的电脑
+      // 如果设置了保存路径，文件已在服务器端（本机）指定目录，无需浏览器再下载一份到下载文件夹
+      // 如果没设置保存路径，则浏览器下载是用户获取文件的唯一方式
+      if(!saveDir){
       try{
         const dlUrl = '/api/files/' + encodeURIComponent(d.newFid) + '?download=1&_t=' + Date.now();
         const resp = await fetch(dlUrl);
@@ -3371,11 +3373,12 @@ async function espDoApply(){
           a.click();
           document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-          msg += '（已下载到本机）';
+          msg += '（已下载到浏览器下载文件夹）';
         } else {
           msg += '（⚠️下载失败）';
         }
       }catch(e){ msg += '（⚠️下载异常）'; }
+      } // end if(!saveDir)
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();
