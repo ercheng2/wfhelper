@@ -502,8 +502,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <div style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px">
           <div class="form-row"><label>保存路径</label><input type="text" id="espSaveDir" placeholder="留空=仅存服务器" style="flex:1;font-size:11px"></div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-            <button class="btn btn-sm" onclick="espSaveStampDir()" style="font-size:11px">💾 保存路径</button>
-            <span style="font-size:10px;color:#aaa">盖章文件额外保存到此本地路径</span>
+          <button class="btn btn-sm" onclick="espSaveStampDir()" style="font-size:11px">💾 保存路径</button>
+            <span style="font-size:10px;color:#aaa">盖章后自动下载到本机；此路径为服务器端额外备份</span>
           </div>
         </div>
       </div>
@@ -3355,9 +3355,19 @@ async function espDoApply(){
       espRenderThumbs();
       espRenderPreview();
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
-      if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️保存路径失败：${d.copiedTo.slice(5)}）`;
-      else if(d.copiedTo) msg += `（已保存到：${d.copiedTo}）`;
-      else if(saveDir) msg += `（⚠️未复制到保存路径）`;
+      if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️服务器端保存失败：${d.copiedTo.slice(5)}）`;
+      else if(d.copiedTo) msg += `（服务器端已保存到：${d.copiedTo}）`;
+      // 自动下载盖章后的PDF到当前操作的电脑
+      try{
+        const dlUrl = '/api/files/' + encodeURIComponent(d.newFid) + '?_t=' + Date.now();
+        const a = document.createElement('a');
+        a.href = dlUrl;
+        a.download = d.newName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        msg += '（已下载到本机）';
+      }catch(e){ }
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();
