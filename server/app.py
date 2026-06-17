@@ -1915,66 +1915,111 @@ def main():
             print('\n服务器已停止')
             server.server_close()
 
+def _hide_console():
+    """隐藏控制台窗口（Windows）"""
+    try:
+        import ctypes
+        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+        if hwnd:
+            ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE
+    except Exception:
+        pass
+
+def _show_console():
+    """显示控制台窗口（Windows）"""
+    try:
+        import ctypes
+        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+        if hwnd:
+            ctypes.windll.user32.ShowWindow(hwnd, 1)  # SW_SHOWNORMAL
+    except Exception:
+        pass
+
 def _run_with_tray(server, port):
     """以系统托盘方式运行"""
+    pystray_ok = False
     try:
         import pystray
         from PIL import Image as PILImage
-    except ImportError:
-        print('[警告] pystray未安装，无法最小化到托盘，以普通模式运行')
+        pystray_ok = True
+    except ImportError as e:
+        print(f'[警告] pystray导入失败: {e}，无法最小化到托盘')
         print('[提示] 运行 pip install pystray 后重试')
+    
+    if not pystray_ok:
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             server.server_close()
         return
     
-    # 创建托盘图标（蓝色圆形带"微"字）
-    icon_size = 64
-    img = PILImage.new('RGBA', (icon_size, icon_size), (0, 0, 0, 0))
-    from PIL import ImageDraw, ImageFont
-    draw = ImageDraw.Draw(img)
-    draw.ellipse([4, 4, icon_size-4, icon_size-4], fill=(26, 115, 232, 255))
-    try:
-        font = ImageFont.truetype("msyh.ttc", 32)
-    except:
-        try:
-            font = ImageFont.truetype("simhei.ttf", 32)
-        except:
-            font = ImageFont.load_default()
-    bbox = draw.textbbox((0, 0), "微", font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    tx = (icon_size - tw) // 2 - bbox[0]
-    ty = (icon_size - th) // 2 - bbox[1]
-    draw.text((tx, ty), "微", fill=(255, 255, 255, 255), font=font)
-    
-    # 托盘菜单
-    def open_ui(icon, item):
-        webbrowser.open(f'http://localhost:{port}')
-    
-    def quit_app(icon, item):
-        icon.stop()
-        server.shutdown()
-    
-    menu = pystray.Menu(
-        pystray.MenuItem('打开界面', open_ui, default=True),
-        pystray.Menu.SEPARATOR,
-        pystray.MenuItem(f'访问地址：localhost:{port}', None, enabled=False),
-        pystray.MenuItem('退出', quit_app),
-    )
-    
-    icon = pystray.Icon('wfhelper', img, f'微信好友助手 - :{port}', menu)
-    
-    # 服务器在后台线程运行
-    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    # 先在控制台可见状态下启动服务器，确认能工作后再隐藏
+    # 服务器在后台线程运行（非daemon，确保进程不会因主线程异常退出）
+    server_thread = threading.Thread(target=server.serve_forever, daemon=False)
     server_thread.start()
     
-    # 第一次启动自动打开浏览器
-    if OPEN_BROWSER:
-        threading.Timer(2.0, lambda: webbrowser.open(f'http://localhost:{port}')).start()
+    # 等待服务器就绪
+    import time
+    time.sleep(0.5)
     
-    # 运行托盘（阻塞主线程）
-    icon.run()
+    try:
+        # 创建托盘图标（蓝色圆形带"微"字）
+        icon_size = 64
+        img = PILImage.new('RGBA', (icon_size, icon_size), (0, 0, 0, 0))
+        from PIL import ImageDraw, ImageFont
+        draw = ImageDraw.Draw(img)
+        draw.ellipse([4, 4, icon_size-4, icon_size-4], fill=(26, 115, 232, 255))
+        try:
+            font = ImageFont.truetype("msyh.ttc", 32)
+        except:
+            try:
+                font = ImageFont.truetype("simhei.ttf", 32)
+            except:
+                font = ImageFont.load_default()
+        bbox = draw.textbbox((0, 0), "微", font=font)
+        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        tx = (icon_size - tw) // 2 - bbox[0]
+        ty = (icon_size - th) // 2 - bbox[1]
+        draw.text((tx, ty), "微", fill=(255, 255, 255, 255), font=font)
+        
+        # 托盘菜单
+        def open_ui(icon, item):
+            webbrowser.open(f'http://localhost:{port}')
+        
+        def quit_app(icon, item):
+            icon.stop()
+            server.shutdown()
+        
+        menu = pystray.Menu(
+            pystray.MenuItem('打开界面', open_ui, default=True),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem(f'访问地址：localhost:{port}', None, enabled=False),
+            pystray.MenuItem('退出', quit_app),
+        )
+        
+        icon = pystray.Icon('wfhelper', img, f'微信好友助手 - :{port}', menu)
+        
+        # 第一次启动自动打开浏览器
+        if OPEN_BROWSER:
+            threading.Timer(2.0, lambda: webbrowser.open(f'http://localhost:{port}')).start()
+        
+        # 托盘图标启动成功后隐藏控制台
+        _hide_console()
+        
+        # 运行托盘（阻塞主线程）
+        icon.run()
+        
+    except Exception as e:
+        # 托盘创建失败，恢复控制台，回退到普通模式
+        print(f'[警告] 托盘创建失败: {e}，回退到普通模式')
+        _show_console()
+        # 服务器已经在运行，只需保持主线程不退出
+        try:
+            while server_thread.is_alive():
+                time.sleep(1)
+        except KeyboardInterrupt:
+            server.shutdown()
+            server.server_close()
 
 if __name__ == '__main__':
     main()
