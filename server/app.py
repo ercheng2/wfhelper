@@ -969,7 +969,7 @@ class Handler(BaseHTTPRequestHandler):
     
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+        path = urllib.parse.unquote(parsed.path)
         
         # API: GET /api/data/<key>
         if path.startswith('/api/data/'):
@@ -1212,7 +1212,7 @@ class Handler(BaseHTTPRequestHandler):
     
     def do_PUT(self):
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+        path = urllib.parse.unquote(parsed.path)
         
         # API: PUT /api/data/<key>
         if path.startswith('/api/data/'):
@@ -1239,7 +1239,7 @@ class Handler(BaseHTTPRequestHandler):
     
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+        path = urllib.parse.unquote(parsed.path)
         
         # API: POST /api/beacon/<key> — navigator.sendBeacon 专用（替代同步XHR）
         if path.startswith('/api/beacon/'):
@@ -1844,7 +1844,7 @@ class Handler(BaseHTTPRequestHandler):
     
     def do_DELETE(self):
         parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+        path = urllib.parse.unquote(parsed.path)
         
         # API: DELETE /api/files/<fid>
         if path.startswith('/api/files/'):
