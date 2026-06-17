@@ -958,7 +958,9 @@ class Handler(BaseHTTPRequestHandler):
         if inline:
             self.send_header('Content-Disposition', 'inline')
         elif download_name:
-            self.send_header('Content-Disposition', f'attachment; filename="{download_name}"')
+            from urllib.parse import quote
+            encoded = quote(download_name)
+            self.send_header('Content-Disposition', f"attachment; filename=\"{encoded}\"; filename*=UTF-8''{encoded}")
         self.end_headers()
         with open(filepath, 'rb') as f:
             self.wfile.write(f.read())
@@ -1012,7 +1014,13 @@ class Handler(BaseHTTPRequestHandler):
             params = urllib.parse.parse_qs(parsed.query)
             name = params.get('name', [fid])[0]
             mimetype = params.get('type', ['application/octet-stream'])[0]
-            if mimetype.startswith('image/') or mimetype == 'application/pdf':
+            force_download = 'download' in params
+            if force_download:
+                # 强制下载（Content-Disposition: attachment）
+                from urllib.parse import quote
+                encoded_name = quote(name)
+                self.send_file(filepath, download_name=name, inline=False, mime_type=mimetype)
+            elif mimetype.startswith('image/') or mimetype == 'application/pdf':
                 self.send_file(filepath, download_name=None, inline=True, mime_type=mimetype)
             else:
                 self.send_file(filepath, name)

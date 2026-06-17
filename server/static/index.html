@@ -3359,15 +3359,23 @@ async function espDoApply(){
       else if(d.copiedTo) msg += `（服务器端已保存到：${d.copiedTo}）`;
       // 自动下载盖章后的PDF到当前操作的电脑
       try{
-        const dlUrl = '/api/files/' + encodeURIComponent(d.newFid) + '?_t=' + Date.now();
-        const a = document.createElement('a');
-        a.href = dlUrl;
-        a.download = d.newName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        msg += '（已下载到本机）';
-      }catch(e){ }
+        const dlUrl = '/api/files/' + encodeURIComponent(d.newFid) + '?download=1&_t=' + Date.now();
+        const resp = await fetch(dlUrl);
+        if(resp.ok){
+          const blob = await resp.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = d.newName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+          msg += '（已下载到本机）';
+        } else {
+          msg += '（⚠️下载失败）';
+        }
+      }catch(e){ msg += '（⚠️下载异常）'; }
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();
