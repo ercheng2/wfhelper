@@ -1174,6 +1174,29 @@ class Handler(BaseHTTPRequestHandler):
             return
         
         if os.path.isfile(filepath):
+            # 🔒 index.html 注入初始数据——保证打开浏览器就有数据
+            if path == '/index.html':
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        html = f.read()
+                    # 从SQLite读取所有数据，注入到HTML
+                    conn = get_db()
+                    rows = conn.execute("SELECT key, value FROM kv_store").fetchall()
+                    conn.close()
+                    init_data = {row['key']: json.loads(row['value']) for row in rows}
+                    inject_script = f'<script>window.__INIT_DATA__={json.dumps(init_data, ensure_ascii=False)};</script>'
+                    html = html.replace('<head>', '<head>' + inject_script, 1)
+                    body = html.encode('utf-8')
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.send_header('Cache-Control', 'no-cache, no-store')
+                    self.send_header('Content-Length', str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+                except Exception as e:
+                    print(f'[注入初始数据失败，降级为静态文件: {e}]')
+                    pass  # 降级为普通静态文件
             self.send_file(filepath)
         else:
             self.send_error(404)
