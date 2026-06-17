@@ -3355,11 +3355,9 @@ async function espDoApply(){
       espRenderThumbs();
       espRenderPreview();
       let msg = `盖章成功！已生成：${d.newName}` + (d.contractNo ? ` 编号：${d.contractNo}` : '');
-      if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️服务器端保存失败：${d.copiedTo.slice(5)}）`;
-      else if(d.copiedTo) msg += `（服务器端已保存到：${d.copiedTo}）`;
-      // 如果设置了保存路径，文件已在服务器端（本机）指定目录，无需浏览器再下载一份到下载文件夹
-      // 如果没设置保存路径，则浏览器下载是用户获取文件的唯一方式
-      if(!saveDir){
+      if(d.copiedTo && d.copiedTo.startsWith('FAIL:')) msg += `（⚠️服务器端备份失败：${d.copiedTo.slice(5)}）`;
+      else if(d.copiedTo) msg += `（服务器端已备份到：${d.copiedTo}）`;
+      // 始终通过浏览器下载，确保用户能拿到文件（不管是从本机还是其他电脑访问）
       try{
         const dlUrl = '/api/files/' + encodeURIComponent(d.newFid) + '?download=1&_t=' + Date.now();
         const resp = await fetch(dlUrl);
@@ -3373,12 +3371,11 @@ async function espDoApply(){
           a.click();
           document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-          msg += '（已下载到浏览器下载文件夹）';
+          msg += '（已下载到本机）';
         } else {
           msg += '（⚠️下载失败）';
         }
       }catch(e){ msg += '（⚠️下载异常）'; }
-      } // end if(!saveDir)
       showToast(msg + ' <a href="javascript:void(0)" onclick="espUndoLastStamp()" style="color:#ea4335;margin-left:8px;text-decoration:underline">撤销</a>','success',8000);
       espAddFileToContract(d, opt);
       espRefreshFileList();
