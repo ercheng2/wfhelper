@@ -435,6 +435,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 <div class="form-row"><label>重试间隔（天）</label><input type="number" id="cfgRetry" min="1" max="14" value="3" onblur="saveConfig()"></div>
 <div class="form-row"><label>我的称呼</label><input type="text" id="cfgTitle" value="悦动双成-展厅中控" style="flex:1" onblur="saveConfig()"></div>
 <div class="form-row"><label>盖章保存路径</label><input type="text" id="cfgStampSaveDir" placeholder="如 D:\盖章文件" style="flex:1" onblur="saveConfig()"></div>
+<div class="form-row"><label>维保提醒间隔（月）</label><input type="number" id="cfgMaintInterval" min="1" max="24" value="3" onblur="saveConfig()"></div>
 <div class="form-row"><label></label><button class="btn btn-primary" onclick="saveConfig()">💾 保存设置</button></div>
 <h3>📊 统计概览</h3>
 <div class="stats-box" id="statsBox"></div>
@@ -701,7 +702,7 @@ const STATUS_CLASS=['status-0','status-1','status-2','status-3','status-4'];
 // === API 数据层（替代 localStorage） ===
 async function apiGet(key){
   for(let i=0;i<2;i++){
-    try{const r=await fetch('/api/data/'+key,{cache:'no-store'});if(r.ok) return await r.json()}catch(e){if(i===0)continue;console.error('API GET failed:',key,e)}
+    try{const r=await fetch('/api/data/'+key+'?_t='+Date.now(),{cache:'no-store'});if(r.ok) return await r.json()}catch(e){if(i===0)continue;console.error('API GET failed:',key,e)}
   }
   return null
 }
@@ -995,13 +996,13 @@ function addTemplate(){
 function delTemplate(i){templates.splice(i,1);saveTemplates(templates);renderTemplates()}
 
 async function saveConfig(){
-  config.dailyLimit=parseInt(document.getElementById('cfgLimit').value)||25;
-  config.retryDays=parseInt(document.getElementById('cfgRetry').value)||3;
-  config.myTitle=document.getElementById('cfgTitle').value.trim()||'悦动双成-展厅中控';
-  config.stampSaveDir=document.getElementById('cfgStampSaveDir').value.trim();
-  config.maintInterval=parseInt(document.getElementById('cfgMaintInterval').value)||3;
+  config.dailyLimit=parseInt(_getVal('cfgLimit'))||25;
+  config.retryDays=parseInt(_getVal('cfgRetry'))||3;
+  config.myTitle=(_getVal('cfgTitle')||'').trim()||'悦动双成-展厅中控';
+  config.stampSaveDir=(_getVal('cfgStampSaveDir')||'').trim();
+  config.maintInterval=parseInt(_getVal('cfgMaintInterval'))||3;
   // 同步到盖章面板
-  document.getElementById('espSaveDir').value=config.stampSaveDir||'';
+  _setVal('espSaveDir',config.stampSaveDir||'');
   await saveConfigToStorage(config);renderAll();showToast('设置已保存','success');
 }
 
@@ -2346,9 +2347,14 @@ ia.addEventListener('dragover',e=>{e.preventDefault();ia.classList.add('dragover
 ia.addEventListener('dragleave',()=>ia.classList.remove('dragover'));
 ia.addEventListener('drop',e=>{e.preventDefault();ia.classList.remove('dragover');if(e.dataTransfer.files[0]){document.getElementById('fileInput').files=e.dataTransfer.files;handleFileImport(document.getElementById('fileInput'))}});
 
+// === 安全DOM访问 ===
+function _setVal(id,val){const el=document.getElementById(id);if(el)el.value=val;else console.warn('[DOM] 元素不存在:',id)}
+function _getVal(id){const el=document.getElementById(id);return el?el.value:null}
+
 // === 异步初始化 ===
 async function initApp(){
   _diagLog('initApp开始');
+  try{
   // 🔒 最优先：从服务器注入的初始数据加载（同步，100%可靠，不依赖fetch）
   if(window.__INIT_DATA__){
     const init=window.__INIT_DATA__;
@@ -2384,7 +2390,7 @@ async function initApp(){
     if(_needAutoRestore||customers.length===0){
       _diagLog('自动恢复预设数据触发...');
       try{
-        const r=await fetch('/api/restore-preset',{method:'POST'});
+        const r=await fetch('/api/restore-preset?_t='+Date.now(),{method:'POST'});
         const rd=await r.json();
         if(rd.ok){
           const d2=await loadData();
@@ -2397,15 +2403,16 @@ async function initApp(){
   if(!config||!config.dailyLimit){
     try{const d=await loadConfig();if(d)config=d;else{const ls=_lsLoad(CFG_KEY);if(ls)config=ls}}catch(e){const ls=_lsLoad(CFG_KEY);if(ls)config=ls}
   }
-  document.getElementById('cfgLimit').value=config.dailyLimit;
-  document.getElementById('cfgRetry').value=config.retryDays;
-  document.getElementById('cfgTitle').value=config.myTitle;
-  document.getElementById('cfgStampSaveDir').value=config.stampSaveDir||'';
-  document.getElementById('espSaveDir').value=config.stampSaveDir||'';
-  document.getElementById('cfgMaintInterval').value=config.maintInterval||3;
+  // 🔒 安全设置表单值（任何元素不存在都不会崩溃）
+  _setVal('cfgLimit',config.dailyLimit);
+  _setVal('cfgRetry',config.retryDays);
+  _setVal('cfgTitle',config.myTitle);
+  _setVal('cfgStampSaveDir',config.stampSaveDir||'');
+  _setVal('espSaveDir',config.stampSaveDir||'');
+  _setVal('cfgMaintInterval',config.maintInterval||3);
   renderAll();
   _diagLog('initApp完成, customers='+customers.length+'条, _dataLoaded='+_dataLoaded);
-  // 后台静默刷新数据（不阻塞渲染，确保和SQLite同步）
+  // 后台静默刷新数据（2秒后从API拿完整数据含头像，确保和SQLite同步）
   setTimeout(async()=>{
     try{
       const d=await loadData();
@@ -2416,6 +2423,11 @@ async function initApp(){
   setTimeout(()=>{
     if(contracts.length>0)showContractAlertsModal();
   },1000);
+  }catch(e){
+    console.error('[initApp] 严重错误:',e);
+    // 即使出错也要尝试渲染（数据可能已经加载）
+    try{renderAll();_diagLog('initApp错误后强制renderAll, customers='+customers.length)}catch(e2){console.error('[initApp] renderAll也失败:',e2)}
+  }
 }
 // 全局错误捕获——防止任何未处理的Promise rejection
 window.addEventListener('unhandledrejection',e=>{console.error('[全局] 未处理的Promise rejection:',e.reason)});
