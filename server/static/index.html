@@ -3363,15 +3363,39 @@ async function espDoApply(){
         const resp = await fetch(dlUrl);
         if(resp.ok){
           const blob = await resp.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = d.newName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-          msg += '（已下载到本机）';
+          // 优先用 showSaveFilePicker 让用户选择保存位置
+          if(window.showSaveFilePicker){
+            try{
+              const handle = await window.showSaveFilePicker({
+                suggestedName: d.newName,
+                types: [{description: 'PDF文件', accept: {'application/pdf': ['.pdf']}}]
+              });
+              const writable = await handle.createWritable();
+              await writable.write(blob);
+              await writable.close();
+              msg += '（已保存到本机指定位置）';
+            }catch(pickerErr){
+              if(pickerErr.name === 'AbortError'){
+                msg += '（已取消保存）';
+              } else {
+                // showSaveFilePicker失败，回退到普通下载
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl; a.download = d.newName;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                msg += '（已下载到本机）';
+              }
+            }
+          } else {
+            // 浏览器不支持 showSaveFilePicker，用普通下载
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl; a.download = d.newName;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+            msg += '（已下载到本机）';
+          }
         } else {
           msg += '（⚠️下载失败）';
         }
