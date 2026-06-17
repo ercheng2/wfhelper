@@ -1184,7 +1184,16 @@ class Handler(BaseHTTPRequestHandler):
                     rows = conn.execute("SELECT key, value FROM kv_store").fetchall()
                     conn.close()
                     init_data = {row['key']: json.loads(row['value']) for row in rows}
-                    inject_script = f'<script>window.__INIT_DATA__={json.dumps(init_data, ensure_ascii=False)};</script>'
+                    # 🔒 关键：去掉客户数据中的avatarData（base64图片太大，会让HTML膨胀到几十MB）
+                    if 'wfhelper_data' in init_data and isinstance(init_data['wfhelper_data'], list):
+                        init_data['wfhelper_data'] = [
+                            {k: v for k, v in c.items() if k != 'avatarData'}
+                            for c in init_data['wfhelper_data']
+                        ]
+                    # 🔒 关键：转义</script>防止用户备注/话术中的HTML破坏页面
+                    raw_json = json.dumps(init_data, ensure_ascii=False)
+                    raw_json = raw_json.replace('</script', '<\\/script').replace('</Script', '<\\/Script')
+                    inject_script = f'<script>window.__INIT_DATA__={raw_json};</script>'
                     html = html.replace('<head>', '<head>' + inject_script, 1)
                     body = html.encode('utf-8')
                     self.send_response(200)
