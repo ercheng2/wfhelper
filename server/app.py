@@ -1890,7 +1890,7 @@ def main():
     print('=' * 50)
     print('  微信好友助手 v2.0 - 本地服务器版')
     print('=' * 50)
-    print(f'  本机访问：http://localhost:{PORT}')
+    print(f'  本机访问：http://127.0.0.1:{PORT}')
     print(f'  局域网访问：http://{local_ip}:{PORT}')
     print(f'  监听地址：{HOST}:{PORT}')
     print(f'  配置文件：config.json（可修改host/port）')
@@ -1903,7 +1903,7 @@ def main():
     # Open browser after a short delay
     if OPEN_BROWSER and not MINIMIZE_TO_TRAY:
         def open_browser():
-            webbrowser.open(f'http://localhost:{PORT}')
+            webbrowser.open(f'http://127.0.0.1:{PORT}')
         threading.Timer(1.5, open_browser).start()
     
     if MINIMIZE_TO_TRAY:
@@ -1984,7 +1984,7 @@ def _run_with_tray(server, port):
         
         # 托盘菜单
         def open_ui(icon, item):
-            webbrowser.open(f'http://localhost:{port}')
+            webbrowser.open(f'http://127.0.0.1:{port}')
         
         def quit_app(icon, item):
             icon.stop()
@@ -1993,7 +1993,7 @@ def _run_with_tray(server, port):
         menu = pystray.Menu(
             pystray.MenuItem('打开界面', open_ui, default=True),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem(f'访问地址：localhost:{port}', None, enabled=False),
+            pystray.MenuItem(f'访问地址：127.0.0.1:{port}', None, enabled=False),
             pystray.MenuItem('退出', quit_app),
         )
         
@@ -2001,7 +2001,7 @@ def _run_with_tray(server, port):
         
         # 第一次启动自动打开浏览器
         if OPEN_BROWSER:
-            threading.Timer(2.0, lambda: webbrowser.open(f'http://localhost:{port}')).start()
+            threading.Timer(2.0, lambda: webbrowser.open(f'http://127.0.0.1:{port}')).start()
         
         # 托盘图标启动成功后隐藏控制台
         _hide_console()
