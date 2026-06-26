@@ -70,7 +70,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .manual-form{margin-top:16px}
 .form-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
 .form-row label{width:65px;text-align:right;font-size:13px;color:#555;flex-shrink:0}
-.form-row input,.form-row select{flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}.form-row input[type="date"]{min-width:140px;flex:0 0 auto;width:auto}
+.form-row input,.form-row select{flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}.form-row input[type="date"]{min-width:160px;flex:0 0 auto;width:160px;padding-right:4px}
 .form-row input:focus,.form-row select:focus{outline:none;border-color:#1a73e8}
 .template-panel{padding:0}
 .template-toolbar{padding:10px 14px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px}
@@ -211,11 +211,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 #panel-contract .split-right{width:58%;height:100%;position:static;overflow-y:auto}
 .invoice-btn{font-size:13px;cursor:pointer;padding:2px 6px;border:1px dashed #ccc;border-radius:4px;background:#fff;white-space:nowrap}
 .invoice-btn.has-invoice{border-color:#34a853;background:#e6f4ea;color:#34a853}
-.invoice-area{display:none;padding:6px 8px;margin-top:4px;background:#fafafa;border:1px dashed #ddd;border-radius:6px;position:relative}
+.invoice-area{display:none;padding:6px 8px;margin-top:4px;background:#fafafa;border:1px dashed #ddd;border-radius:6px;position:relative;overflow:hidden}.invoice-area img{max-width:150px!important;max-height:50px!important;transform:none!important;transition:none!important}
 .invoice-area.show{display:block}
 .invoice-paste-zone{min-height:50px;display:flex;align-items:center;justify-content:center;border:2px dashed #ccc;border-radius:6px;cursor:pointer;font-size:12px;color:#999;padding:4px}
 .invoice-paste-zone:hover{border-color:#1a73e8;color:#1a73e8}
-.invoice-thumb{max-width:200px!important;max-height:60px!important;border-radius:4px;cursor:pointer;display:block;margin:0 auto;transition:none!important}.invoice-thumb:hover{transform:none!important;max-width:200px!important;max-height:60px!important}
+.invoice-thumb{max-width:150px!important;max-height:50px!important;border-radius:4px;cursor:pointer;display:block;margin:0 auto;transition:none!important;transform:none!important}.invoice-thumb:hover{transform:none!important;max-width:150px!important;max-height:50px!important}.invoice-thumb:active{transform:none!important}.invoice-thumb:focus{transform:none!important}
 .invoice-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:#ea4335;color:#fff;border:none;cursor:pointer;font-size:11px;line-height:18px;text-align:center}
 .contract-stats{background:linear-gradient(135deg,#f8f9ff,#eef1ff);border-radius:10px;padding:14px 16px;margin-bottom:8px;border:1px solid #d0d9f0}
 .contract-stats-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
