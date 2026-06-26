@@ -201,6 +201,42 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .modal-footer{padding:12px 20px 16px;text-align:center}
 .modal-footer .btn{min-width:120px;padding:8px 20px;font-size:14px}
 
+/* === 合同收款统计 === */
+#panel-contract.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
+#panel-contract .contract-alerts{flex-shrink:0}
+#panel-contract .contract-stats{flex-shrink:0}
+#panel-contract .split{flex:1;min-height:0;height:auto}
+#panel-contract .split-left{height:auto;overflow:hidden}
+#panel-contract .split-left{width:42%}
+#panel-contract .split-right{width:58%;height:100%;position:static;overflow-y:auto}
+.invoice-btn{font-size:13px;cursor:pointer;padding:2px 6px;border:1px dashed #ccc;border-radius:4px;background:#fff;white-space:nowrap}
+.invoice-btn.has-invoice{border-color:#34a853;background:#e6f4ea;color:#34a853}
+.invoice-area{display:none;padding:6px 8px;margin-top:4px;background:#fafafa;border:1px dashed #ddd;border-radius:6px;position:relative}
+.invoice-area.show{display:block}
+.invoice-paste-zone{min-height:50px;display:flex;align-items:center;justify-content:center;border:2px dashed #ccc;border-radius:6px;cursor:pointer;font-size:12px;color:#999;padding:4px}
+.invoice-paste-zone:hover{border-color:#1a73e8;color:#1a73e8}
+.invoice-thumb{max-width:100%;max-height:120px;border-radius:4px;cursor:pointer;display:block;margin:0 auto}
+.invoice-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:#ea4335;color:#fff;border:none;cursor:pointer;font-size:11px;line-height:18px;text-align:center}
+.contract-stats{background:linear-gradient(135deg,#f8f9ff,#eef1ff);border-radius:10px;padding:14px 16px;margin-bottom:8px;border:1px solid #d0d9f0}
+.contract-stats-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.contract-stats-header h3{margin:0;font-size:14px;font-weight:600;color:#333}
+.contract-stats-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+.cs-card{background:#fff;border-radius:8px;padding:10px 8px;text-align:center;border:1px solid #e8eaef;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cs-card .cs-num{font-size:18px;font-weight:700;color:#1a73e8;line-height:1.2}
+.cs-card .cs-label{font-size:11px;color:#888;margin-top:2px}
+.cs-card.green .cs-num{color:#34a853}
+.cs-card.orange .cs-num{color:#e37400}
+.cs-card.red .cs-num{color:#ea4335}
+.cs-card.gray .cs-num{color:#666}
+.contract-stats-bar{height:8px;background:#e8eaef;border-radius:4px;overflow:hidden;margin-bottom:4px}
+.contract-stats-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.contract-stats-footer{display:flex;justify-content:space-between;font-size:11px;color:#888}
+.contract-stats-filter{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.contract-stats-filter select,.contract-stats-filter button{padding:3px 8px;font-size:11px;border-radius:4px;border:1px solid #ddd;background:#fff;cursor:pointer}
+.contract-stats-filter button.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.contract-stats-filter .export-btn{background:#34a853;color:#fff;border-color:#34a853;margin-left:auto}
+.contract-stats-filter .export-btn:hover{background:#2d8e47}
+
 /* === 合同电子章面板 === */
 .stamp-layout{display:flex;gap:0;height:100%}
 .stamp-left{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;padding:14px;border-right:1px solid #eee;overflow-y:auto}
@@ -452,13 +488,14 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 </div>
 <div class="panel" id="panel-contract">
 <div class="contract-alerts" id="contractAlerts"></div>
+<div class="contract-stats" id="contractStats"></div>
 <div class="split">
 <div class="split-left">
 <div class="list-toolbar">
-<span style="font-weight:600">合同列表</span>
+<span style="font-weight:600">合同/项目</span>
 <select id="contractFilter" onchange="renderContractList()"><option value="all">全部</option><option value="active">执行中</option><option value="completed">已完成</option><option value="overdue">有逾期</option></select>
 <span style="color:#888;margin-left:auto" id="contractCount"></span>
-<button class="btn btn-primary btn-sm" onclick="showAddContract()">+ 新增合同</button>
+<button class="btn btn-primary btn-sm" onclick="showAddContract()">+ 新增</button>
 </div>
 <div class="customer-list" id="contractList"></div>
 </div>
@@ -1190,9 +1227,12 @@ function renderContractList(){
     items.forEach(c=>{
       const cu=customers.find(x=>x.id===c.customerId);
       const isSelected=c.id===selectedContractId;
+      const paidAmt=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;
+      const payIcon=paidAmt>0&&paidAmt>=(c.amount||0)?'🟢':paidAmt>0?'🟡':'🔴';
       html+=`<div class="contract-item-expandable${isSelected?' selected':''}" data-cid="${c.id}">
         <div class="contract-item-header" onclick="toggleContractAccordion('${c.id}')">
           <span class="expand-arrow${isSelected?' open':''}">▶</span>
+          <span style="font-size:10px;margin-right:2px">${payIcon}</span>
           <span class="c-name">${c.name||'未命名合同'}</span>
           <span class="c-amount">¥${(c.amount||0).toLocaleString()}</span>
           <span class="c-status ${sc[c._s]}">${sl[c._s]}</span>
@@ -1214,8 +1254,8 @@ function renderContractList(){
   const urgents=checkContractAlerts().filter(a=>a.t==='urgent').length;
   const hdrEl=document.getElementById('contractAlertBadge');
   if(hdrEl)hdrEl.style.display=urgents>0?'inline':'none';
+  renderContractStats();
 }
-
 function buildAccordionDetail(c,cu){
   const totalPay=c.payments?c.payments.reduce((s,p)=>s+(p.amount||0),0):0;
   const paidPay=c.payments?c.payments.filter(p=>p.paidDate).reduce((s,p)=>s+(p.amount||0),0):0;
@@ -1223,6 +1263,7 @@ function buildAccordionDetail(c,cu){
   let html=`<div class="contract-detail-summary">
     <span><span class="label">客户：</span><b>${cu?cu.company||cu.name:'-'}</b></span>
     <span><span class="label">签订：</span><b>${c.signDate||'-'}</b></span>
+    <span><span class="label">完成：</span><b>${c.completedDate||'-'}</b></span>
     <span><span class="label">金额：</span><b>¥${(c.amount||0).toLocaleString()}</b></span>
     <span><span class="label">已收：</span><b style="color:#34a853">¥${paidPay.toLocaleString()}</b></span>
   </div>
@@ -1246,6 +1287,93 @@ function buildAccordionDetail(c,cu){
     <button class="btn btn-danger btn-sm" onclick="deleteContract('${c.id}')">🗑 删除</button>
   </div>`;
   return html;
+}
+// === 合同收款统计 ===
+let _csYear='all',_csPeriod='all';
+function renderContractStats(){
+  const el=document.getElementById('contractStats');if(!el)return;
+  if(!contracts.length){el.innerHTML='';return}
+  // 筛选
+  let list=contracts.slice();
+  const now=new Date();
+  if(_csYear!=='all'){
+    const yr=parseInt(_csYear);
+    list=list.filter(c=>{
+      const d=c.completedDate||c.signDate||c.endDate||c.createdAt||'';
+      return d.slice(0,4)===String(yr);
+    });
+  }
+  if(_csPeriod!=='all'){
+    const mo=now.getMonth(),yr=now.getFullYear();
+    if(_csPeriod==='q1') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='01'&&d<='03'});
+    else if(_csPeriod==='q2') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='04'&&d<='06'});
+    else if(_csPeriod==='q3') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='07'&&d<='09'});
+    else if(_csPeriod==='q4') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='10'&&d<='12'});
+    else if(_csPeriod==='month') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(0,7);return d===now.toISOString().slice(0,7)});
+  }
+  // 统计
+  const totalCount=list.length;
+  const totalAmount=list.reduce((s,c)=>s+(c.amount||0),0);
+  const totalPaid=list.reduce((s,c)=>s+(c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0),0);
+  const totalUnpaid=totalAmount-totalPaid;
+  const settledCount=list.filter(c=>{const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;return paid>0&&paid>=(c.amount||0)}).length;
+  const partPaidCount=list.filter(c=>{const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;return paid>0&&paid<(c.amount||0)}).length;
+  const unpaidCount=list.filter(c=>{const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;return paid===0&&c.amount>0}).length;
+  const pct=totalAmount>0?Math.round(totalPaid/totalAmount*100):0;
+  // 年份选项
+  const years=new Set();contracts.forEach(c=>{const d=c.completedDate||c.signDate||c.endDate||c.createdAt||'';if(d)years.add(d.slice(0,4))});
+  const yearOpts=[...years].sort((a,b)=>b-a).map(y=>`<option value="${y}"${_csYear===y?' selected':''}>${y}年</option>`).join('');
+  const fmt=n=>n>=10000?(n/10000).toFixed(1)+'万':n.toLocaleString();
+  el.innerHTML=`
+  <div class="contract-stats-header"><h3>📊 收款统计</h3>
+    <div class="contract-stats-filter">
+      <select onchange="_csYear=this.value;renderContractStats()"><option value="all"${_csYear==='all'?' selected':''}>全部年份</option>${yearOpts}</select>
+      <button onclick="_csPeriod='all';renderContractStats()" class="${_csPeriod==='all'?'active':''}">全年</button>
+      <button onclick="_csPeriod='month';renderContractStats()" class="${_csPeriod==='month'?'active':''}">本月</button>
+      <button onclick="_csPeriod='q1';renderContractStats()" class="${_csPeriod==='q1'?'active':''}">Q1</button>
+      <button onclick="_csPeriod='q2';renderContractStats()" class="${_csPeriod==='q2'?'active':''}">Q2</button>
+      <button onclick="_csPeriod='q3';renderContractStats()" class="${_csPeriod==='q3'?'active':''}">Q3</button>
+      <button onclick="_csPeriod='q4';renderContractStats()" class="${_csPeriod==='q4'?'active':''}">Q4</button>
+      <button class="export-btn" onclick="exportContractStats()">📥 导出</button>
+    </div>
+  </div>
+  <div class="contract-stats-cards">
+    <div class="cs-card"><div class="cs-num">${totalCount}</div><div class="cs-label">项目总数</div></div>
+    <div class="cs-card"><div class="cs-num">¥${fmt(totalAmount)}</div><div class="cs-label">合同总额</div></div>
+    <div class="cs-card green"><div class="cs-num">¥${fmt(totalPaid)}</div><div class="cs-label">已收总额</div></div>
+    <div class="cs-card orange"><div class="cs-num">¥${fmt(totalUnpaid)}</div><div class="cs-label">未收总额</div></div>
+    <div class="cs-card${pct>=80?' green':pct>=50?' orange':' red'}"><div class="cs-num">${pct}%</div><div class="cs-label">结清率</div></div>
+  </div>
+  <div class="contract-stats-bar"><div class="contract-stats-bar-fill" style="width:${pct}%;background:${pct>=80?'#34a853':pct>=50?'#e37400':'#ea4335'}"></div></div>
+  <div class="contract-stats-footer">
+    <span>🟢 已结清 ${settledCount}个 ｜ 🟡 部分收款 ${partPaidCount}个 ｜ 🔴 未收款 ${unpaidCount}个</span>
+    <span>已收 ¥${fmt(totalPaid)} / 未收 ¥${fmt(totalUnpaid)}</span>
+  </div>`;
+}
+function exportContractStats(){
+  let list=contracts.slice();
+  if(_csYear!=='all'){const yr=_csYear;list=list.filter(c=>{const d=c.completedDate||c.signDate||c.endDate||c.createdAt||'';return d.slice(0,4)===yr})}
+  if(_csPeriod!=='all'){
+    if(_csPeriod==='q1') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='01'&&d<='03'});
+    else if(_csPeriod==='q2') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='04'&&d<='06'});
+    else if(_csPeriod==='q3') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='07'&&d<='09'});
+    else if(_csPeriod==='q4') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(5,7);return d>='10'&&d<='12'});
+    else if(_csPeriod==='month') list=list.filter(c=>{const d=(c.completedDate||c.signDate||'').slice(0,7);return d===new Date().toISOString().slice(0,7)});
+  }
+  // BOM + CSV
+  let csv='\uFEFF项目名称,客户,合同金额,已收金额,未收金额,收款状态,签订日期,项目完成日期,收款明细\n';
+  list.forEach(c=>{
+    const cu=customers.find(x=>x.id===c.customerId);
+    const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;
+    const unpaid=(c.amount||0)-paid;
+    const status=paid>0&&paid>=(c.amount||0)?'已结清':paid>0?'部分收款':c.amount>0?'未收款':'-';
+    const payDetail=(c.payments||[]).map(p=>`${p.name||''}:${p.amount||0}(${p.paidDate?'已收'+p.paidDate:'待收'+(p.date||'')})`).join('; ');
+    csv+=[`"${(c.name||'').replace(/"/g,'""')}"`,`"${(cu?cu.company||cu.name:'').replace(/"/g,'""')}"`,c.amount||0,paid,unpaid,status,c.signDate||'',c.completedDate||'',`"${payDetail.replace(/"/g,'""')}"`].join(',')+'\n';
+  });
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`合同收款统计_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);
+  showToast(`已导出${list.length}条记录`,'success');
 }
 function toggleYearGroup(el){
   const arrow=el.querySelector('.group-arrow');
@@ -1343,14 +1471,18 @@ function renderContractDetail(c){
     const amt=parseFloat(c.amount)||0;
     const pPct=amt>0&&p.amount?Math.round(p.amount/amt*100):0;
     const isPaid=!!p.paidDate;
-    return`<div class="payment-row" style="background:${isPaid?'#f0faf0':'#fff'};border:1px solid ${isPaid?'#c8e6c9':'#eee'};border-radius:6px;padding:6px 8px">
+    return`<div class="payment-row" data-invoice="${p.invoiceData||''}" style="background:${isPaid?'#f0faf0':'#fff'};border:1px solid ${isPaid?'#c8e6c9':'#eee'};border-radius:6px;padding:6px 8px">
       <input class="p-name" value="${p.name||''}" placeholder="节点名" data-pi="${i}" data-pf="name" style="width:80px">
       <input class="p-amount" type="number" value="${p.amount||''}" placeholder="金额" data-pi="${i}" data-pf="amount" style="width:90px" oninput="updatePayPct(this)">
       <span class="pay-pct" style="font-size:11px;color:#1a73e8;min-width:36px;text-align:right">${pPct? pPct+'%':''}</span>
       <input class="p-date" type="date" value="${p.date||''}" title="应收日期" data-pi="${i}" data-pf="date" style="width:125px">
       <input class="p-date" type="date" value="${p.paidDate||''}" title="实收日期" data-pi="${i}" data-pf="paidDate" style="background:${isPaid?'#e6f4ea':'#fff'};width:125px">
       <span style="font-size:11px;padding:2px 6px;border-radius:10px;${isPaid?'background:#e6f4ea;color:#34a853':'background:#fef7e0;color:#e37400'}">${isPaid?'✓已收':'待收'}</span>
+      <button class="btn btn-sm invoice-btn${p.invoiceData?' has-invoice':''}" onclick="toggleInvoice(${i})" title="发票">🧾${p.invoiceData?' ✓':''}</button>
       <button class="btn btn-danger btn-sm" onclick="removePaymentRow(${i})" style="padding:2px 6px">✕</button>
+    </div>
+    <div class="invoice-area" id="invoiceArea${i}">
+      ${p.invoiceData?`<button class="invoice-remove" onclick="removeInvoice(${i})">✕</button><img class="invoice-thumb" src="${p.invoiceData}" onclick="viewInvoice(${i})">`:`<div class="invoice-paste-zone" id="invoicePaste${i}" onclick="focusInvoicePaste(${i})">📋 点击此处，然后 Ctrl+V 粘贴发票</div>`}
     </div>`}).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">暂无付款节点</div>';
   const fileItems=(c.files&&c.files.length)?c.files.map(f=>{const isImg=f.type&&f.type.startsWith('image/');const isPdf=f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf');const icon=isPdf?'📕':f.type&&f.type.startsWith('text/')?'📝':'📄';const imgSrc=isImg?(f.thumbnail||('/api/files/'+f.id+'?name='+encodeURIComponent(f.name||f.id)+'&type='+encodeURIComponent(f.type||''))):'';return`<div class="contract-file-item" style="cursor:pointer" onclick="viewContractFile('${f.id}','${f.name||''}','${f.type||''}')">${isImg&&imgSrc?`<img src="${imgSrc}">`:`<div class="file-icon">${icon}</div>`}<div class="file-name">${f.name}</div><button class="remove-file" onclick="event.stopPropagation();removeContractFile('${c.id}','${f.id}')">✕</button></div>`}).join(''):'';
   document.getElementById('contractDetail').innerHTML=`
@@ -1374,6 +1506,7 @@ function renderContractDetail(c){
   <div class="form-row"><label>乙方</label><input type="text" id="cfPartyB" value="${c.partyB||''}" placeholder="乙方名称"></div>
   <div class="form-row"><label>开始日期</label><input type="date" id="cfStartDate" value="${c.startDate||''}"></div>
   <div class="form-row"><label>结束日期</label><input type="date" id="cfEndDate" value="${c.endDate||''}"></div>
+  <div class="form-row"><label>项目完成</label><input type="date" id="cfCompletedDate" value="${c.completedDate||''}"></div>
   </div>
   <h4>🛡️ 质保信息</h4>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">
@@ -1410,16 +1543,16 @@ function renderContractDetail(c){
   zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');if(e.dataTransfer.files.length)handleContractFileUploadObj(e.dataTransfer.files)});
 }
 function showAddContract(){
-  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:'',customerId:'',amount:0,signDate:'',partyA:'',partyB:'',startDate:'',endDate:'',payments:[],warrantyStart:'',warrantyEnd:'',warrantyAmount:0,warrantyPaidDate:'',files:[],notes:'',createdAt:new Date().toISOString()};
+  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:'',customerId:'',amount:0,signDate:'',partyA:'',partyB:'',startDate:'',endDate:'',completedDate:'',payments:[],warrantyStart:'',warrantyEnd:'',warrantyAmount:0,warrantyPaidDate:'',files:[],notes:'',createdAt:new Date().toISOString()};
   contracts.push(nc);saveContractsData(contracts);selectedContractId=nc.id;renderContractList();renderContractDetail(nc);document.getElementById('cfName').focus();
 }
 function collectContractData(){
   const payments=[];
   document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
-    const p={name:row.querySelector('[data-pf="name"]')?.value||'',amount:parseFloat(row.querySelector('[data-pf="amount"]')?.value)||0,date:row.querySelector('[data-pf="date"]')?.value||'',paidDate:row.querySelector('[data-pf="paidDate"]')?.value||''};
+    const p={name:row.querySelector('[data-pf="name"]')?.value||'',amount:parseFloat(row.querySelector('[data-pf="amount"]')?.value)||0,date:row.querySelector('[data-pf="date"]')?.value||'',paidDate:row.querySelector('[data-pf="paidDate"]')?.value||'',invoiceData:row.getAttribute('data-invoice')||''};
     if(p.name||p.amount||p.date)payments.push(p);
   });
-  return{name:document.getElementById('cfName').value.trim(),customerId:document.getElementById('cfCustomer').value,amount:parseFloat(document.getElementById('cfAmount').value)||0,signDate:document.getElementById('cfSignDate').value,partyA:document.getElementById('cfPartyA').value.trim(),partyB:document.getElementById('cfPartyB').value.trim(),startDate:document.getElementById('cfStartDate').value,endDate:document.getElementById('cfEndDate').value,payments,warrantyStart:document.getElementById('cfWS').value,warrantyEnd:document.getElementById('cfWE').value,warrantyAmount:parseFloat(document.getElementById('cfWA').value)||0,warrantyPaidDate:document.getElementById('cfWPD').value,notes:document.getElementById('cfNotes').value.trim()};
+  return{name:document.getElementById('cfName').value.trim(),customerId:document.getElementById('cfCustomer').value,amount:parseFloat(document.getElementById('cfAmount').value)||0,signDate:document.getElementById('cfSignDate').value,partyA:document.getElementById('cfPartyA').value.trim(),partyB:document.getElementById('cfPartyB').value.trim(),startDate:document.getElementById('cfStartDate').value,endDate:document.getElementById('cfEndDate').value,completedDate:document.getElementById('cfCompletedDate').value,payments,warrantyStart:document.getElementById('cfWS').value,warrantyEnd:document.getElementById('cfWE').value,warrantyAmount:parseFloat(document.getElementById('cfWA').value)||0,warrantyPaidDate:document.getElementById('cfWPD').value,notes:document.getElementById('cfNotes').value.trim()};
 }
 function saveContract(){
   if(!selectedContractId){showToast('请先选择合同','error');return}
@@ -1467,6 +1600,62 @@ function removePaymentRow(idx){
   if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
   const d=collectContractData();Object.assign(c,d);c.payments.splice(idx,1);saveContractsData(contracts);renderContractDetail(c);
 }
+// === 发票粘贴功能 ===
+function toggleInvoice(idx){
+  const area=document.getElementById('invoiceArea'+idx);
+  if(!area)return;
+  area.classList.toggle('show');
+  if(area.classList.contains('show')){
+    const pz=document.getElementById('invoicePaste'+idx);
+    if(pz){pz.focus();pz.setAttribute('tabindex','0')}
+  }
+}
+function focusInvoicePaste(idx){
+  const area=document.getElementById('invoiceArea'+idx);
+  if(area)area.classList.add('show');
+  const pz=document.getElementById('invoicePaste'+idx);
+  if(pz){pz.focus();pz.setAttribute('tabindex','0')}
+}
+function removeInvoice(idx){
+  if(!selectedContractId)return;
+  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);
+  if(c.payments[idx])c.payments[idx].invoiceData='';
+  saveContractsData(contracts);renderContractDetail(c);
+}
+function viewInvoice(idx){
+  if(!selectedContractId)return;
+  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const p=c.payments[idx];
+  if(!p||!p.invoiceData)return;
+  const w=window.open('','_blank');
+  w.document.write(`<img src="${p.invoiceData}" style="max-width:100%;height:auto">`);
+}
+document.addEventListener('paste',function(e){
+  if(!selectedContractId)return;
+  const active=document.activeElement;
+  if(!active||!active.id||!active.id.startsWith('invoicePaste'))return;
+  const idx=parseInt(active.id.replace('invoicePaste',''));
+  if(isNaN(idx))return;
+  const items=e.clipboardData?.items;
+  if(!items)return;
+  for(let i=0;i<items.length;i++){
+    if(items[i].type.indexOf('image')!==-1){
+      e.preventDefault();
+      const blob=items[i].getAsFile();
+      const reader=new FileReader();
+      reader.onload=function(ev){
+        const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+        const d=collectContractData();Object.assign(c,d);
+        if(!c.payments[idx])c.payments[idx]={name:'',amount:0,date:'',paidDate:''};
+        c.payments[idx].invoiceData=ev.target.result;
+        saveContractsData(contracts);renderContractDetail(c);
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }
+  }
+});
 async function handleContractFileUpload(input){if(!selectedContractId||!input.files.length)return;await handleContractFileUploadObj(input.files);input.value=''}
 async function handleContractFileUploadObj(fileList){
   if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
@@ -2360,6 +2549,13 @@ async function initApp(){
     const init=window.__INIT_DATA__;
     _diagLog('注入数据: '+Object.keys(init).join(','));
     if(init[DB_KEY]&&init[DB_KEY].length){customers=init[DB_KEY];_dataLoaded=true;_diagLog('注入客户数据: '+customers.length+'条')}
+    // 🔒 从服务器恢复avatarData（头像/备注截图），防止localStorage丢失导致图片消失
+    if(init['wfhelper_avatars']){
+      const avatars=init['wfhelper_avatars'];
+      let restored=0;
+      customers.forEach(c=>{if(avatars[c.id]&&!c.avatarData){c.avatarData=avatars[c.id];restored++}});
+      if(restored>0)_diagLog('恢复avatarData: '+restored+'条');
+    }
     if(init[CFG_KEY]) config=init[CFG_KEY];
     if(init[TPL_KEY]&&init[TPL_KEY].length) templates=init[TPL_KEY];
     if(init[CONTRACT_KEY]) contracts=init[CONTRACT_KEY];
