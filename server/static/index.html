@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -70,7 +70,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .manual-form{margin-top:16px}
 .form-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
 .form-row label{width:65px;text-align:right;font-size:13px;color:#555;flex-shrink:0}
-.form-row input,.form-row select{flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}.form-row input[type="date"]{min-width:160px;flex:0 0 auto;width:160px;padding-right:4px}
+.form-row input,.form-row select{flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}.form-row input[type="date"]{flex:1;min-width:130px;padding:7px 28px 7px 8px;font-size:12px}
 .form-row input:focus,.form-row select:focus{outline:none;border-color:#1a73e8}
 .template-panel{padding:0}
 .template-toolbar{padding:10px 14px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px}
@@ -124,11 +124,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cs-overdue{background:#fce8e6;color:#ea4335}
 .contract-form{padding:0}
 .contract-form h3{font-size:15px;margin-bottom:12px;font-weight:600}
-.contract-form h4{font-size:13px;margin:14px 0 8px;color:#555;font-weight:600;border-bottom:1px solid #eee;padding-bottom:4px}
+.contract-form h4{font-size:12px;margin:10px 0 4px;color:#555;font-weight:600;border-bottom:1px solid #eee;padding-bottom:2px}
 .payment-row{display:flex;gap:5px;margin-bottom:5px;align-items:center;flex-wrap:wrap}
-.payment-row input,.payment-row select{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
-.p-name{width:80px!important}.p-amount{width:90px!important}.p-date{width:125px!important}
-.contract-file-zone{border:2px dashed #ccc;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:8px;font-size:13px;color:#888}
+.payment-row input,.payment-row select{padding:3px 6px;border:1px solid #ddd;border-radius:4px;font-size:12px}
+.p-name{width:72px!important}.p-amount{width:80px!important}.p-date{width:115px!important}
+.contract-file-zone{border:2px dashed #ccc;border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:6px;font-size:12px;color:#888}
 .contract-file-zone:hover{border-color:#1a73e8;background:#f8f9ff}
 .contract-file-zone.dragover{border-color:#1a73e8;background:#e8f0fe}
 .contract-files-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -141,7 +141,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .pdf-page-thumb:hover{border-color:#1a73e8;box-shadow:0 2px 8px rgba(26,115,232,.2);transform:translateY(-1px)}
 .pdf-page-thumb img{width:100%;display:block}
 .pdf-page-thumb .page-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;text-align:center;padding:2px 0}
-.contract-summary{background:#f8f9ff;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px}
+.contract-summary{background:#f8f9ff;border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-around}
 .contract-summary .srow{display:flex;justify-content:space-between;padding:3px 0}
 .contract-summary .srow b{color:#333}
 .pay-progress{margin:6px 0}
@@ -211,24 +211,24 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 #panel-contract .split-right{width:58%;height:100%;position:static;overflow-y:auto}
 .invoice-btn{font-size:13px;cursor:pointer;padding:2px 6px;border:1px dashed #ccc;border-radius:4px;background:#fff;white-space:nowrap}
 .invoice-btn.has-invoice{border-color:#34a853;background:#e6f4ea;color:#34a853}
-.invoice-area{display:none;padding:6px 8px;margin-top:4px;background:#fafafa;border:1px dashed #ddd;border-radius:6px;position:relative;overflow:hidden}.invoice-area img{max-width:150px!important;max-height:50px!important;transform:none!important;transition:none!important}
+.invoice-area{display:none;padding:6px 8px;margin-top:4px;background:#fafafa;border:1px dashed #ddd;border-radius:6px;position:relative;overflow:visible}.invoice-area img{width:150px;height:50px;object-fit:contain;border-radius:4px;display:block;margin:0 auto}
 .invoice-area.show{display:block}
 .invoice-paste-zone{min-height:50px;display:flex;align-items:center;justify-content:center;border:2px dashed #ccc;border-radius:6px;cursor:pointer;font-size:12px;color:#999;padding:4px}
 .invoice-paste-zone:hover{border-color:#1a73e8;color:#1a73e8}
-.invoice-thumb{max-width:150px!important;max-height:50px!important;border-radius:4px;cursor:pointer;display:block;margin:0 auto;transition:none!important;transform:none!important}.invoice-thumb:hover{transform:none!important;max-width:150px!important;max-height:50px!important}.invoice-thumb:active{transform:none!important}.invoice-thumb:focus{transform:none!important}
+.invoice-thumb{width:150px;height:50px;object-fit:contain;border-radius:4px;cursor:pointer;display:block;margin:0 auto}
 .invoice-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:#ea4335;color:#fff;border:none;cursor:pointer;font-size:11px;line-height:18px;text-align:center}
-.contract-stats{background:linear-gradient(135deg,#f8f9ff,#eef1ff);border-radius:10px;padding:14px 16px;margin-bottom:8px;border:1px solid #d0d9f0}
-.contract-stats-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.contract-stats{background:linear-gradient(135deg,#f8f9ff,#eef1ff);border-radius:10px;padding:6px 10px;margin-bottom:6px;border:1px solid #d0d9f0}
+.contract-stats-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .contract-stats-header h3{margin:0;font-size:14px;font-weight:600;color:#333}
-.contract-stats-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
-.cs-card{background:#fff;border-radius:8px;padding:10px 8px;text-align:center;border:1px solid #e8eaef;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.cs-card .cs-num{font-size:18px;font-weight:700;color:#1a73e8;line-height:1.2}
-.cs-card .cs-label{font-size:11px;color:#888;margin-top:2px}
+.contract-stats-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:4px}
+.cs-card{background:#fff;border-radius:6px;padding:4px 8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e8eaef;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cs-card .cs-num{font-size:14px;font-weight:700;color:#1a73e8;line-height:1.2;text-align:right;min-width:45px;flex-shrink:0}
+.cs-card .cs-label{font-size:10px;color:#888;white-space:nowrap}
 .cs-card.green .cs-num{color:#34a853}
 .cs-card.orange .cs-num{color:#e37400}
 .cs-card.red .cs-num{color:#ea4335}
 .cs-card.gray .cs-num{color:#666}
-.contract-stats-bar{height:8px;background:#e8eaef;border-radius:4px;overflow:hidden;margin-bottom:4px}
+.contract-stats-bar{height:6px;background:#e8eaef;border-radius:3px;overflow:hidden;margin-bottom:2px}
 .contract-stats-bar-fill{height:100%;border-radius:4px;transition:width .3s}
 .contract-stats-footer{display:flex;justify-content:space-between;font-size:11px;color:#888}
 .contract-stats-filter{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -802,7 +802,7 @@ async function loadTemplates(){
 }
 function saveTemplates(t){apiPut(TPL_KEY,t)}
 function loadContracts(){return apiGet(CONTRACT_KEY)}
-function saveContractsData(d){apiPut(CONTRACT_KEY,d)}
+function saveContractsData(d){return apiPut(CONTRACT_KEY,d)}
 function loadMaintItems(){return apiGet(MAINT_KEY)}
 function saveMaintItems(d){apiPut(MAINT_KEY,d)}
 function loadMaintRecords(){return apiGet(MAINT_RECORDS_KEY)}
@@ -1091,6 +1091,8 @@ async function importData(event){
           let mergedC=data.contracts.map(c=>existCMap.has(c.id)?existCMap.get(c.id):c);
           mergedC=mergedC.concat(contracts.filter(c=>!data.contracts.find(d=>d.id===c.id)));
           contracts=mergedC;saveContractsData(contracts);
+  if(!ok){showToast('保存失败，请重试','error');return}
+  if(!ok){showToast('保存失败，请重试','error');return}
         }
         if(data.maintItems&&data.maintItems.length){
           const existMMap=new Map(maintItems.map(m=>[m.id,m]));
@@ -1165,7 +1167,7 @@ function showToast(msg,type='info',duration=2000){
 function getContractStatus(c){
   if(!c)return'active';const now=new Date().toISOString().slice(0,10);
   const allPaid=c.payments&&c.payments.length>0&&c.payments.every(p=>p.paidDate);
-  const warrantyDone=!c.warrantyAmount||c.warrantyPaidDate;
+  const warrantyDone=!c.warrantyAmount||(c.payments?!!c.payments.find(p=>p.name==='质保金'&&p.paidDate):false);
   const warrantyEnded=c.warrantyEnd&&c.warrantyEnd<now;
   if(allPaid&&warrantyDone&&warrantyEnded)return'completed';
   if(c.payments&&c.payments.some(p=>!p.paidDate&&p.date&&p.date<now))return'overdue';
@@ -1182,7 +1184,7 @@ function checkContractAlerts(){
       if(p.date&&p.date<now)alerts.push({t:'urgent',text:`「${c.name||'未命名'}」${p.name||'付款'}已逾期（${p.date}），¥${(p.amount||0).toLocaleString()}`});
       else if(p.date&&p.date<=wk)alerts.push({t:'warning',text:`「${c.name||'未命名'}」${p.name||'付款'}即将到期（${p.date}），¥${(p.amount||0).toLocaleString()}`});
     });
-    if(c.warrantyEnd&&!c.warrantyPaidDate&&c.warrantyAmount){
+    if(c.warrantyEnd&&c.warrantyAmount&&!(c.payments?!!c.payments.find(p=>p.name==='质保金'&&p.paidDate):false)){
       if(c.warrantyEnd<now)alerts.push({t:'urgent',text:`「${c.name||'未命名'}」质保金¥${c.warrantyAmount.toLocaleString()}已到期（质保至${c.warrantyEnd}）`});
       else if(c.warrantyEnd<=mo)alerts.push({t:'warning',text:`「${c.name||'未命名'}」质保期即将到期（${c.warrantyEnd}），质保金¥${c.warrantyAmount.toLocaleString()}`});
     }
@@ -1194,6 +1196,7 @@ function renderContractAlerts(){
   el.classList.add('show');
   el.innerHTML=`<div class="alert-title">⚠️ 合同提醒（${alerts.length}条）</div>`+alerts.map(a=>`<div class="alert-item"><span class="alert-badge ${a.t==='urgent'?'alert-urgent':'alert-warning'}">${a.t==='urgent'?'逾期':'即将到期'}</span><span>${a.text}</span></div>`).join('');
 }
+let _expandedYears=null;
 function renderContractList(){
   const filter=document.getElementById('contractFilter').value;
   let list=contracts.map(c=>({...c,_s:getContractStatus(c)}));
@@ -1208,7 +1211,7 @@ function renderContractList(){
     if(!groups[year])groups[year]=[];
     groups[year].push(c);
   });
-  const sortedYears=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  const sortedYears=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
   if(!list.length){
     document.getElementById('contractList').innerHTML='<div style="padding:36px;text-align:center;color:#aaa">暂无合同</div>';
     document.getElementById('contractCount').textContent='0 份';
@@ -1217,7 +1220,9 @@ function renderContractList(){
   let html='';
   sortedYears.forEach(year=>{
     const items=groups[year];
-    const collapsed=year!==(sortedYears[0]||'');
+    items.sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
+    if(!_expandedYears)_expandedYears=new Set([sortedYears[0]||'']);
+    const collapsed=!_expandedYears.has(year);
     html+=`<div class="contract-group-header" onclick="toggleYearGroup(this)">
       <span class="group-arrow${collapsed?'':' open'}">▶</span>
       <span class="group-label">📄 ${year}年</span>
@@ -1233,7 +1238,7 @@ function renderContractList(){
         <div class="contract-item-header" onclick="toggleContractAccordion('${c.id}')">
           <span class="expand-arrow${isSelected?' open':''}">▶</span>
           <span style="font-size:10px;margin-right:2px">${payIcon}</span>
-          <span class="c-name">${c.name||'未命名合同'}</span>
+          <span class="c-name"><span style="color:#999;font-size:11px">${(c.createdAt||'').slice(0,10)} </span>${c.name||'未命名合同'}</span>
           <span class="c-amount">¥${(c.amount||0).toLocaleString()}</span>
           <span class="c-status ${sc[c._s]}">${sl[c._s]}</span>
         </div>
@@ -1290,6 +1295,23 @@ function buildAccordionDetail(c,cu){
 }
 // === 合同收款统计 ===
 let _csYear='all',_csPeriod='all';
+
+// 数字转中文大写
+function numberToChinese(n){
+  if(!n&&n!==0)return'';
+  const units=['','拾','佰','仟','万','拾','佰','仟','亿'];
+  const digits=['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'];
+  n=Math.round(n);
+  if(n===0)return'零圆整';
+  let s=n.toString(),len=s.length,result='',zero=false;
+  for(let i=0;i<len;i++){
+    const d=parseInt(s[i]),u=len-1-i;
+    if(d===0){zero=true;if(u===4||u===8){result+=u===8?'亿':'万';zero=false;}}
+    else{if(zero){result+='零';zero=false;}result+=digits[d]+units[u];}
+  }
+  return result+'圆整';
+}
+
 function renderContractStats(){
   const el=document.getElementById('contractStats');if(!el)return;
   if(!contracts.length){el.innerHTML='';return}
@@ -1320,10 +1342,21 @@ function renderContractStats(){
   const partPaidCount=list.filter(c=>{const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;return paid>0&&paid<(c.amount||0)}).length;
   const unpaidCount=list.filter(c=>{const paid=c.payments?c.payments.filter(p=>p.paidDate).reduce((a,p)=>a+(p.amount||0),0):0;return paid===0&&c.amount>0}).length;
   const pct=totalAmount>0?Math.round(totalPaid/totalAmount*100):0;
+  // 质保金专项统计
+  const totalWarranty=list.reduce((s,c)=>{const wp=c.payments?c.payments.find(p=>p.name==='质保金'):null;return s+(wp?(wp.amount!=null?wp.amount:c.warrantyAmount||0):c.warrantyAmount||0);},0);
+  const warrantyPaidTotal=list.reduce((s,c)=>{
+    const wp=c.payments?c.payments.find(p=>p.name==='质保金'):null;
+    const isPaid=(wp&&wp.paidDate);
+    return s+(isPaid?(wp?(wp.amount!=null?wp.amount:c.warrantyAmount||0):c.warrantyAmount||0):0);
+  },0);
+  const warrantyUnpaidTotal=totalWarranty-warrantyPaidTotal;
+  const warrantyExpiredUnpaid=list.filter(c=>{if(!c.warrantyEnd||c.warrantyEnd>=now.toISOString().slice(0,10)||!c.warrantyAmount)return false;const wp=c.payments?c.payments.find(p=>p.name==='质保金'):null;const isPaid=(wp&&wp.paidDate);return !isPaid;});
+  const warrantyUnexpiredUnpaid=list.filter(c=>{if(!c.warrantyEnd||c.warrantyEnd<now.toISOString().slice(0,10)||!c.warrantyAmount)return false;const wp=c.payments?c.payments.find(p=>p.name==='质保金'):null;const isPaid=(wp&&wp.paidDate);return !isPaid;});
+  const warrantyPct=totalWarranty>0?Math.round(warrantyPaidTotal/totalWarranty*100):0;
   // 年份选项
   const years=new Set();contracts.forEach(c=>{const d=c.completedDate||c.signDate||c.endDate||c.createdAt||'';if(d)years.add(d.slice(0,4))});
   const yearOpts=[...years].sort((a,b)=>b-a).map(y=>`<option value="${y}"${_csYear===y?' selected':''}>${y}年</option>`).join('');
-  const fmt=n=>n>=10000?(n/10000).toFixed(1)+'万':n.toLocaleString();
+  const fmt=n=>n.toLocaleString();
   el.innerHTML=`
   <div class="contract-stats-header"><h3>📊 收款统计</h3>
     <div class="contract-stats-filter">
@@ -1338,12 +1371,20 @@ function renderContractStats(){
     </div>
   </div>
   <div class="contract-stats-cards">
-    <div class="cs-card"><div class="cs-num">${totalCount}</div><div class="cs-label">项目总数</div></div>
-    <div class="cs-card"><div class="cs-num">¥${fmt(totalAmount)}</div><div class="cs-label">合同总额</div></div>
-    <div class="cs-card green"><div class="cs-num">¥${fmt(totalPaid)}</div><div class="cs-label">已收总额</div></div>
-    <div class="cs-card orange"><div class="cs-num">¥${fmt(totalUnpaid)}</div><div class="cs-label">未收总额</div></div>
-    <div class="cs-card${pct>=80?' green':pct>=50?' orange':' red'}"><div class="cs-num">${pct}%</div><div class="cs-label">结清率</div></div>
+    <div class="cs-card"><span class="cs-label">项目总数</span><span class="cs-num">${totalCount}</span></div>
+    <div class="cs-card"><span class="cs-label">合同总额</span><span class="cs-num">¥${fmt(totalAmount)}</span></div>
+    <div class="cs-card green"><span class="cs-label">已收总额</span><span class="cs-num">¥${fmt(totalPaid)}</span></div>
+    <div class="cs-card orange"><span class="cs-label">未收总额</span><span class="cs-num">¥${fmt(totalUnpaid)}</span></div>
+    <div class="cs-card${pct>=80?' green':pct>=50?' orange':' red'}"><span class="cs-label">结清率</span><span class="cs-num">${pct}%</span></div>
   </div>
+  <div class="contract-stats-cards" style="margin-top:4px">
+    <div class="cs-card" style="border-left:3px solid #fbbc04"><span class="cs-label">🛡️ 质保金总额</span><span class="cs-num">¥${totalWarranty.toLocaleString()}</span></div>
+    <div class="cs-card green" style="border-left:3px solid #34a853"><span class="cs-label">✅ 已回收质保金</span><span class="cs-num">¥${warrantyPaidTotal.toLocaleString()}</span></div>
+    <div class="cs-card orange" style="border-left:3px solid #e37400"><span class="cs-label">⏳ 待回收质保金</span><span class="cs-num">¥${warrantyUnpaidTotal.toLocaleString()}</span></div>
+    <div class="cs-card${warrantyExpiredUnpaid.length>0?' red':''}" style="border-left:3px solid ${warrantyExpiredUnpaid.length>0?'#ea4335':'#34a853'}"><span class="cs-label">🚨 已到期未回收</span><span class="cs-num">${warrantyExpiredUnpaid.length}</span></div>
+    <div class="cs-card" style="border-left:3px solid #1a73e8"><span class="cs-label">🔵 未到期质保金</span><span class="cs-num">${warrantyUnexpiredUnpaid.length}</span></div>
+  </div>
+  ${warrantyExpiredUnpaid.length>0?`<div style="background:#fce8e6;border:1px solid #ea4335;border-radius:8px;padding:8px 14px;margin-bottom:6px;font-size:12px">🚨 <b>质保金已到期未回收：</b>${warrantyExpiredUnpaid.map(c=>`<span style="cursor:pointer;color:#ea4335;text-decoration:underline" onclick="selectContract('${c.id}')">「${c.name||'未命名'}」¥${(c.warrantyAmount||0).toLocaleString()}（${c.warrantyEnd}到期）</span>`).join('、')}</div>`:''}
   <div class="contract-stats-bar"><div class="contract-stats-bar-fill" style="width:${pct}%;background:${pct>=80?'#34a853':pct>=50?'#e37400':'#ea4335'}"></div></div>
   <div class="contract-stats-footer">
     <span>🟢 已结清 ${settledCount}个 ｜ 🟡 部分收款 ${partPaidCount}个 ｜ 🔴 未收款 ${unpaidCount}个</span>
@@ -1379,13 +1420,17 @@ function toggleYearGroup(el){
   const arrow=el.querySelector('.group-arrow');
   const itemsDiv=el.nextElementSibling;
   if(!itemsDiv)return;
+  const yearLabel=el.querySelector('.group-label');
+  const year=yearLabel?yearLabel.textContent.replace('📄 ','').replace('年',''):'';
   const isCollapsed=itemsDiv.classList.contains('collapsed');
   if(isCollapsed){
     itemsDiv.classList.remove('collapsed');
     arrow.classList.add('open');
+    if(_expandedYears)_expandedYears.add(year);
   }else{
     itemsDiv.classList.add('collapsed');
     arrow.classList.remove('open');
+    if(_expandedYears)_expandedYears.delete(year);
   }
 }
 function toggleContractAccordion(cid){
@@ -1459,68 +1504,84 @@ function closeContractAlertModal(){
 }
 
 function selectContract(id){selectedContractId=id;renderContractDetail(contracts.find(x=>x.id===id));renderContractList()}
+function calcDepositDate(we){if(!we)return"";const p=we.split("-");p[1]=String(Number(p[1])-1);if(p[1]==="0"){p[0]=String(Number(p[0])-1);p[1]="12";}if(p[1].length===1)p[1]="0"+p[1];return p.join("-");}
 function renderContractDetail(c){
-  if(!c){document.getElementById('contractDetail').innerHTML='<div class="detail-empty">← 选择或新增合同查看详情</div>';return}
+  const spl=document.querySelector('#panel-contract .split-left');
+  const spr=document.querySelector('#panel-contract .split-right');
+  if(!c){spl.style.width='';spr.style.width='';document.getElementById('contractDetail').innerHTML='<div class="detail-empty">← 选择或新增合同查看详情</div>';return}
+  spl.style.width='30%';spr.style.width='70%';
   const st=getContractStatus(c);const sl={active:'执行中',completed:'已完成',overdue:'有逾期'};
   const sc={active:'cs-active',completed:'cs-completed',overdue:'cs-overdue'};
   const totalPay=c.payments?c.payments.reduce((s,p)=>s+(p.amount||0),0):0;
   const paidPay=c.payments?c.payments.filter(p=>p.paidDate).reduce((s,p)=>s+(p.amount||0),0):0;
   const pct=totalPay>0?Math.round(paidPay/totalPay*100):0;
-  const custOpts=customers.map(cu=>`<option value="${cu.id}"${c.customerId===cu.id?' selected':''}>${cu.name}${cu.company?' - '+cu.company:''}</option>`).join('');
+  const pctSumTotal=c.payments?c.payments.reduce((s,p)=>{const a=parseFloat(p.amount)||0;return s+(c.amount>0&&a>0?Math.round(a/c.amount*100):0)},0):0;
+  const warrantyPaymentPaid=c.payments?!!c.payments.find(p=>p.name==='质保金'&&p.paidDate):false;
+  // 确保质保金条目存在
+  if(!c.payments||!c.payments.length){c.payments=[{name:'质保金',amount:0,date:'',paidDate:''}];}
+  else if(!c.payments.some(p=>p.name==='质保金')){c.payments.unshift({name:'质保金',amount:c.warrantyAmount||0,date:'',paidDate:''});}
   const payRows=(c.payments&&c.payments.length)?c.payments.map((p,i)=>{
     const amt=parseFloat(c.amount)||0;
     const pPct=amt>0&&p.amount?Math.round(p.amount/amt*100):0;
     const isPaid=!!p.paidDate;
-    return`<div class="payment-row" data-invoice="${p.invoiceData||''}" style="background:${isPaid?'#f0faf0':'#fff'};border:1px solid ${isPaid?'#c8e6c9':'#eee'};border-radius:6px;padding:6px 8px">
-      <input class="p-name" value="${p.name||''}" placeholder="节点名" data-pi="${i}" data-pf="name" style="width:80px">
-      <input class="p-amount" type="number" value="${p.amount||''}" placeholder="金额" data-pi="${i}" data-pf="amount" style="width:90px" oninput="updatePayPct(this)">
+    const isWarranty=p.name==='质保金';
+    const delBtn=isWarranty?`<span style="padding:2px 6px;color:#1a73e8;font-size:11px" title="质保金条目不可删除">🔒</span>`:`<button class="btn btn-danger btn-sm" onclick="removePaymentRow(${i})" style="padding:2px 6px">✕</button>`;
+    const amtOninput=isWarranty?'oninput="updatePayPct(this)"':'oninput="updatePayPct(this)"';
+    const paidOninput='';
+    return`<div class="payment-row" data-invoice="${p.invoiceData||''}" style="background:${isWarranty?'#fffef5':isPaid?'#f0faf0':'#fff'};border:1px solid ${isWarranty?'#fbbc04':isPaid?'#c8e6c9':'#eee'};border-radius:6px;padding:4px 6px" oninput="setTimeout(updatePaymentSummary,50)">
+      <input class="p-name" value="${p.name||''}" placeholder="节点名" data-pi="${i}" data-pf="name" style="width:80px;${isWarranty?'background:#fffde7;font-weight:600':''}" ${isWarranty?'readonly':''}>
+      <input class="p-amount" type="number" value="${p.amount||''}" placeholder="金额" data-pi="${i}" data-pf="amount" style="width:90px" ${amtOninput}>
       <span class="pay-pct" style="font-size:11px;color:#1a73e8;min-width:36px;text-align:right">${pPct? pPct+'%':''}</span>
       <input class="p-date" type="date" value="${p.date||''}" title="应收日期" data-pi="${i}" data-pf="date" style="width:125px">
-      <input class="p-date" type="date" value="${p.paidDate||''}" title="实收日期" data-pi="${i}" data-pf="paidDate" style="background:${isPaid?'#e6f4ea':'#fff'};width:125px">
+      <input class="p-date" type="date" value="${p.paidDate||''}" title="实收日期" data-pi="${i}" data-pf="paidDate" style="background:${isPaid?'#e6f4ea':'#fff'};width:125px" ${paidOninput}>
+      <span class="pay-status-badge" onclick="togglePaymentPaid(this,${i})" style="cursor:pointer;padding:2px 8px;border-radius:10px;font-size:11px;white-space:nowrap;user-select:none;${isPaid?'background:#e6f4ea;color:#1e7e34':'background:#fff3cd;color:#856404'}">${isPaid?'已收':'待收'}</span>
       <span style="font-size:11px;padding:2px 6px;border-radius:10px;${isPaid?'background:#e6f4ea;color:#34a853':'background:#fef7e0;color:#e37400'}">${isPaid?'✓已收':'待收'}</span>
       <button class="btn btn-sm invoice-btn${p.invoiceData?' has-invoice':''}" onclick="toggleInvoice(${i})" title="发票">🧾${p.invoiceData?' ✓':''}</button>
-      <button class="btn btn-danger btn-sm" onclick="removePaymentRow(${i})" style="padding:2px 6px">✕</button>
+      ${delBtn}
     </div>
     <div class="invoice-area" id="invoiceArea${i}">
       ${p.invoiceData?`<button class="invoice-remove" onclick="removeInvoice(${i})">✕</button><img class="invoice-thumb" src="${p.invoiceData}" onclick="viewInvoice(${i})">`:`<div class="invoice-paste-zone" id="invoicePaste${i}" onclick="focusInvoicePaste(${i})">📋 点击此处，然后 Ctrl+V 粘贴发票</div>`}
     </div>`}).join(''):'<div style="color:#aaa;font-size:12px;padding:4px 0">暂无付款节点</div>';
   const fileItems=(c.files&&c.files.length)?c.files.map(f=>{const isImg=f.type&&f.type.startsWith('image/');const isPdf=f.type==='application/pdf'||(f.name||'').toLowerCase().endsWith('.pdf');const icon=isPdf?'📕':f.type&&f.type.startsWith('text/')?'📝':'📄';const imgSrc=isImg?(f.thumbnail||('/api/files/'+f.id+'?name='+encodeURIComponent(f.name||f.id)+'&type='+encodeURIComponent(f.type||''))):'';return`<div class="contract-file-item" style="cursor:pointer" onclick="viewContractFile('${f.id}','${f.name||''}','${f.type||''}')">${isImg&&imgSrc?`<img src="${imgSrc}">`:`<div class="file-icon">${icon}</div>`}<div class="file-name">${f.name}</div><button class="remove-file" onclick="event.stopPropagation();removeContractFile('${c.id}','${f.id}')">✕</button></div>`}).join(''):'';
   document.getElementById('contractDetail').innerHTML=`
-  <div class="contract-form" style="max-width:100%;margin:0 auto;padding:0">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:12px 16px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;border-radius:10px"><h3 style="margin:0;font-size:17px;color:#fff">合同详情</h3><span style="padding:3px 12px;border-radius:12px;font-size:12px;font-weight:500;${st==='completed'?'background:#34a853;color:#fff':st==='overdue'?'background:#ea4335;color:#fff':'background:rgba(255,255,255,.25);color:#fff'}">${sl[st]}</span></div>
+  <div class="contract-form" style="display:flex;flex-direction:column;height:100%;max-width:100%;margin:0 auto;padding:0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:8px 14px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;border-radius:8px"><h3 style="margin:0;font-size:15px;color:#fff">合同详情</h3><span style="padding:3px 12px;border-radius:12px;font-size:12px;font-weight:500;${st==='completed'?'background:#34a853;color:#fff':st==='overdue'?'background:#ea4335;color:#fff':'background:rgba(255,255,255,.25);color:#fff'}">${sl[st]}</span></div>
   <div class="contract-summary">
-    <div class="srow"><span>合同金额</span><b>¥${(c.amount||0).toLocaleString()}</b></div>
+    <div class="srow"><span>合同金额</span><input type="number" id="cfAmount" value="${c.amount||''}" placeholder="合同总金额" readonly style="width:90px;text-align:right;font-weight:bold;border:1px solid #d0d9f0;border-radius:4px;padding:2px 6px;font-size:13px;background:#f5f5f5;cursor:default" oninput="updateAllPayPct();renderContractStats()"><span style="font-size:11px;color:#e37400;white-space:nowrap;min-width:80px;text-align:left" id="cfAmountChinese">${c.amount?numberToChinese(c.amount):''}</span><button class="btn btn-sm" onclick="editCfAmount()" style="padding:1px 6px;font-size:11px;line-height:1.4" title="修改合同金额">✎</button></div>
     <div class="srow"><span>已收款</span><b style="color:#34a853">¥${paidPay.toLocaleString()}</b></div>
     <div class="pay-progress"><div class="pay-progress-bar"><div class="pay-progress-fill" style="width:${pct}%"></div></div><div class="pay-progress-text">收款进度 ${pct}%</div></div>
-    ${c.warrantyAmount?`<div class="srow"><span>质保金</span><b style="color:${c.warrantyPaidDate?'#34a853':'#e37400'}">¥${c.warrantyAmount.toLocaleString()}${c.warrantyPaidDate?' ✓已收':''}</b></div>`:''}
+    ${c.warrantyAmount?`<div class="srow"><span>质保金</span><b style="color:${warrantyPaymentPaid?'#34a853':'#e37400'}">¥${c.warrantyAmount.toLocaleString()}${warrantyPaymentPaid?' ✓已收':''}</b></div>`:''}
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin-top:4px">
-  <div style="min-width:0;overflow:hidden">
+  ${(()=>{if(!c.warrantyEnd)return'';const now=new Date().toISOString().slice(0,10);const diff=Math.ceil((new Date(c.warrantyEnd+'T00:00:00')-new Date(now+'T00:00:00'))/864e5);if(diff<0){return`<div style="background:#fce8e6;border:1px solid #ea4335;border-radius:6px;padding:6px 10px;margin-bottom:6px;display:flex;align-items:center;gap:6px;font-size:12px"><span style="font-size:20px">🚨</span><div><b style="color:#ea4335">质保金已逾期 ${Math.abs(diff)} 天！</b><br><span style="font-size:12px;color:#666">质保期 ${c.warrantyStart||'?'} ~ ${c.warrantyEnd}，质保金 ¥${(c.warrantyAmount||0).toLocaleString()}${warrantyPaymentPaid?'（已回收）':'（待回收）'}</span></div></div>`}if(diff<=30){return`<div style="background:#fef7e0;border:1px solid #fbbc04;border-radius:6px;padding:6px 10px;margin-bottom:6px;display:flex;align-items:center;gap:6px;font-size:12px"><span style="font-size:20px">⏰</span><div><b style="color:#e37400">质保期 ${diff} 天后到期</b><br><span style="font-size:12px;color:#666">质保期 ${c.warrantyStart||'?'} ~ ${c.warrantyEnd}，质保金 ¥${(c.warrantyAmount||0).toLocaleString()}${warrantyPaymentPaid?'（已回收）':'（待回收）'}</span></div></div>`}return''})()}
+  <div style="flex:1;overflow-y:auto;min-height:0">
   <h4>📋 基础信息</h4>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 6px">
   <div class="form-row"><label>合同名称 *</label><input type="text" id="cfName" value="${c.name||''}" placeholder="如：XX展厅中控项目合同"></div>
-  <div class="form-row"><label>关联客户</label><select id="cfCustomer"><option value="">-- 选择客户 --</option>${custOpts}</select></div>
-  <div class="form-row"><label>合同金额</label><input type="number" id="cfAmount" value="${c.amount||''}" placeholder="合同总金额" oninput="updateAllPayPct()"></div>
-  <div class="form-row"><label>签订日期</label><input type="date" id="cfSignDate" value="${c.signDate||''}"></div>
+
+  <div class="form-row"><label>创建日期</label><input type="date" id="cfCreatedAt" value="${(c.createdAt||'').slice(0,10)}"></div>
   <div class="form-row"><label>甲方</label><input type="text" id="cfPartyA" value="${c.partyA||''}" placeholder="甲方名称"></div>
   <div class="form-row"><label>乙方</label><input type="text" id="cfPartyB" value="${c.partyB||''}" placeholder="乙方名称"></div>
-  <div class="form-row"><label>开始日期</label><input type="date" id="cfStartDate" value="${c.startDate||''}"></div>
-  <div class="form-row"><label>结束日期</label><input type="date" id="cfEndDate" value="${c.endDate||''}"></div>
-  <div class="form-row"><label>项目完成</label><input type="date" id="cfCompletedDate" value="${c.completedDate||''}"></div>
+  <div class="form-row"><label>开工时间</label><input type="date" id="cfStartDate" value="${c.startDate||''}"></div>
+  <div class="form-row"><label>培训时间</label><input type="date" id="cfCompletedDate" value="${c.completedDate||''}" onchange="syncTrainingToWarranty('completed')"></div>
   </div>
   <h4>🛡️ 质保信息</h4>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">
-  <div class="form-row"><label>质保开始</label><input type="date" id="cfWS" value="${c.warrantyStart||''}"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0 4px">
+  <div class="form-row"><label>质保开始</label><input type="date" id="cfWS" value="${c.warrantyStart||''}" onchange="calcWarrantyEnd();syncTrainingToWarranty('ws')"></div>
+  <div class="form-row"><label>质保年限</label><input type="number" id="cfWY" value="${c.warrantyYears||1}" min="0.5" step="0.5" placeholder="年" style="width:60px" oninput="calcWarrantyEnd()"></div>
   <div class="form-row"><label>质保结束</label><input type="date" id="cfWE" value="${c.warrantyEnd||''}"></div>
-  <div class="form-row"><label>质保金</label><input type="number" id="cfWA" value="${c.warrantyAmount||''}" placeholder="质保金金额"></div>
-  <div class="form-row"><label>质保金回收</label><input type="date" id="cfWPD" value="${c.warrantyPaidDate||''}"></div>
+  <div class="form-row"><label>质保金</label><input type="number" id="cfWA" value="${c.warrantyAmount||''}" placeholder="质保金金额" oninput="syncWarrantyInfoToPayment()"></div>
+  <div class="form-row"><label>质保金回收</label><input type="date" id="cfWPD" value="${c.warrantyPaidDate||calcDepositDate(c.warrantyEnd)}"></div>
   </div>
-  </div>
-  <div style="min-width:0;overflow:hidden">
-  <h4>💰 付款计划 <span style="font-weight:400;font-size:11px;color:#888">（节点名 | 金额 | 占比 | 应收日期 | 实收日期 | 状态）</span></h4>
+  <h4>💰 付款计划 <span style="font-weight:400;font-size:10px;color:#888">（节点名 | 金额 | 占比 | 应收日期 | 实收日期 | 状态）</span></h4>
   <div id="paymentRows">${payRows}</div>
-  <button class="btn btn-sm" onclick="addPaymentRow()" style="margin-top:4px">+ 添加付款节点</button>
-  <h4 style="margin-top:12px">📎 合同文件</h4>
+  <div style="display:flex;align-items:center;gap:10px;padding:4px 8px;margin-top:4px;background:#f0f4ff;border-radius:4px;font-size:11px;color:#555" id="paymentSummary">
+    <span>📊 合计：<b id="paySumTotal" style="color:#1a73e8">¥${totalPay.toLocaleString()}</b></span>
+    <span>已收：<b id="paySumPaid" style="color:#34a853">¥${paidPay.toLocaleString()}</b></span>
+    <span>占比：<b id="paySumPct" style="color:#e37400">${pctSumTotal}%</b></span>
+    <span style="margin-left:auto;font-size:10px;color:#999">（金额/占比基于付款计划各节点汇总）</span>
+  </div>
+  <button class="btn btn-sm" onclick="addPaymentRow()" style="margin-top:2px">+ 添加付款节点</button>
+  <h4 style="margin-top:8px">📎 合同文件</h4>
   <div id="ocrStatus" style="display:none;background:#e8f0fe;padding:8px 12px;border-radius:6px;font-size:12px;color:#1a73e8;margin-bottom:8px"></div>
   <div id="ocrRawBlock" style="display:none;margin-bottom:8px">
     <div style="font-size:12px;color:#666;cursor:pointer;padding:4px 8px;background:#f5f5f5;border-radius:4px 4px 0 1px;user-select:none" onclick="var t=document.getElementById('ocrRawText');t.style.display=t.style.display==='none'?'block':'none'">📋 OCR识别原文（点击展开/收起）</div>
@@ -1528,10 +1589,9 @@ function renderContractDetail(c){
   </div>
   <div class="contract-file-zone" id="contractFileZone" onclick="document.getElementById('contractFileInput').click()">📂 点击上传合同文件（图片/PDF）<input type="file" id="contractFileInput" accept="image/*,.pdf" multiple style="display:none" onchange="handleContractFileUpload(this)"></div>
   <div class="contract-files-list" id="contractFilesList">${fileItems}</div>
-  <div class="form-row" style="align-items:flex-start;margin-top:8px"><label>备注</label><textarea id="cfNotes" rows="3" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical">${c.notes||''}</textarea></div>
+  <div class="form-row" style="align-items:flex-start;margin-top:4px"><label>备注</label><textarea id="cfNotes" rows="3" style="flex:1;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical">${c.notes||''}</textarea></div>
   </div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:14px">
+  <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn btn-primary" onclick="saveContract()">💾 保存合同</button>
     <button class="btn" onclick="reOcrContract()" style="background:#e8f0fe;color:#1a73e8;border-color:#1a73e8">🔍 重新识别</button>
     <button class="btn btn-danger" onclick="deleteContract('${c.id}')">🗑 删除</button>
@@ -1543,27 +1603,111 @@ function renderContractDetail(c){
   zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragover');if(e.dataTransfer.files.length)handleContractFileUploadObj(e.dataTransfer.files)});
 }
 function showAddContract(){
-  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:'',customerId:'',amount:0,signDate:'',partyA:'',partyB:'',startDate:'',endDate:'',completedDate:'',payments:[],warrantyStart:'',warrantyEnd:'',warrantyAmount:0,warrantyPaidDate:'',files:[],notes:'',createdAt:new Date().toISOString()};
+  const nc={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:'',amount:0,signDate:'',partyA:'',partyB:'',startDate:'',endDate:'',completedDate:'',payments:[{name:'质保金',amount:0,date:'',paidDate:''}],warrantyStart:'',warrantyEnd:'',warrantyYears:1,warrantyAmount:0,warrantyPaidDate:'',files:[],notes:'',createdAt:new Date().toISOString()};
   contracts.push(nc);saveContractsData(contracts);selectedContractId=nc.id;renderContractList();renderContractDetail(nc);document.getElementById('cfName').focus();
 }
 function collectContractData(){
   const payments=[];
+  let warrantyFromPayment=0,warrantyPaidFromPayment='';
   document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
     const p={name:row.querySelector('[data-pf="name"]')?.value||'',amount:parseFloat(row.querySelector('[data-pf="amount"]')?.value)||0,date:row.querySelector('[data-pf="date"]')?.value||'',paidDate:row.querySelector('[data-pf="paidDate"]')?.value||'',invoiceData:row.getAttribute('data-invoice')||''};
     if(p.name||p.amount||p.date)payments.push(p);
+    if(p.name==='质保金'){warrantyFromPayment=p.amount;warrantyPaidFromPayment=p.paidDate;}
   });
-  return{name:document.getElementById('cfName').value.trim(),customerId:document.getElementById('cfCustomer').value,amount:parseFloat(document.getElementById('cfAmount').value)||0,signDate:document.getElementById('cfSignDate').value,partyA:document.getElementById('cfPartyA').value.trim(),partyB:document.getElementById('cfPartyB').value.trim(),startDate:document.getElementById('cfStartDate').value,endDate:document.getElementById('cfEndDate').value,completedDate:document.getElementById('cfCompletedDate').value,payments,warrantyStart:document.getElementById('cfWS').value,warrantyEnd:document.getElementById('cfWE').value,warrantyAmount:parseFloat(document.getElementById('cfWA').value)||0,warrantyPaidDate:document.getElementById('cfWPD').value,notes:document.getElementById('cfNotes').value.trim()};
+  const wa=document.getElementById('cfWA');const wav=parseFloat(wa?.value)||0;
+  const wpd=document.getElementById('cfWPD');const wpdv=wpd?.value||'';
+  const ws=document.getElementById('cfWS');const wsv=ws?.value||'';
+  const wy=document.getElementById('cfWY');const wyv=parseFloat(wy?.value)||1;
+  let calcEnd='';
+  if(wsv&&wyv){
+    const parts=wsv.split('-');
+    const totalMonths=Math.round(wyv*12);
+    const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1+totalMonths,parseInt(parts[2]));
+    calcEnd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  const we=document.getElementById('cfWE');const wev=calcEnd||we?.value||'';
+  // 质保金回收默认日期 = 质保结束 - 1个月
+  let calcDeposit='';if(wev){const dp=new Date(wev+'T00:00:00Z');dp.setUTCMonth(dp.getUTCMonth()-1);calcDeposit=dp.toISOString().slice(0,10);}
+  return{name:document.getElementById('cfName')?.value?.trim()||'',amount:parseFloat(document.getElementById('cfAmount')?.value)||0,signDate:document.getElementById('cfSignDate')?.value||'',createdAt:document.getElementById('cfCreatedAt')?.value||'',partyA:document.getElementById('cfPartyA')?.value?.trim()||'',partyB:document.getElementById('cfPartyB')?.value?.trim()||'',startDate:document.getElementById('cfStartDate')?.value||'',endDate:document.getElementById('cfEndDate')?.value||'',completedDate:document.getElementById('cfCompletedDate')?.value||'',payments,warrantyStart:wsv,warrantyEnd:wev,warrantyYears:wyv,warrantyAmount:wav,warrantyPaidDate:wpdv||calcDeposit,notes:document.getElementById('cfNotes')?.value?.trim()||''};
 }
-function saveContract(){
+
+function editCfAmount(){
+  const inp=document.getElementById('cfAmount');
+  if(!inp)return;
+  inp.removeAttribute('readonly');
+  inp.style.background='#fff';
+  inp.style.cursor='text';
+  inp.focus();
+  inp.select();
+  // Revert to readonly on blur
+  inp.onblur=function(){
+    inp.setAttribute('readonly','readonly');
+    inp.style.background='#f5f5f5';
+    inp.style.cursor='default';
+    updateAllPayPct();renderContractStats();
+    // Update Chinese uppercase
+    const ch=document.getElementById('cfAmountChinese');
+    if(ch){const v=parseFloat(inp.value)||0;ch.textContent=v?numberToChinese(v):'';}
+  };
+}
+
+
+// 根据质保开始+质保年限自动计算质保结束
+function calcWarrantyEnd(){
+  const ws=document.getElementById('cfWS');
+  const wy=document.getElementById('cfWY');
+  const we=document.getElementById('cfWE');
+  const wpd=document.getElementById('cfWPD');
+  if(!ws||!wy||!we)return;
+  const start=ws.value;
+  const years=parseFloat(wy.value)||0;
+  if(!start||!years)return;
+  const parts=start.split('-');
+  const totalMonths=Math.round(years*12);
+  const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1+totalMonths,parseInt(parts[2]));
+  const endStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  we.value=endStr;
+  // 质保金回收日期始终联动（不管原来有没有值）
+  if(wpd){
+    wpd.value=endStr;
+    syncWarrantyInfoToPayment();
+    // 同步更新内存中的contract对象
+    if(selectedContractId){
+      const c=contracts.find(x=>x.id===selectedContractId);
+      if(c){c.warrantyEnd=endStr;c.warrantyPaidDate=endStr;}
+    }
+  }
+}
+// 质保开始 与 培训时间 双向同步
+function syncTrainingToWarranty(source){
+  const completed=document.getElementById('cfCompletedDate');
+  const ws=document.getElementById('cfWS');
+  const wpd=document.getElementById('cfWPD');
+  if(!completed||!ws)return;
+  if(source==='completed'&&completed.value){
+    ws.value=completed.value;
+    calcWarrantyEnd();
+    if(wpd&&!wpd.value)wpd.value=completed.value;
+  }else if(source==='ws'&&ws.value){
+    completed.value=ws.value;
+    if(wpd&&!wpd.value)wpd.value=ws.value;
+  }
+}
+
+async function saveContract(){
+  try{
+  console.log(">>> saveContract called, selectedContractId=",selectedContractId);
   if(!selectedContractId){showToast('请先选择合同','error');return}
-  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
-  const d=collectContractData();Object.assign(c,d);c.updatedAt=new Date().toISOString();
-  saveContractsData(contracts);
+  const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();console.log('saveContract warrantyYears:',d.warrantyYears,'cfWY.value:',document.getElementById('cfWY')?.value);Object.assign(c,d);c.updatedAt=new Date().toISOString();
+  const ok=await saveContractsData(_cs);console.log(">>> SAVE_DEBUG: ok="+ok+" warrantyYears="+c.warrantyYears);
+  if(!ok){showToast('保存失败，请重试','error');return}
   // 自动生成定期维护日程
   const added=autoGeneratePeriodicMaint(c);
   renderContractList();renderContractDetail(c);renderContractAlerts();
   if(added>0) showToast(`合同已保存，自动生成${added}条定期维护日程`,'success');
   else showToast('合同已保存','success');
+  }catch(e){showToast('保存出错:'+e.message,'error');console.error(e);}
 }
 function deleteContract(id){
   if(!confirm('确定删除此合同？'))return;
@@ -1580,6 +1724,26 @@ function updatePayPct(el){
   const p=amt>0&&val?Math.round(val/amt*100):0;
   pctSpan.textContent=p?p+'%':'';
 }
+
+// 更新付款计划统计
+function updatePaymentSummary(){
+  const sumTotal=document.getElementById('paySumTotal');
+  const sumPaid=document.getElementById('paySumPaid');
+  const sumPct=document.getElementById('paySumPct');
+  if(!sumTotal||!sumPaid||!sumPct)return;
+  const cfAmount=parseFloat(document.getElementById('cfAmount')?.value)||0;
+  let total=0,paid=0,pctSum=0;
+  document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
+    const amt=parseFloat(row.querySelector('[data-pf="amount"]')?.value)||0;
+    total+=amt;
+    if(row.querySelector('[data-pf="paidDate"]')?.value)paid+=amt;
+    if(cfAmount>0&&amt>0)pctSum+=Math.round(amt/cfAmount*100);
+  });
+  sumTotal.textContent='¥'+total.toLocaleString();
+  sumPaid.textContent='¥'+paid.toLocaleString();
+  sumPct.textContent=pctSum+'%';
+}
+
 function updateAllPayPct(){
   const amt=parseFloat(document.getElementById('cfAmount').value)||0;
   document.querySelectorAll('#paymentRows .payment-row').forEach(row=>{
@@ -1590,15 +1754,70 @@ function updateAllPayPct(){
     pctSpan.textContent=p?p+'%':'';
   });
 }
+// 质保金双向同步：质保信息 → 付款计划
+function syncWarrantyInfoToPayment(){
+  const wa=document.getElementById('cfWA');const wpd=document.getElementById('cfWPD');
+  const rows=document.querySelectorAll('#paymentRows .payment-row');
+  rows.forEach(row=>{
+    const nameEl=row.querySelector('.p-name');
+    if(nameEl&&nameEl.value==='质保金'){
+      const amtEl=row.querySelector('.p-amount');
+      if(amtEl&&wa){amtEl.value=wa.value;updatePayPct(amtEl);}
+      const pdEl=row.querySelectorAll('.p-date')[1];
+      if(pdEl&&wpd)pdEl.value=wpd.value;
+    }
+  });
+}
+// 质保金双向同步：付款计划金额 → 质保信息
+function syncPaymentWarrantyToInfo(el){
+  updatePayPct(el);
+  const wa=document.getElementById('cfWA');if(wa)wa.value=el.value;
+}
+// 质保金双向同步：付款计划实收日期 → 质保信息
+function togglePaymentPaid(el,idx){
+  const row=el.closest('.payment-row');
+  const paidInput=row.querySelector('[data-pf="paidDate"]');
+  const nameInput=row.querySelector('[data-pf="name"]');
+  if(paidInput.value){
+    paidInput.value='';
+    row.style.background='#fff';
+    row.style.borderColor='#eee';
+    paidInput.style.background='#fff';
+  }else{
+    paidInput.value=new Date().toISOString().slice(0,10);
+    row.style.background='#f0faf0';
+    row.style.borderColor='#c8e6c9';
+    paidInput.style.background='#e6f4ea';
+  }
+  updatePaymentSummary();
+  if(nameInput&&nameInput.value.indexOf('质保金')>=0){
+    // sync disabled: syncPaymentWarrantyPaidToInfo(paidInput);
+  }
+  renderPaymentStatusBadge(el,!!paidInput.value);
+}
+
+function renderPaymentStatusBadge(el,isPaid){
+  el.textContent=isPaid?'已收':'待收';
+  el.style.background=isPaid?'#e6f4ea':'#fff3cd';
+  el.style.color=isPaid?'#1e7e34':'#856404';
+}
+
+function syncPaymentWarrantyPaidToInfo(el){
+  const wpd=document.getElementById('cfWPD');if(wpd)wpd.value=el.value;
+}
 function addPaymentRow(){
-  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
-  const d=collectContractData();Object.assign(c,d);c.payments.push({name:'',amount:0,date:'',paidDate:''});
+  setTimeout(updatePaymentSummary,100);
+  if(!selectedContractId)return;const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);const wi=c.payments.findIndex(p=>p.name==='质保金');if(wi>=0){c.payments.splice(wi,0,{name:'',amount:0,date:'',paidDate:''});}else{c.payments.push({name:'',amount:0,date:'',paidDate:''});}
   saveContractsData(contracts);renderContractDetail(c);
-  const rows=document.querySelectorAll('#paymentRows .payment-row');if(rows.length)rows[rows.length-1].querySelector('.p-name').focus();
+  const rows=document.querySelectorAll('#paymentRows .payment-row');const target=rows.length>1?rows[rows.length-2]:rows[0];if(target)target.querySelector('.p-name').focus();
 }
 function removePaymentRow(idx){
-  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
-  const d=collectContractData();Object.assign(c,d);c.payments.splice(idx,1);saveContractsData(contracts);renderContractDetail(c);
+  setTimeout(updatePaymentSummary,100);
+  if(!selectedContractId)return;const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
+  const d=collectContractData();Object.assign(c,d);
+  if(c.payments[idx]&&c.payments[idx].name==='质保金'){showToast('质保金条目不可删除','error');return;}
+  c.payments.splice(idx,1);saveContractsData(contracts);renderContractDetail(c);
 }
 // === 发票粘贴功能 ===
 function toggleInvoice(idx){
@@ -1618,19 +1837,49 @@ function focusInvoicePaste(idx){
 }
 function removeInvoice(idx){
   if(!selectedContractId)return;
-  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
   const d=collectContractData();Object.assign(c,d);
   if(c.payments[idx])c.payments[idx].invoiceData='';
   saveContractsData(contracts);renderContractDetail(c);
 }
 function viewInvoice(idx){
-  if(!selectedContractId)return;
-  const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  const c=contracts.find(c=>c.id===selectedContractId);
+  if(!c||!c.payments)return;
   const p=c.payments[idx];
   if(!p||!p.invoiceData)return;
-  const w=window.open('','_blank');
-  w.document.write(`<img src="${p.invoiceData}" style="max-width:100%;height:auto">`);
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  const img=document.createElement('img');
+  img.src=p.invoiceData;img.style.cssText='max-width:90vw;max-height:90vh;object-fit:contain;border-radius:4px;box-shadow:0 4px 30px rgba(0,0,0,.5)';
+  ov.appendChild(img);
+  ov.onclick=function(){ov.remove();};
+  document.body.appendChild(ov);
 }
+// 发票缩略图hover居中预览
+let _invoiceOverlay=null;
+document.addEventListener('mouseenter',function(e){
+  const thumb=e.target.closest('.invoice-thumb');
+  if(!thumb||_invoiceOverlay)return;
+  _invoiceOverlay=document.createElement('div');
+  _invoiceOverlay.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  const img=document.createElement('img');
+  img.src=thumb.src;img.style.cssText='max-width:85vw;max-height:85vh;object-fit:contain;border-radius:4px;box-shadow:0 4px 30px rgba(0,0,0,.4)';
+  _invoiceOverlay.appendChild(img);
+  _invoiceOverlay.onclick=function(){_invoiceOverlay.remove();_invoiceOverlay=null;};
+  _invoiceOverlay.addEventListener('mouseleave',function(){
+    if(_invoiceOverlay){_invoiceOverlay.remove();_invoiceOverlay=null;}
+  });
+  document.body.appendChild(_invoiceOverlay);
+},true);
+document.addEventListener('mouseleave',function(e){
+  const thumb=e.target.closest('.invoice-thumb');
+  if(!thumb||!_invoiceOverlay)return;
+  setTimeout(function(){
+    if(_invoiceOverlay&&!_invoiceOverlay.matches(':hover')){
+      _invoiceOverlay.remove();_invoiceOverlay=null;
+    }
+  },50);
+},true);
 document.addEventListener('paste',function(e){
   if(!selectedContractId)return;
   const active=document.activeElement;
@@ -1645,7 +1894,7 @@ document.addEventListener('paste',function(e){
       const blob=items[i].getAsFile();
       const reader=new FileReader();
       reader.onload=function(ev){
-        const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+        const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
         const d=collectContractData();Object.assign(c,d);
         if(!c.payments[idx])c.payments[idx]={name:'',amount:0,date:'',paidDate:''};
         c.payments[idx].invoiceData=ev.target.result;
@@ -1658,7 +1907,7 @@ document.addEventListener('paste',function(e){
 });
 async function handleContractFileUpload(input){if(!selectedContractId||!input.files.length)return;await handleContractFileUploadObj(input.files);input.value=''}
 async function handleContractFileUploadObj(fileList){
-  if(!selectedContractId)return;const c=contracts.find(x=>x.id===selectedContractId);if(!c)return;
+  if(!selectedContractId)return;const _cs=contracts;const c=_cs.find(x=>x.id===selectedContractId);if(!c)return;
   // 显示上传spinner
   const spinnerId='uploadSpinner_'+Date.now();
   const fileZone=document.getElementById('contractFileZone');
@@ -1957,7 +2206,7 @@ function getMaintEvents(){
     if(c.warrantyStart&&c.warrantyEnd){
       const ws=new Date(c.warrantyStart+'T00:00:00');
       const we=new Date(c.warrantyEnd+'T00:00:00');
-      const intervalMonths=config.maintInterval||3; // 默认每3个月
+      const intervalMonths=(config&&config.maintInterval)||3; // 默认每3个月
       let d=new Date(ws);
       d.setMonth(d.getMonth()+intervalMonths);
       while(d<=we){
@@ -1976,7 +2225,7 @@ function getMaintEvents(){
       }
     }
     // 质保到期（增强：显示倒计时）
-    if(c.warrantyEnd&&c.warrantyAmount&&!c.warrantyPaidDate){
+    if(c.warrantyEnd&&c.warrantyAmount&&!(c.payments?!!c.payments.find(p=>p.name==='质保金'&&p.paidDate):false)){
       let severity='info';
       if(c.warrantyEnd<now) severity='urgent';
       else if(c.warrantyEnd<=mo30) severity='warning';
@@ -2486,7 +2735,7 @@ function renderMaintNotes(){
 // === 合同保存时自动生成定期维护日程 ===
 function autoGeneratePeriodicMaint(contract){
   if(!contract.warrantyStart||!contract.warrantyEnd)return;
-  const intervalMonths=config.maintInterval||3;
+  const intervalMonths=(config&&config.maintInterval)||3;
   const ws=new Date(contract.warrantyStart+'T00:00:00');
   const we=new Date(contract.warrantyEnd+'T00:00:00');
   const now=new Date().toISOString().slice(0,10);
@@ -2513,6 +2762,26 @@ function autoGeneratePeriodicMaint(contract){
     }
     d=new Date(d);
     d.setMonth(d.getMonth()+intervalMonths);
+  }
+  // 质保金回收提醒：质保结束前1个月（字符串计算，避免时区Bug）
+  const depParts=contract.warrantyEnd.split('-');
+  let depM=parseInt(depParts[1])-1, depY=parseInt(depParts[0]);
+  if(depM<=0){depM+=12;depY-=1;}
+  const dds=depY+'-'+String(depM).padStart(2,'0')+'-'+depParts[2];
+  if(dds>=now&&!maintItems.some(m=>m.contractId===contract.id&&m.type==='warranty_deposit')){
+    const depositItem={
+      id:Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'wd',
+      title:'质保金回收 - '+ (contract.name||'未命合同'),
+      type:'warranty_deposit',
+      date:dds,
+      contractId:contract.id,
+      note:'质保金即将到期，请及时回收',
+      done:false,
+      autoGenerated:true,
+      createdAt:new Date().toISOString()
+    };
+    maintItems.push(depositItem);
+    added++;
   }
   if(added>0){
     saveMaintItems(maintItems);
@@ -2558,7 +2827,7 @@ async function initApp(){
     }
     if(init[CFG_KEY]) config=init[CFG_KEY];
     if(init[TPL_KEY]&&init[TPL_KEY].length) templates=init[TPL_KEY];
-    if(init[CONTRACT_KEY]) contracts=init[CONTRACT_KEY];
+    if(init[CONTRACT_KEY]){contracts=init[CONTRACT_KEY];loadContracts().then(d=>{if(d&&d.length){contracts=d;renderAll();_diagLog("API刷新合同:"+d.length+"条")}}).catch(e=>_diagLog("刷新合同失败:"+e.message))}
     if(init[MAINT_KEY]) maintItems=init[MAINT_KEY];
     if(init[MAINT_RECORDS_KEY]) maintRecords=init[MAINT_RECORDS_KEY];
     if(init[MAINT_NOTES_KEY]) maintNotes=init[MAINT_NOTES_KEY];
@@ -2608,11 +2877,20 @@ async function initApp(){
   _setVal('cfgMaintInterval',config.maintInterval||3);
   renderAll();
   _diagLog('initApp完成, customers='+customers.length+'条, _dataLoaded='+_dataLoaded);
-  // 后台静默刷新数据（2秒后从API拿完整数据含头像，确保和SQLite同步）
+  // 后台静默刷新数据（2秒后从API拿完整数据，确保和SQLite同步）
   setTimeout(async()=>{
     try{
       const d=await loadData();
-      if(d&&d.length){customers=d;_dataLoaded=true;_lsSave(DB_KEY,d);renderAll();_diagLog('后台刷新数据成功: '+d.length+'条')}
+      if(d&&d.length){
+        customers=d;_dataLoaded=true;
+        // 🔒 恢复avatarData（API返回的客户数据不含头像，需从注入数据中恢复）
+        if(window.__INIT_DATA__&&window.__INIT_DATA__['wfhelper_avatars']){
+          const avatars=window.__INIT_DATA__['wfhelper_avatars'];
+          let restored=0;
+          customers.forEach(c=>{if(avatars[c.id]&&!c.avatarData){c.avatarData=avatars[c.id];restored++}});
+          if(restored>0)_diagLog('后台刷新恢复avatarData: '+restored+'条');
+        }
+        const cd2=await loadContracts();if(cd2&&cd2.length)contracts=cd2;_lsSave(DB_KEY,d);renderAll();_diagLog('后台刷新数据成功: '+d.length+'条')}
     }catch(e){_diagLog('后台刷新失败(不影响): '+e.message)}
   },2000);
   // 进入合同管理页面时弹窗提醒（延迟1秒，避免初始化时阻塞）

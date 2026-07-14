@@ -976,20 +976,29 @@ class Handler(BaseHTTPRequestHandler):
         # API: GET /api/data/<key>
         if path.startswith('/api/data/'):
             key = path[len('/api/data/'):]
-            conn = get_db()
-            row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
-            # 🔒 数据完整性保护：客户数据为空时自动恢复预设
-            if key == 'wfhelper_data' and (not row or not json.loads(row['value'])):
-                conn.close()
-                print('[数据保护] 检测到客户数据为空，自动恢复预设数据...')
-                self._auto_restore_preset()
+            try:
+                import gc; gc.collect(); gc.collect()
                 conn = get_db()
                 row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
-            conn.close()
-            if row:
-                self.send_text(row['value'], 'application/json; charset=utf-8')
-            else:
-                self.send_text('null', 'application/json; charset=utf-8')
+                # 🔒 数据完整性保护：客户数据为空时自动恢复预设
+                if key == 'wfhelper_data' and (not row or not json.loads(row['value'])):
+                    conn.close()
+                    print('[数据保护] 检测到客户数据为空，自动恢复预设数据...')
+                    self._auto_restore_preset()
+                    gc.collect()
+                    conn = get_db()
+                    row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
+                conn.close()
+                if row:
+                    self.send_text(row['value'], 'application/json; charset=utf-8')
+                else:
+                    self.send_text('null', 'application/json; charset=utf-8')
+            except MemoryError:
+                import gc; gc.collect()
+                try: conn.close()
+                except: pass
+                print(f'[MemoryError] API请求{key}内存不足')
+                self.send_error(503, 'Server memory exhausted')
             return
         
         # API: GET /api/ocr-test - 测试百度OCR连通性
@@ -1164,7 +1173,7 @@ class Handler(BaseHTTPRequestHandler):
         # API: GET /api/export
         if path == '/api/export':
             conn = get_db()
-            rows = conn.execute("SELECT key, value FROM kv_store").fetchall()
+            rows = conn.execute("SELECT key, value FROM kv_store WHERE key NOT IN ('wfhelper_data')").fetchall()
             conn.close()
             data = {row['key']: json.loads(row['value']) for row in rows}
             self.send_json(data)
@@ -1191,13 +1200,8 @@ class Handler(BaseHTTPRequestHandler):
                     conn = get_db()
                     rows = conn.execute("SELECT key, value FROM kv_store").fetchall()
                     conn.close()
-                    init_data = {row['key']: json.loads(row['value']) for row in rows}
-                    # 🔒 关键：去掉客户数据中的avatarData（base64图片太大，会让HTML膨胀到几十MB）
-                    if 'wfhelper_data' in init_data and isinstance(init_data['wfhelper_data'], list):
-                        init_data['wfhelper_data'] = [
-                            {k: v for k, v in c.items() if k != 'avatarData'}
-                            for c in init_data['wfhelper_data']
-                        ]
+                    init_data = {row['key']: json.loads(row['value']) for row in rows if row['key'] not in ('wfhelper_data',)}
+                    # wfhelper_data 跳过注入（3.9MB），页面通过API异步加载
                     # 🔒 关键：转义</script>防止用户备注/话术中的HTML破坏页面
                     raw_json = json.dumps(init_data, ensure_ascii=False)
                     raw_json = raw_json.replace('</script', '<\\/script').replace('</Script', '<\\/Script')
@@ -1238,6 +1242,17 @@ class Handler(BaseHTTPRequestHandler):
                     pass
             conn = get_db()
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, body))
+            # 🔒 同时保存avatarData到单独key，防止localStorage丢失导致图片消失
+            if key == 'wfhelper_data':
+                try:
+                    parsed_val = json.loads(body)
+                    if isinstance(parsed_val, list):
+                        avatars = {c['id']: c['avatarData'] for c in parsed_val if c.get('avatarData')}
+                        if avatars:
+                            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                                        ('wfhelper_avatars', json.dumps(avatars, ensure_ascii=False)))
+                except:
+                    pass
             conn.commit()
             conn.close()
             self.send_json({'ok': True})
@@ -1265,6 +1280,17 @@ class Handler(BaseHTTPRequestHandler):
                     pass
             conn = get_db()
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)", (key, body))
+            # 🔒 同时保存avatarData到单独key，防止localStorage丢失导致图片消失
+            if key == 'wfhelper_data':
+                try:
+                    parsed_val = json.loads(body)
+                    if isinstance(parsed_val, list):
+                        avatars = {c['id']: c['avatarData'] for c in parsed_val if c.get('avatarData')}
+                        if avatars:
+                            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                                        ('wfhelper_avatars', json.dumps(avatars, ensure_ascii=False)))
+                except:
+                    pass
             conn.commit()
             conn.close()
             self.send_json({'ok': True})
