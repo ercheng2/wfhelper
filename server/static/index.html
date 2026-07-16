@@ -2451,6 +2451,20 @@ function calInit(){
       boardLoad();
     }
   },30000);
+  // 页面从后台切回前台时，立即检查日期是否跨天
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden){
+      var d=new Date();
+      var ds=d.toISOString().split('T')[0];
+      if(ds!==_calSelDate){
+        _calYear=d.getFullYear();
+        _calMonth=d.getMonth()+1;
+        _calSelDate=ds;
+        calLoadMonth();
+        boardLoad();
+      }
+    }
+  });
 }
 
 // === 农历日历计算 ===
@@ -4746,3 +4760,4 @@ function espAddFileToContract(d, opt){
 </script>
 </body>
 </html>
+
