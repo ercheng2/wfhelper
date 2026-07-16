@@ -370,81 +370,83 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 
 
 
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
-.cal-nav{display:flex;align-items:center;gap:8px}
-.cal-nav-btn{width:28px;height:28px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;display:flex;align-items:center;justify-content:center}
-.cal-nav-btn:hover{background:#f0f0f0}
-.cal-title{font-size:14px;font-weight:600;color:#333;min-width:100px;text-align:center}
-.cal-views{display:flex;gap:4px}
-.cal-view-btn{padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555}
-.cal-view-btn:hover{background:#f0f0f0}
-.cal-view-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 16px 0;text-align:center}
-.cal-weekday{font-size:11px;color:#888;font-weight:600;padding:3px 0}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:4px 12px;border-bottom:1px solid #e8ecf1;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,#f0f4ff,#faf5ff)}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-nav-btn{width:26px;height:26px;border:1px solid #d0d7e2;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#5f6b7a;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cal-nav-btn:hover{background:#e8f0fe;border-color:#8ab4f8}
+.cal-title{font-size:13px;font-weight:700;color:#3c4043;min-width:90px;text-align:center}
+.cal-views{display:flex;gap:3px}
+.cal-view-btn{padding:3px 10px;border:1px solid #d0d7e2;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#5f6b7a;transition:all .15s}
+.cal-view-btn:hover{background:#e8f0fe;border-color:#8ab4f8}
+.cal-view-btn.active{background:#4a6fa5;color:#fff;border-color:#4a6fa5}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 10px 0;text-align:center}
+.cal-weekday{font-size:10px;color:#8b96a5;font-weight:600;padding:2px 0}
 .cal-body{display:flex;flex:0 0 auto;min-height:0;overflow:hidden}
-.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 4px 8px;gap:1px;overflow-y:auto;align-content:start}
-.cal-cell{min-height:44px;border:1px solid #eee;border-radius:4px;padding:1px 2px;cursor:pointer;position:relative;transition:all .15s;background:#fff;overflow:hidden}
-.cal-cell:hover{border-color:#1a73e8;background:#f8faff}
-.cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
-.cal-cell.other-month:hover{border-color:#eee;background:#fafafa}
-.cal-cell.today{border-color:#1a73e8;background:#e8f0fe}
-.cal-cell.selected{border-color:#1a73e8;background:#d2e3fc;box-shadow:0 0 0 2px rgba(26,115,232,.2)}
-.cal-cell-num{font-size:10px;font-weight:600;color:#333;margin-bottom:0;line-height:1.1}
-.cal-cell.other-month .cal-cell-num{color:#ccc}
-.cal-cell.today .cal-cell-num{color:#1a73e8}
-.cal-cell.selected .cal-cell-num{color:#1a73e8}
-.cal-dots{display:flex;flex-wrap:wrap;gap:1px;margin-top:1px}
-.cal-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
-.cal-dot.done{background:#34a853}
-.cal-dot.undone{background:#ea4335}
-.cal-dot-more{font-size:8px;color:#888;line-height:4px}
-.cal-cell-titles{margin-top:1px;overflow:hidden}
-.cal-cell-title{font-size:8px;line-height:1.2;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0}
-.cal-cell-title.done{color:#999;text-decoration:line-through}
-/* === 6板块布局 === */
+.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 6px 3px 6px;gap:2px;overflow-y:auto;align-content:start}
+.cal-cell{min-height:28px;border:1px solid #e4e8f0;border-radius:4px;padding:1px 2px;cursor:pointer;position:relative;transition:all .15s;background:#f8faff;overflow:hidden}
+.cal-cell:hover{border-color:#8ab4f8;background:#eef3ff}
+.cal-cell.other-month{background:#f5f5f7;color:#c5c9d2;cursor:default}
+.cal-cell.other-month:hover{border-color:#e4e8f0;background:#f5f5f7}
+.cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}
+.cal-cell.selected{border-color:#4a6fa5;background:#d4e2fc;box-shadow:0 0 0 2px rgba(74,111,165,.25)}
+.cal-cell-num{font-size:9px;font-weight:700;color:#4a5568;margin-bottom:0;line-height:1.1}
+.cal-cell.other-month .cal-cell-num{color:#c5c9d2}
+.cal-cell.today .cal-cell-num{color:#3b5998}
+.cal-cell.selected .cal-cell-num{color:#2c4a7c}
+.cal-dots{display:flex;flex-wrap:wrap;gap:1px;margin-top:0}
+.cal-dot{width:3px;height:3px;border-radius:50%;flex-shrink:0}
+.cal-dot.done{background:#48bb78}
+.cal-dot.undone{background:#f56565}
+.cal-dot-more{font-size:7px;color:#8b96a5;line-height:3px}
+.cal-cell-titles{margin-top:0;overflow:hidden}
+.cal-cell-title{font-size:7px;line-height:1.1;color:#5f6b7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0}
+.cal-cell-title.done{color:#a0aec0;text-decoration:line-through}
+/* === 6板块竖条布局 === */
 #panel-schedule.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
-.board-container{padding:6px 8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
-.board-row-2{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-height:130px}
-.board-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;min-height:130px}
-.board-panel{border:1px solid #ea4335;border-radius:8px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
-.board-panel-title{background:#fff;color:#ea4335;font-weight:600;font-size:12px;padding:6px 10px;border-bottom:1px solid #ea4335;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.board-panel-badge{font-size:10px;background:#fce8e6;color:#ea4335;padding:1px 6px;border-radius:8px;font-weight:400}
-.board-panel-body{flex:1;overflow-y:auto;padding:4px 8px;min-height:50px;max-height:180px}
-.board-empty{text-align:center;color:#bbb;padding:16px 8px;font-size:11px}
-.board-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+.board-container{flex:1;display:flex;flex-direction:row;gap:6px;padding:6px 8px;overflow-x:auto;overflow-y:hidden}
+.board-strip{flex:1;min-width:140px;display:flex;flex-direction:column;border:1px solid #e0e0e0;border-radius:8px;background:#fff;overflow:hidden;transition:border-color .2s}
+.board-strip:hover{border-color:#c0c8d4}
+.board-strip-header{background:linear-gradient(180deg,#fafbff,#f5f6fa);padding:7px 10px;border-bottom:1px solid #e8ecf1;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:4px}
+.board-strip-header .strip-title{font-weight:700;font-size:12px;color:#3c4043;white-space:nowrap}
+.board-strip-header .strip-badge{font-size:10px;background:#e8f0fe;color:#4a6fa5;padding:1px 6px;border-radius:8px;font-weight:500;white-space:nowrap}
+.board-strip-body{flex:1;overflow-y:auto;padding:4px 8px;min-height:0}
+.board-strip-footer{display:flex;flex-direction:column;gap:3px;padding:4px 8px;border-top:1px solid #eee;flex-shrink:0}
+.board-strip-footer input{width:100%;padding:5px 7px;border:1px solid #e0e4ea;border-radius:6px;font-size:11px;outline:none;box-sizing:border-box}
+.board-strip-footer input:focus{border-color:#8ab4f8}
+.board-strip-footer .btn-row{display:flex;gap:4px}
+.board-strip-footer .btn{padding:3px 8px;font-size:11px;flex:1}
+.board-strip-toggle{display:flex;align-items:center;gap:4px;padding:3px 8px;border-top:1px solid #eee;flex-shrink:0;background:#fafbfd}
+.board-strip-toggle label{font-size:10px;color:#5f6b7a;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.board-empty{text-align:center;color:#c0c6d0;padding:20px 8px;font-size:11px}
+.board-item{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid #f5f5f5;font-size:11px}
 .board-item:last-child{border-bottom:none}
-.board-item-check{width:15px;height:15px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s}
-.board-item-check:hover{border-color:#34a853}
-.board-item.done .board-item-check{background:#34a853;border-color:#34a853;color:#fff}
-.board-item-title{flex:1;color:#333;cursor:pointer;padding:2px 4px;border-radius:3px;outline:none;word-break:break-all}
-.board-item-title:hover{background:#f0f0f0}
-.board-item-title.editing{background:#fff;border:1px solid #1a73e8;border-radius:4px;cursor:text}
-.board-item.done .board-item-title{text-decoration:line-through;color:#34a853}
-.board-item-title.undone{color:#ea4335}
-.board-item-del{color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;border-radius:4px;flex-shrink:0;visibility:hidden}
+.board-item-check{width:14px;height:14px;border:2px solid #cbd5e0;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;transition:all .15s}
+.board-item-check:hover{border-color:#48bb78}
+.board-item.done .board-item-check{background:#48bb78;border-color:#48bb78;color:#fff}
+.board-item-title{flex:1;color:#4a5568;cursor:pointer;padding:1px 3px;border-radius:3px;outline:none;word-break:break-all;min-width:0}
+.board-item-title:hover{background:#f0f2f5}
+.board-item-title.editing{background:#fff;border:1px solid #8ab4f8;border-radius:4px;cursor:text}
+.board-item.done .board-item-title{text-decoration:line-through;color:#48bb78}
+.board-item-title.undone{color:#f56565}
+.board-item-del{color:#cbd5e0;cursor:pointer;font-size:13px;padding:0 3px;border-radius:3px;flex-shrink:0;visibility:hidden}
 .board-item:hover .board-item-del{visibility:visible}
-.board-item-del:hover{color:#ea4335;background:#fce8e6}
-.board-item-tag{font-size:10px;padding:1px 6px;border-radius:8px;background:#e8f0fe;color:#1a73e8;white-space:nowrap;flex-shrink:0}
-.board-item-carry{display:flex;align-items:center;gap:2px;font-size:10px;color:#888;cursor:pointer;flex-shrink:0;white-space:nowrap}
-.board-item-carry input[type="checkbox"]{width:12px;height:12px;cursor:pointer;margin:0}
-.board-item-btn{font-size:10px;padding:2px 8px;border:1px solid #1a73e8;border-radius:4px;background:#fff;color:#1a73e8;cursor:pointer;white-space:nowrap;transition:all .15s}
-.board-item-btn:hover{background:#1a73e8;color:#fff}
-.board-panel-footer{display:flex;gap:4px;padding:4px 8px;border-top:1px solid #eee;flex-shrink:0}
-.board-panel-footer input{flex:1;padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:11px;outline:none;min-width:0}
-.board-panel-footer input:focus{border-color:#1a73e8}
-.board-panel-footer .btn{padding:3px 8px;font-size:11px}
-.board-toggle-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-top:1px solid #eee;flex-shrink:0}
-.board-toggle-row label{font-size:11px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px}
-.board-status-popup{display:none;position:fixed;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
+.board-item-del:hover{color:#f56565;background:#fff5f5}
+.board-item-tag{font-size:9px;padding:1px 5px;border-radius:8px;background:#e8f0fe;color:#4a6fa5;white-space:nowrap;flex-shrink:0}
+.board-item-carry{display:flex;align-items:center;gap:1px;font-size:9px;color:#8b96a5;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.board-item-carry input[type="checkbox"]{width:11px;height:11px;cursor:pointer;margin:0}
+.board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
+.board-item-btn:hover{background:#4a6fa5;color:#fff}
+.board-status-popup{display:none;position:fixed;background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
 .board-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
-.board-status-btn-done{background:#34a853;color:#fff}
-.board-status-btn-done:hover{background:#2d8e47}
-.board-status-btn-undone{background:#ea4335;color:#fff}
-.board-status-btn-undone:hover{background:#d33426}
-.board-status-btn-cancel{background:#f0f0f0;color:#666}
-.board-status-btn-cancel:hover{background:#e0e0e0}
-@media(max-width:1024px){.board-row-4{grid-template-columns:1fr 1fr}}
-@media(max-width:768px){.board-row-2,.board-row-4{grid-template-columns:1fr}}
+.board-status-btn-done{background:#48bb78;color:#fff}
+.board-status-btn-done:hover{background:#38a169}
+.board-status-btn-undone{background:#f56565;color:#fff}
+.board-status-btn-undone:hover{background:#e53e3e}
+.board-status-btn-cancel{background:#f0f2f5;color:#5f6b7a}
+.board-status-btn-cancel:hover{background:#e2e6eb}
+@media(max-width:1200px){.board-strip{min-width:120px}}
+@media(max-width:900px){.board-container{flex-wrap:wrap}.board-strip{flex:1 1 45%;min-width:0}}
+@media(max-width:600px){.board-container{flex-direction:column}.board-strip{flex:1 1 auto}}
 </style>
 </head>
 <body>
@@ -824,67 +826,66 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
   </div>
   <div class="cal-weekdays">
     <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
-    <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#ea4335">日</div>
+    <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#e53e3e">日</div>
   </div>
   <div class="cal-body">
     <div class="cal-grid" id="calGrid"></div>
   </div>
   <div class="board-container" id="boardContainer">
-    <div class="board-row-2">
-      <div class="board-panel" id="board-active-projects">
-        <div class="board-panel-title">📌 执行项目 <span class="board-panel-badge" id="activeCount">0</span></div>
-        <div class="board-panel-body" id="activeList"><div class="board-empty">暂无执行项目</div></div>
-        <div class="board-panel-footer">
-          <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
-          <input type="text" id="activeCat" placeholder="归类" style="max-width:70px" onkeydown="if(event.key==='Enter')boardActiveAdd()">
-          <button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button>
-        </div>
-      </div>
-      <div class="board-panel" id="board-pending-projects">
-        <div class="board-panel-title">📌 待执行项目 <span class="board-panel-badge" id="pendingCount">0</span></div>
-        <div class="board-panel-body" id="pendingList"><div class="board-empty">暂无待执行项目</div></div>
-        <div class="board-panel-footer">
-          <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
-          <input type="text" id="pendingCat" placeholder="归类" style="max-width:70px" onkeydown="if(event.key==='Enter')boardPendingAdd()">
-          <button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button>
-        </div>
+    <!-- 执行项目 -->
+    <div class="board-strip" id="board-active-projects">
+      <div class="board-strip-header"><span class="strip-title">📌 执行项目</span><span class="strip-badge" id="activeCount">0</span></div>
+      <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
+        <div class="btn-row"><input type="text" id="activeCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardActiveAdd()"><button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button></div>
       </div>
     </div>
-    <div class="board-row-4">
-      <div class="board-panel" id="board-daily-must">
-        <div class="board-panel-title">📌 每日必做</div>
-        <div class="board-panel-body" id="dailyMustList"><div class="board-empty">暂无每日必做</div></div>
-        <div class="board-toggle-row">
-          <label><input type="checkbox" id="dailyMustCarry" onchange="boardDailyMustCarry()"> 延续到明天</label>
-        </div>
-        <div class="board-panel-footer">
-          <input type="text" id="dailyMustInput" placeholder="添加任务..." onkeydown="if(event.key==='Enter')boardDailyMustAdd()">
-          <button class="btn btn-primary btn-sm" onclick="boardDailyMustAdd()">+</button>
-        </div>
+    <!-- 待执行项目 -->
+    <div class="board-strip" id="board-pending-projects">
+      <div class="board-strip-header"><span class="strip-title">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
+      <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
+        <div class="btn-row"><input type="text" id="pendingCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardPendingAdd()"><button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button></div>
       </div>
-      <div class="board-panel" id="board-today-todo">
-        <div class="board-panel-title">📌 今日待办</div>
-        <div class="board-panel-body" id="todayTodoList"><div class="board-empty">暂无待办事项</div></div>
-        <div class="board-panel-footer">
-          <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
-          <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
-        </div>
+    </div>
+    <!-- 每日必做 -->
+    <div class="board-strip" id="board-daily-must">
+      <div class="board-strip-header"><span class="strip-title">📌 每日必做</span></div>
+      <div class="board-strip-body" id="dailyMustList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="dailyMustCarry" onchange="boardDailyMustCarry()">延续到明天</label></div>
+      <div class="board-strip-footer">
+        <input type="text" id="dailyMustInput" placeholder="添加任务..." onkeydown="if(event.key==='Enter')boardDailyMustAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardDailyMustAdd()">+</button>
       </div>
-      <div class="board-panel" id="board-collection">
-        <div class="board-panel-title">📌 催款项目</div>
-        <div class="board-panel-body" id="collectionList"><div class="board-empty">暂无催款项目</div></div>
-        <div class="board-panel-footer">
-          <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
-          <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
-        </div>
+    </div>
+    <!-- 今日待办 -->
+    <div class="board-strip" id="board-today-todo">
+      <div class="board-strip-header"><span class="strip-title">📌 今日待办</span></div>
+      <div class="board-strip-body" id="todayTodoList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
+        <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
       </div>
-      <div class="board-panel" id="board-payments">
-        <div class="board-panel-title">📌 待付款</div>
-        <div class="board-panel-body" id="paymentsList"><div class="board-empty">暂无待付款</div></div>
-        <div class="board-panel-footer">
-          <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
-          <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
-        </div>
+    </div>
+    <!-- 催款项目 -->
+    <div class="board-strip" id="board-collection">
+      <div class="board-strip-header"><span class="strip-title">📌 催款项目</span></div>
+      <div class="board-strip-body" id="collectionList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label></div>
+      <div class="board-strip-footer">
+        <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
+      </div>
+    </div>
+    <!-- 待付款 -->
+    <div class="board-strip" id="board-payments">
+      <div class="board-strip-header"><span class="strip-title">📌 待付款</span></div>
+      <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
       </div>
     </div>
   </div>
@@ -2408,7 +2409,7 @@ function emptyBoard(){return {
   today_todo:{items:[]},
   active_projects:{projects:[]},
   pending_projects:{projects:[]},
-  collection:{items:[]},
+  collection:{carry_over:false,items:[]},
   payments:{items:[]}
 };}
 
@@ -2781,6 +2782,7 @@ function boardPendingDel(idx){
 function boardCollRender(){
   var list=document.getElementById('collectionList');
   var items=_boardData.collection.items;
+  document.getElementById('collCarry').checked=_boardData.collection.carry_over;
   if(!items.length){list.innerHTML='<div class="board-empty">暂无催款项目</div>';return;}
   var html='';
   for(var i=0;i<items.length;i++){
@@ -2790,6 +2792,10 @@ function boardCollRender(){
       +'</div>';
   }
   list.innerHTML=html;
+}
+function boardCollCarry(){
+  _boardData.collection.carry_over=document.getElementById('collCarry').checked;
+  boardSave();
 }
 function boardCollAdd(){
   var input=document.getElementById('collInput');
@@ -2867,13 +2873,12 @@ function boardPayDel(idx){
   boardSave();
 }
 
-// === 日历圆点更新 ===
+// === 日历圆点更新（支持历史日期） ===
 function boardUpdateCalendarDots(){
-  var today=new Date().toISOString().split('T')[0];
-  if(_calSelDate!==today) return;
+  var ds=_calSelDate;
   var items=_boardData.today_todo.items;
-  var dotsEl=document.getElementById('calDots_'+today);
-  var titlesEl=document.getElementById('calTitles_'+today);
+  var dotsEl=document.getElementById('calDots_'+ds);
+  var titlesEl=document.getElementById('calTitles_'+ds);
   if(!dotsEl||!titlesEl) return;
   var undone=items.filter(function(x){return !x.completed;});
   var done=items.filter(function(x){return x.completed;});
