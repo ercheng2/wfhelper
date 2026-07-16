@@ -368,6 +368,27 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .maint-countdown.cd-ok{background:#e6f4ea;color:#34a853}
 
 
+
+.schedule-toolbar{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
+.schedule-content{padding:16px;max-height:calc(100vh - 160px);overflow-y:auto}
+.schedule-sections{display:flex;flex-direction:column;gap:16px}
+.schedule-section-header{font-weight:600;font-size:14px;color:#444;padding:8px 12px;background:#f5f7fa;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.schedule-list{display:flex;flex-direction:column;gap:4px}
+.schedule-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #eee;border-radius:8px;transition:all .2s}
+.schedule-item:hover{background:#fafbff;border-color:#d0d9f0}
+.schedule-item.completed{background:#f0faf0;border-color:#c8e6c9;opacity:.7}
+.schedule-item.completed .schedule-title{text-decoration:line-through;color:#999}
+.schedule-check{width:20px;height:20px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px}
+.schedule-check:hover{border-color:#34a853}
+.schedule-item.completed .schedule-check{background:#34a853;border-color:#34a853;color:#fff}
+.schedule-title{flex:1;font-size:13px;color:#333}
+.schedule-date{font-size:11px;color:#999;white-space:nowrap}
+.schedule-type{font-size:11px;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.schedule-type.daily{background:#e8f0fe;color:#1a73e8}
+.schedule-type.temp{background:#fef7e0;color:#e37400}
+.schedule-del{color:#ccc;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all .2s}
+.schedule-del:hover{color:#ea4335;background:#fce8e6}
+.schedule-empty{text-align:center;color:#bbb;padding:20px;font-size:13px}
 </style>
 </head>
 <body>
@@ -724,6 +745,35 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
           <button class="btn btn-primary" onclick="applyStamp()">✅ 执行盖章</button>
           <span style="font-size:11px;color:#888;line-height:30px">盖章后生成新PDF文件，不覆盖原文件</span>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- === 日程管理面板 === -->
+<div class="panel" id="panel-schedule">
+  <div class="schedule-toolbar">
+    <span style="font-weight:600">✅ 日程管理</span>
+    <span style="font-size:12px;color:#888;margin-left:12px" id="scheduleDate"></span>
+    <button class="btn btn-primary btn-sm" onclick="toggleScheduleAdd()" style="margin-left:auto">+ 添加日程</button>
+  </div>
+  <div class="schedule-content">
+    <div id="scheduleAddForm" style="display:none;background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:14px;border:1px solid #d0d9f0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:2;min-width:160px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">事项 *</label><input type="text" id="scheduleTitle" placeholder="输入日程事项" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
+        <div style="min-width:100px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">类型</label><select id="scheduleType" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"><option value="daily">📌 每日必做</option><option value="temp">📝 临时事项</option></select></div>
+        <div style="min-width:120px" id="scheduleDateField"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">日期</label><input type="date" id="scheduleItemDate" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
+        <div style="display:flex;gap:4px"><button class="btn btn-primary btn-sm" onclick="addSchedule()">✅ 添加</button><button class="btn btn-sm" onclick="toggleScheduleAdd()">取消</button></div>
+      </div>
+    </div>
+    <div class="schedule-sections">
+      <div class="schedule-section">
+        <div class="schedule-section-header">📌 每日必做</div>
+        <div id="dailySchedules" class="schedule-list"></div>
+      </div>
+      <div class="schedule-section">
+        <div class="schedule-section-header">📝 临时事项</div>
+        <div id="tempSchedules" class="schedule-list"></div>
       </div>
     </div>
   </div>
@@ -2181,6 +2231,100 @@ async function applyStamp(){
 
 function renderAll(){renderHeader();renderTodayList();renderAllList();renderTemplates();refreshStats();renderContractList();renderContractAlerts();espRefreshFileList();espLoadStamps();renderMaint()}
 
+// === 日程管理 ===
+let _schedules=[];
+
+async function loadSchedules(){
+  try{
+    const d=document.getElementById('scheduleItemDate');
+    if(d && !d.value) d.value=new Date().toISOString().split('T')[0];
+    const date=d&&d.value?d.value:new Date().toISOString().split('T')[0];
+    document.getElementById('scheduleDate').textContent=date;
+    const r=await fetch('/api/schedules?date='+date);
+    _schedules=await r.json();
+    renderSchedules();
+  }catch(e){console.error('loadSchedules',e);}
+}
+
+function renderSchedules(){
+  const daily=_schedules.filter(s=>s.type==='daily');
+  const temp=_schedules.filter(s=>s.type==='temp');
+  const dailyEl=document.getElementById('dailySchedules');
+  const tempEl=document.getElementById('tempSchedules');
+  dailyEl.innerHTML=daily.length?daily.map(s=>scheduleItemHTML(s)).join(''):'<div class="schedule-empty">暂无每日必做事项，点击右上角添加</div>';
+  tempEl.innerHTML=temp.length?temp.map(s=>scheduleItemHTML(s)).join(''):'<div class="schedule-empty">暂无临时事项</div>';
+}
+
+function scheduleItemHTML(s){
+  const cls=s.completed?' completed':'';
+  const check=s.completed?'✓':'';
+  const dateStr=s.type==='temp'?('<span class="schedule-date">'+s.date+'</span>'):'';
+  const typeLabel=s.type==='daily'?'每日必做':'临时';
+  return '<div class="schedule-item'+cls+'">'
+    +'<div class="schedule-check" onclick="toggleSchedule(''+s.id+'')">'+check+'</div>'
+    +'<span class="schedule-title">'+escHtml(s.title)+'</span>'
+    +dateStr
+    +'<span class="schedule-type '+s.type+'">'+typeLabel+'</span>'
+    +'<span class="schedule-del" onclick="deleteSchedule(''+s.id+'')" title="删除">×</span>'
+    +'</div>';
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function toggleScheduleAdd(){
+  const f=document.getElementById('scheduleAddForm');
+  const tf=document.getElementById('scheduleType');
+  const df=document.getElementById('scheduleDateField');
+  if(f.style.display==='none'){
+    f.style.display='block';
+    document.getElementById('scheduleTitle').value='';
+    tf.value='temp';
+    updateScheduleDateField();
+    document.getElementById('scheduleTitle').focus();
+  }else{f.style.display='none';}
+}
+
+function updateScheduleDateField(){
+  const t=document.getElementById('scheduleType').value;
+  document.getElementById('scheduleDateField').style.display=t==='daily'?'none':'';
+}
+
+async function addSchedule(){
+  const title=document.getElementById('scheduleTitle').value.trim();
+  if(!title) return alert('请输入事项');
+  const type=document.getElementById('scheduleType').value;
+  const date=document.getElementById('scheduleItemDate').value||new Date().toISOString().split('T')[0];
+  try{
+    const r=await fetch('/api/schedules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,type,date})});
+    if(r.ok){toggleScheduleAdd();loadSchedules();}
+  }catch(e){console.error(e);}
+}
+
+async function toggleSchedule(id){
+  const s=_schedules.find(x=>x.id===id);
+  if(!s) return;
+  s.completed=!s.completed;
+  s.completedAt=s.completed?new Date().toISOString():null;
+  try{
+    await fetch('/api/schedules/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({completed:s.completed,completedAt:s.completedAt})});
+    renderSchedules();
+  }catch(e){console.error(e);}
+}
+
+async function deleteSchedule(id){
+  if(!confirm('确定删除此事项？')) return;
+  try{
+    await fetch('/api/schedules/'+id,{method:'DELETE'});
+    loadSchedules();
+  }catch(e){console.error(e);}
+}
+
+// 初始加载时绑定类型切换事件
+document.addEventListener('DOMContentLoaded',function(){
+  const st=document.getElementById('scheduleType');
+  if(st) st.addEventListener('change',updateScheduleDateField);
+});
+
 // === 维保日程提醒 ===
 let _maintCalYear=new Date().getFullYear();
 let _maintCalMonth=new Date().getMonth();
@@ -2797,6 +2941,7 @@ document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=
   window.scrollTo({top:0,behavior:'smooth'});
   // 切换到盖章面板时重新加载印章列表
   if(tab.dataset.tab==='stamp'){espLoadStamps();}
+  if(tab.dataset.tab==='schedule'){loadSchedules();}
 })});
 
 const ia=document.getElementById('importArea');

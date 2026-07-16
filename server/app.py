@@ -878,6 +878,11 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_maint_notes', '[]'))
     
+    # Initialize empty schedules
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_schedules'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_schedules', '[]'))
+    
     conn.commit()
     conn.close()
 
@@ -999,6 +1004,18 @@ class Handler(BaseHTTPRequestHandler):
                 except: pass
                 print(f'[MemoryError] API请求{key}内存不足')
                 self.send_error(503, 'Server memory exhausted')
+            return
+        
+        # API: GET /api/schedules
+        if path == '/api/schedules':
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
+            conn.close()
+            schedules = json.loads(row['value']) if row else []
+            query = urllib.parse.parse_qs(parsed.query)
+            date = query.get('date', [datetime.now().strftime('%Y-%m-%d')])[0]
+            result = [s for s in schedules if s.get('type') == 'daily' or s.get('date') == date]
+            self.send_json(result)
             return
         
         # API: GET /api/ocr-test - 测试百度OCR连通性
@@ -1258,6 +1275,25 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True})
             return
         
+        # API: PUT /api/schedules/<id>
+        if path.startswith('/api/schedules/'):
+            sid = path[len('/api/schedules/'):]
+            body = json.loads(self.read_body().decode('utf-8'))
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
+            schedules = json.loads(row['value']) if row else []
+            for s in schedules:
+                if s['id'] == sid:
+                    for k, v in body.items():
+                        s[k] = v
+                    break
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_schedules', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
         self.send_error(404)
     
     def do_POST(self):
@@ -1294,6 +1330,30 @@ class Handler(BaseHTTPRequestHandler):
             conn.commit()
             conn.close()
             self.send_json({'ok': True})
+            return
+        
+        # API: POST /api/schedules
+        if path == '/api/schedules':
+            body = json.loads(self.read_body().decode('utf-8'))
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
+            schedules = json.loads(row['value']) if row else []
+            new_item = {
+                'id': str(uuid.uuid4()),
+                'title': body.get('title', ''),
+                'type': body.get('type', 'temp'),
+                'date': body.get('date', datetime.now().strftime('%Y-%m-%d')),
+                'completed': False,
+                'completedAt': None,
+                'sortOrder': len(schedules),
+                'createdAt': datetime.now().isoformat()
+            }
+            schedules.append(new_item)
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_schedules', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True, 'item': new_item})
             return
         
         # API: POST /api/files/upload
@@ -1905,6 +1965,20 @@ class Handler(BaseHTTPRequestHandler):
             fp = os.path.join(STAMPS_DIR, fn)
             if os.path.exists(fp):
                 os.remove(fp)
+            self.send_json({'ok': True})
+            return
+        
+        # API: DELETE /api/schedules/<id>
+        if path.startswith('/api/schedules/'):
+            sid = path[len('/api/schedules/'):]
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
+            schedules = json.loads(row['value']) if row else []
+            schedules = [s for s in schedules if s['id'] != sid]
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_schedules', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
             self.send_json({'ok': True})
             return
         
