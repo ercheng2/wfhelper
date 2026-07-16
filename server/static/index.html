@@ -382,14 +382,14 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 16px 0;text-align:center}
 .cal-weekday{font-size:12px;color:#888;font-weight:600;padding:4px 0}
 .cal-body{display:flex;flex:1;min-height:0;overflow:hidden}
-.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 8px 8px 16px;gap:2px;overflow-y:auto;align-content:start}
-.cal-cell{min-height:80px;border:1px solid #eee;border-radius:6px;padding:4px 6px;cursor:pointer;position:relative;transition:all .15s;background:#fff}
+.cal-grid{flex:0 0 310px;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 4px 8px 8px;gap:2px;overflow-y:auto;align-content:start}
+.cal-cell{min-height:68px;border:1px solid #eee;border-radius:5px;padding:2px 3px;cursor:pointer;position:relative;transition:all .15s;background:#fff;overflow:hidden}
 .cal-cell:hover{border-color:#1a73e8;background:#f8faff}
 .cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
 .cal-cell.other-month:hover{border-color:#eee;background:#fafafa}
 .cal-cell.today{border-color:#1a73e8;background:#e8f0fe}
 .cal-cell.selected{border-color:#1a73e8;background:#d2e3fc;box-shadow:0 0 0 2px rgba(26,115,232,.2)}
-.cal-cell-num{font-size:13px;font-weight:600;color:#333;margin-bottom:2px}
+.cal-cell-num{font-size:11px;font-weight:600;color:#333;margin-bottom:1px;line-height:1.1}
 .cal-cell.other-month .cal-cell-num{color:#ccc}
 .cal-cell.today .cal-cell-num{color:#1a73e8}
 .cal-cell.selected .cal-cell-num{color:#1a73e8}
@@ -398,6 +398,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-dot.done{background:#34a853}
 .cal-dot.undone{background:#ea4335}
 .cal-dot-more{font-size:10px;color:#888;line-height:6px}
+.cal-cell-titles{margin-top:1px;overflow:hidden}
+.cal-cell-title{font-size:9px;line-height:1.3;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 0}
+.cal-cell-title.done{color:#999;text-decoration:line-through}
 .cal-sidebar{flex:1;min-width:360px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
 .cal-sidebar-header{padding:10px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .cal-sidebar-date{color:#1a73e8}
@@ -2318,40 +2321,51 @@ async function calLoadDailyTasks(){
 
 function calRender(){
   document.getElementById('calTitle').textContent=_calYear+'年'+_calMonth+'月';
-  const firstDay=new Date(_calYear,_calMonth-1,1);
-  const lastDay=new Date(_calYear,_calMonth,0);
-  const startDow=(firstDay.getDay()+6)%7;
-  const totalDays=lastDay.getDate();
-  const today=new Date().toISOString().split('T')[0];
+  var firstDay=new Date(_calYear,_calMonth-1,1);
+  var lastDay=new Date(_calYear,_calMonth,0);
+  var startDow=(firstDay.getDay()+6)%7;
+  var totalDays=lastDay.getDate();
+  var today=new Date().toISOString().split('T')[0];
   
-  let html='';
-  const prevLast=new Date(_calYear,_calMonth-1,0).getDate();
-  for(let i=startDow-1;i>=0;i--){
-    const d=prevLast-i;
+  var html='';
+  var prevLast=new Date(_calYear,_calMonth-1,0).getDate();
+  for(var i=startDow-1;i>=0;i--){
+    var d=prevLast-i;
     html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
   }
-  for(let d=1;d<=totalDays;d++){
-    const ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    let cls='cal-cell';
+  for(var d=1;d<=totalDays;d++){
+    var ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var cls='cal-cell';
     if(ds===today) cls+=' today';
     if(ds===_calSelDate) cls+=' selected';
     html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calSelectDate(\x27'+ds+'\x27)">';
     html+='<div class="cal-cell-num">'+d+'</div>';
     html+='<div class="cal-dots">';
-    const items=_calData[ds]||[];
-    const undone=items.filter(function(x){return !x.completed;});
-    const done=items.filter(function(x){return x.completed;});
-    const maxDots=4;
-    let shown=0;
-    for(let i=0;i<undone.length&&shown<maxDots;i++){html+='<div class="cal-dot undone"></div>';shown++;}
-    for(let i=0;i<done.length&&shown<maxDots;i++){html+='<div class="cal-dot done"></div>';shown++;}
-    const total=undone.length+done.length;
+    var items=_calData[ds]||[];
+    var undone=items.filter(function(x){return !x.completed;});
+    var done=items.filter(function(x){return x.completed;});
+    var maxDots=3;
+    var shown=0;
+    for(var i=0;i<undone.length&&shown<maxDots;i++){html+='<span class="cal-dot undone"></span>';shown++;}
+    for(var i=0;i<done.length&&shown<maxDots;i++){html+='<span class="cal-dot done"></span>';shown++;}
+    var total=undone.length+done.length;
     if(total>maxDots) html+='<span class="cal-dot-more">+'+ (total-maxDots) +'</span>';
-    html+='</div></div>';
+    html+='</div>';
+    var allItems=items.slice(0,2);
+    html+='<div class="cal-cell-titles">';
+    for(var i=0;i<allItems.length;i++){
+      var it=allItems[i];
+      var t=it.title||'';
+      if(t.length>6) t=t.substring(0,6)+'…';
+      var mark=it.completed?' ✓':'';
+      html+='<div class="cal-cell-title'+(it.completed?' done':'')+'">'+calEsc(t)+mark+'</div>';
+    }
+    html+='</div>';
+    html+='</div>';
   }
-  const totalCells=startDow+totalDays;
-  const remain=totalCells%7===0?0:7-totalCells%7;
-  for(let d=1;d<=remain;d++){
+  var totalCells=startDow+totalDays;
+  var remain=totalCells%7===0?0:7-totalCells%7;
+  for(var d=1;d<=remain;d++){
     html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
   }
   document.getElementById('calGrid').innerHTML=html;
@@ -2533,24 +2547,24 @@ async function calDeleteDailyTask(dailyTaskId){
 
 async function calEditItem(el,id,isDaily){
   if(el.classList.contains('editing')) return;
+  const isDailyBool=isDaily===true||isDaily==='true';
   const origText=el.textContent;
   el.classList.add('editing');
   el.contentEditable='true';
   el.focus();
-  // 选中全部文字
-  const range=document.createRange();
+  var range=document.createRange();
   range.selectNodeContents(el);
-  const sel=window.getSelection();
+  var sel=window.getSelection();
   sel.removeAllRanges();
   sel.addRange(range);
   
   async function save(){
     el.contentEditable='false';
     el.classList.remove('editing');
-    const newTitle=el.textContent.trim();
-    if(!newTitle||newTitle===origText) return;
+    var newTitle=el.textContent.trim();
+    if(!newTitle||newTitle===origText){el.onblur=null;el.onkeydown=null;return;}
     try{
-      if(isDaily){
+      if(isDailyBool){
         await fetch('/api/daily-tasks/'+id,{
           method:'PUT',
           headers:{'Content-Type':'application/json'},

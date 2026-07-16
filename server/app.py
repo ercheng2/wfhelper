@@ -1410,6 +1410,22 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True})
             return
         
+        # API: PUT /api/cal-notes
+        if path == '/api/cal-notes':
+            body = json.loads(self.read_body().decode('utf-8'))
+            date = body.get('date', '')
+            note = body.get('note', '')
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
+            notes = json.loads(row['value']) if row else {}
+            notes[date] = note
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_cal_notes', json.dumps(notes, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
         self.send_error(404)
     
     def do_POST(self):
@@ -1489,22 +1505,6 @@ class Handler(BaseHTTPRequestHandler):
             conn.commit()
             conn.close()
             self.send_json({'ok': True, 'item': new_item})
-            return
-        
-        # API: PUT /api/cal-notes
-        if path == '/api/cal-notes':
-            body = json.loads(self.read_body().decode('utf-8'))
-            date = body.get('date', '')
-            note = body.get('note', '')
-            conn = get_db()
-            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
-            notes = json.loads(row['value']) if row else {}
-            notes[date] = note
-            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                        ('wfhelper_cal_notes', json.dumps(notes, ensure_ascii=False)))
-            conn.commit()
-            conn.close()
-            self.send_json({'ok': True})
             return
         
         # API: POST /api/files/upload
