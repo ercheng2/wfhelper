@@ -1367,6 +1367,36 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True, 'item': new_item})
             return
         
+        # API: GET /api/cal-notes?date=YYYY-MM-DD
+        if path == '/api/cal-notes':
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
+            conn.close()
+            notes = json.loads(row['value']) if row else {}
+            query = urllib.parse.parse_qs(parsed.query)
+            date = query.get('date', [None])[0]
+            if date:
+                self.send_json({'note': notes.get(date, '')})
+            else:
+                self.send_json(notes)
+            return
+        
+        # API: PUT /api/cal-notes
+        if path == '/api/cal-notes':
+            body = json.loads(self.read_body().decode('utf-8'))
+            date = body.get('date', '')
+            note = body.get('note', '')
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
+            notes = json.loads(row['value']) if row else {}
+            notes[date] = note
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_cal_notes', json.dumps(notes, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
         # API: POST /api/files/upload
         if path == '/api/files/upload':
             content_type = self.headers.get('Content-Type', '')

@@ -20,6 +20,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .tab.active{background:#1a73e8;color:#fff}
 .panel{display:none;background:#fff;border-radius:0;box-shadow:none;overflow:hidden;margin:0 auto 8px}
 .panel.active{display:block}
+#panel-schedule.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
 .split{display:flex;gap:0;height:calc(100vh - 110px)}
 .split-left{width:70%;border-right:1px solid #eee;display:flex;flex-direction:column;overflow:hidden}
 .split-right{width:30%;padding:20px;overflow-y:auto;position:sticky;top:0;height:calc(100vh - 110px)}
@@ -380,7 +381,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-view-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 16px 0;text-align:center}
 .cal-weekday{font-size:12px;color:#888;font-weight:600;padding:4px 0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 16px 16px;gap:2px}
+.cal-body{display:flex;flex:1;min-height:0;overflow:hidden}
+.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 8px 8px 16px;gap:2px;overflow-y:auto;align-content:start}
 .cal-cell{min-height:80px;border:1px solid #eee;border-radius:6px;padding:4px 6px;cursor:pointer;position:relative;transition:all .15s;background:#fff}
 .cal-cell:hover{border-color:#1a73e8;background:#f8faff}
 .cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
@@ -396,16 +398,20 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-dot.done{background:#34a853}
 .cal-dot.undone{background:#ea4335}
 .cal-dot-more{font-size:10px;color:#888;line-height:6px}
-.cal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:1000;justify-content:center;align-items:flex-start;padding-top:60px}
-.cal-overlay.show{display:flex}
-.cal-detail{background:#fff;border-radius:12px;width:420px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
-.cal-detail-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #eee}
-.cal-detail-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:16px;color:#999;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.cal-detail-close:hover{background:#f0f0f0;color:#333}
-.cal-detail-add{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid #f0f0f0}
+.cal-sidebar{width:340px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
+.cal-sidebar-header{padding:14px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px}
+.cal-sidebar-date{color:#1a73e8}
+.cal-sidebar-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;padding:24px}
+.cal-note-area{flex:1;display:flex;flex-direction:column;min-height:0;border-bottom:1px solid #eee}
+.cal-note-area textarea{flex:1;border:none;outline:none;resize:none;padding:12px 16px;font-size:13px;line-height:1.7;color:#333;font-family:inherit;background:#fff}
+.cal-note-area textarea::placeholder{color:#ccc}
+.cal-note-saved{font-size:11px;color:#34a853;padding:2px 16px 6px;background:#fff}
+.cal-todo-section{border-top:1px solid #eee;background:#fff;flex-shrink:0;max-height:40%}
+.cal-todo-title{font-size:12px;font-weight:600;color:#888;padding:10px 16px 6px}
+.cal-detail-add{display:flex;gap:8px;padding:8px 16px}
 .cal-detail-add input{flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
 .cal-detail-add input:focus{border-color:#1a73e8}
-.cal-detail-list{padding:8px 18px 18px}
+.cal-detail-list{padding:4px 16px 12px;overflow-y:auto;max-height:200px}
 .cal-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5}
 .cal-item:last-child{border-bottom:none}
 .cal-item-check{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
@@ -797,21 +803,26 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
     <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#ea4335">日</div>
   </div>
-  <div class="cal-grid" id="calGrid"></div>
-</div>
-
-<!-- 日期详情弹窗 -->
-<div class="cal-overlay" id="calOverlay" onclick="calCloseDetail()">
-  <div class="cal-detail" id="calDetail" onclick="event.stopPropagation()">
-    <div class="cal-detail-header">
-      <span style="font-weight:600" id="calDetailDate"></span>
-      <button class="cal-detail-close" onclick="calCloseDetail()">✕</button>
+  <div class="cal-body">
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-sidebar" id="calSidebar">
+      <div class="cal-sidebar-empty" id="calSidebarEmpty">👈 点击左侧日期查看和编辑</div>
+      <div class="cal-sidebar-header" id="calSidebarHeader" style="display:none">
+        📅 <span class="cal-sidebar-date" id="calDetailDate"></span>
+      </div>
+      <div class="cal-note-area" id="calNoteArea" style="display:none">
+        <textarea id="calNoteText" placeholder="📝 记录当天事项..." oninput="calNoteAutoSave()"></textarea>
+        <div class="cal-note-saved" id="calNoteSaved" style="display:none">✅ 已自动保存</div>
+      </div>
+      <div class="cal-todo-section" id="calTodoSection" style="display:none">
+        <div class="cal-todo-title">☑ 待办事项</div>
+        <div class="cal-detail-add">
+          <input type="text" id="calNewTitle" placeholder="添加待办..." onkeydown="if(event.key==='Enter')calAddItem()">
+          <button class="btn btn-primary btn-sm" onclick="calAddItem()">添加</button>
+        </div>
+        <div class="cal-detail-list" id="calDetailList"></div>
+      </div>
     </div>
-    <div class="cal-detail-add">
-      <input type="text" id="calNewTitle" placeholder="添加事项..." onkeydown="if(event.key==='Enter')calAddItem()">
-      <button class="btn btn-primary btn-sm" onclick="calAddItem()">添加</button>
-    </div>
-    <div class="cal-detail-list" id="calDetailList"></div>
   </div>
 </div>
 
@@ -2299,7 +2310,7 @@ function calRender(){
     let cls='cal-cell';
     if(ds===today) cls+=' today';
     if(ds===_calSelDate) cls+=' selected';
-    html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calOpenDetail(\x27'+ds+'\x27)">';
+    html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calSelectDate(\x27'+ds+'\x27)">';
     html+='<div class="cal-cell-num">'+d+'</div>';
     html+='<div class="cal-dots">';
     const items=_calData[ds]||[];
@@ -2355,17 +2366,16 @@ function calSetView(v){
   calLoadMonth();
 }
 
-function calOpenDetail(ds){
+function calSelectDate(ds){
   _calSelDate=ds;
   document.getElementById('calDetailDate').textContent=ds;
   document.getElementById('calNewTitle').value='';
-  document.getElementById('calOverlay').classList.add('show');
+  document.getElementById('calSidebarEmpty').style.display='none';
+  document.getElementById('calSidebarHeader').style.display='flex';
+  document.getElementById('calNoteArea').style.display='flex';
+  document.getElementById('calTodoSection').style.display='block';
+  calLoadNote();
   calRenderDetail();
-  calRender();
-}
-
-function calCloseDetail(){
-  document.getElementById('calOverlay').classList.remove('show');
   calRender();
 }
 
@@ -2431,6 +2441,32 @@ async function calDelete(id){
 }
 
 function calEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// === 日历记事本 ===
+let _calNoteTimer=null;
+async function calLoadNote(){
+  try{
+    const r=await fetch('/api/cal-notes?date='+_calSelDate);
+    const d=await r.json();
+    document.getElementById('calNoteText').value=d.note||'';
+  }catch(e){console.error(e);}
+}
+function calNoteAutoSave(){
+  clearTimeout(_calNoteTimer);
+  _calNoteTimer=setTimeout(async function(){
+    const note=document.getElementById('calNoteText').value;
+    try{
+      await fetch('/api/cal-notes',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({date:_calSelDate,note:note})
+      });
+      const el=document.getElementById('calNoteSaved');
+      el.style.display='block';
+      setTimeout(function(){el.style.display='none';},1500);
+    }catch(e){console.error(e);}
+  },800);
+}
 
 document.addEventListener('DOMContentLoaded',function(){
   calInit();
