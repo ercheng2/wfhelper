@@ -888,8 +888,19 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_daily_tasks', '[]'))
     
+    # Initialize empty schedule board
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_schedule_board'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_schedule_board', '{}'))
+    
     conn.commit()
     conn.close()
+
+def get_prev_date(date_str):
+    """获取前一天日期字符串"""
+    from datetime import datetime, timedelta
+    d = datetime.strptime(date_str, '%Y-%m-%d')
+    return (d - timedelta(days=1)).strftime('%Y-%m-%d')
 
 # === HTTP 处理器 ===
 class Handler(BaseHTTPRequestHandler):
@@ -1087,6 +1098,45 @@ class Handler(BaseHTTPRequestHandler):
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
             conn.close()
             self.send_json(json.loads(row['value']) if row else [])
+            return
+        
+        # API: GET /api/schedule-board?date=YYYY-MM-DD
+        if path == '/api/schedule-board':
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedule_board'").fetchone()
+            board = json.loads(row['value']) if row else {}
+            conn.close()
+            query = urllib.parse.parse_qs(parsed.query)
+            date = query.get('date', [None])[0]
+            if date:
+                if date not in board:
+                    prev_date = get_prev_date(date)
+                    prev = board.get(prev_date, {})
+                    new_entry = {
+                        'daily_must': {'carry_over': False, 'tasks': []},
+                        'today_todo': {'items': []},
+                        'active_projects': {'projects': []},
+                        'pending_projects': {'projects': []},
+                        'collection': {'items': []},
+                        'payments': {'items': []}
+                    }
+                    if prev.get('daily_must', {}).get('carry_over'):
+                        new_entry['daily_must'] = {
+                            'carry_over': True,
+                            'tasks': [dict(t) for t in prev['daily_must']['tasks']]
+                        }
+                    for p in prev.get('active_projects', {}).get('projects', []):
+                        if p.get('carry_over'):
+                            new_entry['active_projects']['projects'].append(dict(p))
+                    board[date] = new_entry
+                    conn = get_db()
+                    conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                                ('wfhelper_schedule_board', json.dumps(board, ensure_ascii=False)))
+                    conn.commit()
+                    conn.close()
+                self.send_json(board.get(date, {}))
+            else:
+                self.send_json(board)
             return
         
         # API: GET /api/ocr-test - 测试百度OCR连通性
@@ -1421,6 +1471,22 @@ class Handler(BaseHTTPRequestHandler):
             notes[date] = note
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                         ('wfhelper_cal_notes', json.dumps(notes, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
+        # API: PUT /api/schedule-board
+        if path == '/api/schedule-board':
+            body = json.loads(self.read_body().decode('utf-8'))
+            date = body.get('date', '')
+            board_data = body.get('board', {})
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedule_board'").fetchone()
+            board = json.loads(row['value']) if row else {}
+            board[date] = board_data
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_schedule_board', json.dumps(board, ensure_ascii=False)))
             conn.commit()
             conn.close()
             self.send_json({'ok': True})

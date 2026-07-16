@@ -370,84 +370,81 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 
 
 
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
 .cal-nav{display:flex;align-items:center;gap:8px}
 .cal-nav-btn{width:28px;height:28px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;display:flex;align-items:center;justify-content:center}
 .cal-nav-btn:hover{background:#f0f0f0}
-.cal-title{font-size:16px;font-weight:600;color:#333;min-width:120px;text-align:center}
+.cal-title{font-size:14px;font-weight:600;color:#333;min-width:100px;text-align:center}
 .cal-views{display:flex;gap:4px}
 .cal-view-btn{padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555}
 .cal-view-btn:hover{background:#f0f0f0}
 .cal-view-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 16px 0;text-align:center}
-.cal-weekday{font-size:12px;color:#888;font-weight:600;padding:4px 0}
-.cal-body{display:flex;flex:1;min-height:0;overflow:hidden}
-.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 4px 8px 8px;gap:2px;overflow-y:auto;align-content:start}
-.cal-cell{min-height:68px;border:1px solid #eee;border-radius:5px;padding:2px 3px;cursor:pointer;position:relative;transition:all .15s;background:#fff;overflow:hidden}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 16px 0;text-align:center}
+.cal-weekday{font-size:11px;color:#888;font-weight:600;padding:3px 0}
+.cal-body{display:flex;flex:0 0 auto;min-height:0;overflow:hidden}
+.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 4px 8px;gap:1px;overflow-y:auto;align-content:start}
+.cal-cell{min-height:44px;border:1px solid #eee;border-radius:4px;padding:1px 2px;cursor:pointer;position:relative;transition:all .15s;background:#fff;overflow:hidden}
 .cal-cell:hover{border-color:#1a73e8;background:#f8faff}
 .cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
 .cal-cell.other-month:hover{border-color:#eee;background:#fafafa}
 .cal-cell.today{border-color:#1a73e8;background:#e8f0fe}
 .cal-cell.selected{border-color:#1a73e8;background:#d2e3fc;box-shadow:0 0 0 2px rgba(26,115,232,.2)}
-.cal-cell-num{font-size:11px;font-weight:600;color:#333;margin-bottom:1px;line-height:1.1}
+.cal-cell-num{font-size:10px;font-weight:600;color:#333;margin-bottom:0;line-height:1.1}
 .cal-cell.other-month .cal-cell-num{color:#ccc}
 .cal-cell.today .cal-cell-num{color:#1a73e8}
 .cal-cell.selected .cal-cell-num{color:#1a73e8}
-.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
-.cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-dots{display:flex;flex-wrap:wrap;gap:1px;margin-top:1px}
+.cal-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
 .cal-dot.done{background:#34a853}
 .cal-dot.undone{background:#ea4335}
-.cal-dot-more{font-size:10px;color:#888;line-height:6px}
+.cal-dot-more{font-size:8px;color:#888;line-height:4px}
 .cal-cell-titles{margin-top:1px;overflow:hidden}
-.cal-cell-title{font-size:9px;line-height:1.3;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 0}
+.cal-cell-title{font-size:8px;line-height:1.2;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0}
 .cal-cell-title.done{color:#999;text-decoration:line-through}
-.cal-sidebar{flex:1;min-width:360px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
-.cal-sidebar-header{padding:10px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex-shrink:0}
-.cal-sidebar-date{color:#1a73e8}
-.cal-sidebar-lunar{font-size:11px;color:#999;font-weight:400;margin-left:4px}
-.cal-today-summary{flex-shrink:0;background:#fff;border-top:1px solid #eee;padding:8px 16px}
-.cal-today-summary-title{font-size:12px;font-weight:600;color:#1a73e8;margin-bottom:4px}
-.cal-today-summary-list{font-size:12px;color:#555;line-height:1.7}
-.cal-today-summary-item{display:flex;align-items:center;gap:6px;padding:2px 0}
-.cal-today-summary-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.cal-today-summary-dot.undone{background:#ea4335}
-.cal-today-summary-dot.done{background:#34a853}
-.cal-today-summary-empty{font-size:11px;color:#bbb;padding:4px 0}
-.cal-status-popup{display:none;position:absolute;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:999;font-size:12px;text-align:center;white-space:nowrap}
-.cal-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
-.cal-status-btn-done{background:#34a853;color:#fff}
-.cal-status-btn-done:hover{background:#2d8e47}
-.cal-status-btn-undone{background:#ea4335;color:#fff}
-.cal-status-btn-undone:hover{background:#d33426}
-.cal-status-btn-cancel{background:#f0f0f0;color:#666}
-.cal-status-btn-cancel:hover{background:#e0e0e0}
-.cal-sidebar-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;padding:24px}
-.cal-note-area{flex:1;display:flex;flex-direction:column;min-height:120px;border-bottom:1px solid #eee}
-.cal-note-area textarea{flex:1;border:none;outline:none;resize:none;padding:10px 16px;font-size:13px;line-height:1.7;color:#333;font-family:inherit;background:#fff}
-.cal-note-area textarea::placeholder{color:#ccc}
-.cal-note-saved{font-size:11px;color:#34a853;padding:2px 16px 4px;background:#fff;flex-shrink:0}
-.cal-section{flex-shrink:0;background:#fff;border-top:1px solid #eee}
-.cal-section-title{font-size:12px;font-weight:600;color:#888;padding:10px 16px 6px;display:flex;align-items:center;justify-content:space-between}
-.cal-section-title .cal-section-badge{font-size:10px;background:#e8f0fe;color:#1a73e8;padding:1px 6px;border-radius:8px}
-.cal-detail-add{display:flex;gap:6px;padding:6px 16px 8px}
-.cal-detail-add input{flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;outline:none}
-.cal-detail-add input:focus{border-color:#1a73e8}
-.cal-detail-list{padding:0 16px 8px;overflow-y:auto;max-height:180px}
-.cal-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5}
-.cal-item:last-child{border-bottom:none}
-.cal-item-check{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
-.cal-item-check:hover{border-color:#34a853}
-.cal-item.done .cal-item-check{background:#34a853;border-color:#34a853;color:#fff}
-.cal-item-title{flex:1;font-size:13px;color:#ea4335;cursor:pointer;padding:2px 4px;border-radius:3px;transition:background .15s}
-.cal-item-title:hover{background:#f0f0f0}
-.cal-item-title.editing{padding:3px 4px;background:#fff;border:1px solid #1a73e8;border-radius:4px;outline:none;cursor:text}
-.cal-item.done .cal-item-title{text-decoration:line-through;color:#34a853}
-.cal-item-edit{color:#ccc;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;flex-shrink:0;visibility:hidden}
-.cal-item:hover .cal-item-edit{visibility:visible}
-.cal-item-edit:hover{color:#1a73e8;background:#e8f0fe}
-.cal-item-del{color:#ccc;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;flex-shrink:0}
-.cal-item-del:hover{color:#ea4335;background:#fce8e6}
-.cal-empty{text-align:center;color:#bbb;padding:16px;font-size:12px}
+/* === 6板块布局 === */
+#panel-schedule.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
+.board-container{padding:6px 8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1}
+.board-row-2{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-height:130px}
+.board-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;min-height:130px}
+.board-panel{border:1px solid #ea4335;border-radius:8px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.board-panel-title{background:#fff;color:#ea4335;font-weight:600;font-size:12px;padding:6px 10px;border-bottom:1px solid #ea4335;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.board-panel-badge{font-size:10px;background:#fce8e6;color:#ea4335;padding:1px 6px;border-radius:8px;font-weight:400}
+.board-panel-body{flex:1;overflow-y:auto;padding:4px 8px;min-height:50px;max-height:180px}
+.board-empty{text-align:center;color:#bbb;padding:16px 8px;font-size:11px}
+.board-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+.board-item:last-child{border-bottom:none}
+.board-item-check{width:15px;height:15px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s}
+.board-item-check:hover{border-color:#34a853}
+.board-item.done .board-item-check{background:#34a853;border-color:#34a853;color:#fff}
+.board-item-title{flex:1;color:#333;cursor:pointer;padding:2px 4px;border-radius:3px;outline:none;word-break:break-all}
+.board-item-title:hover{background:#f0f0f0}
+.board-item-title.editing{background:#fff;border:1px solid #1a73e8;border-radius:4px;cursor:text}
+.board-item.done .board-item-title{text-decoration:line-through;color:#34a853}
+.board-item-title.undone{color:#ea4335}
+.board-item-del{color:#ccc;cursor:pointer;font-size:14px;padding:0 4px;border-radius:4px;flex-shrink:0;visibility:hidden}
+.board-item:hover .board-item-del{visibility:visible}
+.board-item-del:hover{color:#ea4335;background:#fce8e6}
+.board-item-tag{font-size:10px;padding:1px 6px;border-radius:8px;background:#e8f0fe;color:#1a73e8;white-space:nowrap;flex-shrink:0}
+.board-item-carry{display:flex;align-items:center;gap:2px;font-size:10px;color:#888;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.board-item-carry input[type="checkbox"]{width:12px;height:12px;cursor:pointer;margin:0}
+.board-item-btn{font-size:10px;padding:2px 8px;border:1px solid #1a73e8;border-radius:4px;background:#fff;color:#1a73e8;cursor:pointer;white-space:nowrap;transition:all .15s}
+.board-item-btn:hover{background:#1a73e8;color:#fff}
+.board-panel-footer{display:flex;gap:4px;padding:4px 8px;border-top:1px solid #eee;flex-shrink:0}
+.board-panel-footer input{flex:1;padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:11px;outline:none;min-width:0}
+.board-panel-footer input:focus{border-color:#1a73e8}
+.board-panel-footer .btn{padding:3px 8px;font-size:11px}
+.board-toggle-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-top:1px solid #eee;flex-shrink:0}
+.board-toggle-row label{font-size:11px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px}
+.board-status-popup{display:none;position:fixed;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
+.board-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
+.board-status-btn-done{background:#34a853;color:#fff}
+.board-status-btn-done:hover{background:#2d8e47}
+.board-status-btn-undone{background:#ea4335;color:#fff}
+.board-status-btn-undone:hover{background:#d33426}
+.board-status-btn-cancel{background:#f0f0f0;color:#666}
+.board-status-btn-cancel:hover{background:#e0e0e0}
+@media(max-width:1024px){.board-row-4{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.board-row-2,.board-row-4{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -831,47 +828,71 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
   </div>
   <div class="cal-body">
     <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-sidebar" id="calSidebar">
-      <div class="cal-sidebar-empty" id="calSidebarEmpty">👈 点击左侧日期查看和编辑</div>
-      <div class="cal-sidebar-header" id="calSidebarHeader" style="display:none">
-        📅 <span class="cal-sidebar-date" id="calDetailDate"></span><span class="cal-sidebar-lunar" id="calDetailLunar"></span>
-      </div>
-      <div class="cal-today-summary" id="calTodaySummary" style="display:none">
-        <div class="cal-today-summary-title">📋 今日待办</div>
-        <div class="cal-today-summary-list" id="calTodaySummaryList"></div>
-      </div>
-      <div class="cal-note-area" id="calNoteArea" style="display:none">
-        <textarea id="calNoteText" placeholder="📝 记录当天事项..." oninput="calNoteAutoSave()"></textarea>
-        <div class="cal-note-saved" id="calNoteSaved" style="display:none">✅ 已自动保存</div>
-      </div>
-      <!-- 每天必做 -->
-      <div class="cal-section" id="calDailySection" style="display:none">
-        <div class="cal-section-title">
-          📌 每天必做
-          <span class="cal-section-badge" id="calDailyBadge"></span>
-        </div>
-        <div class="cal-detail-list" id="calDailyList"></div>
-        <div class="cal-detail-add">
-          <input type="text" id="calNewDaily" placeholder="添加每天必做任务..." onkeydown="if(event.key==='Enter')calAddDailyTask()">
-          <button class="btn btn-primary btn-sm" onclick="calAddDailyTask()">+</button>
+  </div>
+  <div class="board-container" id="boardContainer">
+    <div class="board-row-2">
+      <div class="board-panel" id="board-active-projects">
+        <div class="board-panel-title">📌 执行项目 <span class="board-panel-badge" id="activeCount">0</span></div>
+        <div class="board-panel-body" id="activeList"><div class="board-empty">暂无执行项目</div></div>
+        <div class="board-panel-footer">
+          <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
+          <input type="text" id="activeCat" placeholder="归类" style="max-width:70px" onkeydown="if(event.key==='Enter')boardActiveAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button>
         </div>
       </div>
-      <!-- 临时事项 -->
-      <div class="cal-section" id="calTodoSection" style="display:none">
-        <div class="cal-section-title">☑ 临时事项</div>
-        <div class="cal-detail-list" id="calDetailList"></div>
-        <div class="cal-detail-add">
-          <input type="text" id="calNewTitle" placeholder="添加临时事项..." onkeydown="if(event.key==='Enter')calAddItem()">
-          <button class="btn btn-primary btn-sm" onclick="calAddItem()">+</button>
+      <div class="board-panel" id="board-pending-projects">
+        <div class="board-panel-title">📌 待执行项目 <span class="board-panel-badge" id="pendingCount">0</span></div>
+        <div class="board-panel-body" id="pendingList"><div class="board-empty">暂无待执行项目</div></div>
+        <div class="board-panel-footer">
+          <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
+          <input type="text" id="pendingCat" placeholder="归类" style="max-width:70px" onkeydown="if(event.key==='Enter')boardPendingAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button>
         </div>
-      </div>
-      <div class="cal-status-popup" id="calStatusPopup">
-        <div style="margin-bottom:6px;font-weight:600">标记任务状态</div>
-        <button class="cal-status-btn-done" onclick="calStatusPick('done')">✅ 已完成</button>
-        <button class="cal-status-btn-undone" onclick="calStatusPick('undone')">❌ 未完成</button>
-        <br><button class="cal-status-btn-cancel" onclick="calStatusPick('cancel')">取消</button>
       </div>
     </div>
+    <div class="board-row-4">
+      <div class="board-panel" id="board-daily-must">
+        <div class="board-panel-title">📌 每日必做</div>
+        <div class="board-panel-body" id="dailyMustList"><div class="board-empty">暂无每日必做</div></div>
+        <div class="board-toggle-row">
+          <label><input type="checkbox" id="dailyMustCarry" onchange="boardDailyMustCarry()"> 延续到明天</label>
+        </div>
+        <div class="board-panel-footer">
+          <input type="text" id="dailyMustInput" placeholder="添加任务..." onkeydown="if(event.key==='Enter')boardDailyMustAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardDailyMustAdd()">+</button>
+        </div>
+      </div>
+      <div class="board-panel" id="board-today-todo">
+        <div class="board-panel-title">📌 今日待办</div>
+        <div class="board-panel-body" id="todayTodoList"><div class="board-empty">暂无待办事项</div></div>
+        <div class="board-panel-footer">
+          <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
+          <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
+        </div>
+      </div>
+      <div class="board-panel" id="board-collection">
+        <div class="board-panel-title">📌 催款项目</div>
+        <div class="board-panel-body" id="collectionList"><div class="board-empty">暂无催款项目</div></div>
+        <div class="board-panel-footer">
+          <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
+        </div>
+      </div>
+      <div class="board-panel" id="board-payments">
+        <div class="board-panel-title">📌 待付款</div>
+        <div class="board-panel-body" id="paymentsList"><div class="board-empty">暂无待付款</div></div>
+        <div class="board-panel-footer">
+          <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="board-status-popup" id="boardStatusPopup">
+    <div style="margin-bottom:6px;font-weight:600">标记任务状态</div>
+    <button class="board-status-btn-done" onclick="boardStatusPick('done')">✅ 已完成</button>
+    <button class="board-status-btn-undone" onclick="boardStatusPick('undone')">❌ 未完成</button>
+    <br><button class="board-status-btn-cancel" onclick="boardStatusPick('cancel')">取消</button>
   </div>
 </div>
 
@@ -2378,7 +2399,18 @@ function calTodayLunar(){
 }
 
 // === 日程管理 ===
-let _calYear, _calMonth, _calData={}, _calSelDate='', _dailyTasks=[], _calView='month';
+let _calYear, _calMonth, _calSelDate='', _calView='month';
+let _boardData=null, _boardTodoPending=null;
+
+// 默认空板块
+function emptyBoard(){return {
+  daily_must:{carry_over:false,tasks:[]},
+  today_todo:{items:[]},
+  active_projects:{projects:[]},
+  pending_projects:{projects:[]},
+  collection:{items:[]},
+  payments:{items:[]}
+};}
 
 function calInit(){
   const now=new Date();
@@ -2386,16 +2418,8 @@ function calInit(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   _calView='month';
-  calLoadDailyTasks();
   calLoadMonth();
-  calRenderTodaySummary();
-}
-
-async function calLoadDailyTasks(){
-  try{
-    const r=await fetch('/api/daily-tasks');
-    _dailyTasks=await r.json();
-  }catch(e){console.error(e);}
+  boardLoad();
 }
 
 function calRender(){
@@ -2419,27 +2443,8 @@ function calRender(){
     if(ds===_calSelDate) cls+=' selected';
     html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calSelectDate(\x27'+ds+'\x27)">';
     html+='<div class="cal-cell-num">'+d+'</div>';
-    html+='<div class="cal-dots">';
-    var items=_calData[ds]||[];
-    var undone=items.filter(function(x){return !x.completed;});
-    var done=items.filter(function(x){return x.completed;});
-    var maxDots=3;
-    var shown=0;
-    for(var i=0;i<undone.length&&shown<maxDots;i++){html+='<span class="cal-dot undone"></span>';shown++;}
-    for(var i=0;i<done.length&&shown<maxDots;i++){html+='<span class="cal-dot done"></span>';shown++;}
-    var total=undone.length+done.length;
-    if(total>maxDots) html+='<span class="cal-dot-more">+'+ (total-maxDots) +'</span>';
-    html+='</div>';
-    var allItems=items.slice(0,2);
-    html+='<div class="cal-cell-titles">';
-    for(var i=0;i<allItems.length;i++){
-      var it=allItems[i];
-      var t=it.title||'';
-      if(t.length>6) t=t.substring(0,6)+'…';
-      var mark=it.completed?' ✓':'';
-      html+='<div class="cal-cell-title'+(it.completed?' done':'')+'">'+calEsc(t)+mark+'</div>';
-    }
-    html+='</div>';
+    html+='<div class="cal-dots" id="calDots_'+ds+'"></div>';
+    html+='<div class="cal-cell-titles" id="calTitles_'+ds+'"></div>';
     html+='</div>';
   }
   var totalCells=startDow+totalDays;
@@ -2451,12 +2456,7 @@ function calRender(){
 }
 
 async function calLoadMonth(){
-  const m=_calYear+'-'+String(_calMonth).padStart(2,'0');
-  try{
-    const r=await fetch('/api/schedules?month='+m);
-    _calData=await r.json();
-    calRender();
-  }catch(e){console.error(e);}
+  calRender();
 }
 
 function calPrevMonth(){
@@ -2473,6 +2473,7 @@ function calGoToday(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   calLoadMonth();
+  boardLoad();
 }
 function calSetView(v){
   if(v==='today'){calGoToday();return;}
@@ -2485,295 +2486,411 @@ function calSetView(v){
 
 function calSelectDate(ds){
   _calSelDate=ds;
-  document.getElementById('calDetailDate').textContent=ds;
-  document.getElementById('calDetailLunar').textContent=lunarByDate(ds);
-  document.getElementById('calNewTitle').value='';
-  document.getElementById('calSidebarEmpty').style.display='none';
-  document.getElementById('calSidebarHeader').style.display='flex';
-  document.getElementById('calTodaySummary').style.display='block';
-  document.getElementById('calNoteArea').style.display='flex';
-  document.getElementById('calDailySection').style.display='block';
-  document.getElementById('calTodoSection').style.display='block';
-  calLoadNote();
-  calRenderDetail();
-  calRenderTodaySummary();
   calRender();
-}
-
-function calRenderItem(s,isDaily){
-  const cls=s.completed?' done':'';
-  const check=s.completed?'✓':'';
-  const did=isDaily?s.dailyTaskId:s.id;
-  const delFn=isDaily?'calDeleteDailyTask':'calDelete';
-  const toggleFn=isDaily?'calToggleDaily':'calToggle';
-  return '<div class="cal-item'+cls+'">'
-    +'<div class="cal-item-check" onclick="'+toggleFn+'(\x27'+did+'\x27)">'+check+'</div>'
-    +'<span class="cal-item-title" onclick="calEditItem(this,\x27'+did+'\x27,'+(isDaily?'true':'false')+')" title="点击编辑">'+calEsc(s.title)+'</span>'
-    +'<span class="cal-item-edit" onclick="calEditItem(this.parentElement.querySelector(\x27.cal-item-title\x27),\x27'+did+'\x27,'+(isDaily?'true':'false')+')" title="编辑">✎</span>'
-    +'<span class="cal-item-del" onclick="'+delFn+'(\x27'+did+'\x27)" title="删除">×</span>'
-    +'</div>';
-}
-
-function calRenderDetail(){
-  const items=_calData[_calSelDate]||[];
-  const dailyItems=items.filter(function(s){return s.isDaily;});
-  const tempItems=items.filter(function(s){return !s.isDaily;});
-  
-  // 每天必做
-  const dailyList=document.getElementById('calDailyList');
-  const dailyBadge=document.getElementById('calDailyBadge');
-  if(dailyItems.length===0){
-    dailyList.innerHTML='<div class="cal-empty">暂无每天必做任务</div>';
-    dailyBadge.textContent='';
-  }else{
-    const doneCount=dailyItems.filter(function(s){return s.completed;}).length;
-    dailyBadge.textContent=doneCount+'/'+dailyItems.length;
-    dailyList.innerHTML=dailyItems.map(function(s){return calRenderItem(s,true);}).join('');
-  }
-  
-  // 临时事项
-  const list=document.getElementById('calDetailList');
-  if(tempItems.length===0){
-    list.innerHTML='<div class="cal-empty">暂无临时事项</div>';
-  }else{
-    list.innerHTML=tempItems.map(function(s){return calRenderItem(s,false);}).join('');
-  }
-}
-
-async function calAddItem(){
-  const title=document.getElementById('calNewTitle').value.trim();
-  if(!title) return;
-  try{
-    const r=await fetch('/api/schedules',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({title:title,date:_calSelDate})
-    });
-    if(r.ok){
-      document.getElementById('calNewTitle').value='';
-      await calLoadMonth();
-      calRenderDetail();
-      calRenderTodaySummary();
-    }
-  }catch(e){console.error(e);}
-}
-
-async function calToggle(id){
-  const items=_calData[_calSelDate]||[];
-  const s=items.find(function(x){return x.id===id;});
-  if(!s) return;
-  s.completed=!s.completed;
-  s.completedAt=s.completed?new Date().toISOString():null;
-  try{
-    await fetch('/api/schedules/'+id,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({completed:s.completed,completedAt:s.completedAt})
-    });
-    calRenderDetail();
-    calRenderTodaySummary();
-    calRender();
-  }catch(e){console.error(e);}
-}
-
-async function calToggleDaily(dailyTaskId){
-  const items=_calData[_calSelDate]||[];
-  const s=items.find(function(x){return x.dailyTaskId===dailyTaskId;});
-  if(!s) return;
-  s.completed=!s.completed;
-  try{
-    await fetch('/api/schedules/daily-'+dailyTaskId,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({date:_calSelDate,completed:s.completed})
-    });
-    calRenderDetail();
-    calRenderTodaySummary();
-    calRender();
-  }catch(e){console.error(e);}
-}
-
-async function calDelete(id){
-  if(!confirm('确定删除？')) return;
-  try{
-    await fetch('/api/schedules/'+id,{method:'DELETE'});
-    await calLoadMonth();
-    calRenderDetail();
-    calRenderTodaySummary();
-  }catch(e){console.error(e);}
-}
-
-async function calAddDailyTask(){
-  const title=document.getElementById('calNewDaily').value.trim();
-  if(!title) return;
-  try{
-    const r=await fetch('/api/daily-tasks',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({title:title})
-    });
-    if(r.ok){
-      document.getElementById('calNewDaily').value='';
-      await calLoadDailyTasks();
-      await calLoadMonth();
-      calRenderDetail();
-      calRenderTodaySummary();
-    }
-  }catch(e){console.error(e);}
-}
-
-async function calDeleteDailyTask(dailyTaskId){
-  if(!confirm('确定删除这个每天必做任务？')) return;
-  try{
-    await fetch('/api/daily-tasks/'+dailyTaskId,{method:'DELETE'});
-    await calLoadDailyTasks();
-    await calLoadMonth();
-    calRenderDetail();
-    calRenderTodaySummary();
-  }catch(e){console.error(e);}
-}
-
-async function calEditItem(el,id,isDaily){
-  if(el.classList.contains('editing')) return;
-  const isDailyBool=isDaily===true||isDaily==='true';
-  const origText=el.textContent;
-  el.classList.add('editing');
-  el.contentEditable='true';
-  el.focus();
-  var range=document.createRange();
-  range.selectNodeContents(el);
-  var sel=window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-  
-  var _savedId=id, _savedIsDaily=isDailyBool;
-  async function save(){
-    el.contentEditable='false';
-    el.classList.remove('editing');
-    el.onblur=null;el.onkeydown=null;
-    var newTitle=el.textContent.trim();
-    if(!newTitle||newTitle===origText) return;
-    try{
-      var r;
-      if(_savedIsDaily){
-        r=await fetch('/api/daily-tasks/'+_savedId,{
-          method:'PUT',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({title:newTitle})
-        });
-        await calLoadDailyTasks();
-      }else{
-        r=await fetch('/api/schedules/'+_savedId,{
-          method:'PUT',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({title:newTitle})
-        });
-      }
-      if(!r.ok) throw new Error('保存失败: '+r.status);
-      await calLoadMonth();
-      calRenderDetail();
-      calRenderTodaySummary();
-      // 弹出状态标记弹窗
-      _calPendingStatus={id:_savedId,isDaily:_savedIsDaily};
-      showStatusPopup(el);
-    }catch(e){console.error(e);showToast('保存失败: '+e.message,'error');}
-  }
-  
-  el.onblur=save;
-  el.onkeydown=function(e){
-    if(e.key==='Enter'){e.preventDefault();el.blur();}
-    if(e.key==='Escape'){el.textContent=origText;el.blur();}
-  };
-}
-
-var _calPendingStatus=null;
-function showStatusPopup(el){
-  var popup=document.getElementById('calStatusPopup');
-  var rect=el.getBoundingClientRect();
-  popup.style.display='block';
-  popup.style.position='fixed';
-  popup.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
-  popup.style.top=(rect.bottom+5)+'px';
-  setTimeout(function(){
-    document.addEventListener('click',hideStatusPopupOut,{once:true});
-  },100);
-}
-function hideStatusPopupOut(e){
-  var popup=document.getElementById('calStatusPopup');
-  if(!popup.contains(e.target)){popup.style.display='none';_calPendingStatus=null;}
-}
-async function calStatusPick(action){
-  document.getElementById('calStatusPopup').style.display='none';
-  if(!_calPendingStatus||action==='cancel'){_calPendingStatus=null;return;}
-  var p=_calPendingStatus;_calPendingStatus=null;
-  var completed=(action==='done');
-  try{
-    if(p.isDaily){
-      await fetch('/api/schedules/daily-'+p.id,{
-        method:'PUT',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({date:_calSelDate,completed:completed})
-      });
-    }else{
-      await fetch('/api/schedules/'+p.id,{
-        method:'PUT',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({completed:completed,completedAt:completed?new Date().toISOString():null})
-      });
-    }
-    await calLoadMonth();
-    calRenderDetail();
-    calRenderTodaySummary();
-    calRender();
-  }catch(e){console.error(e);showToast('状态更新失败','error');}
-}
-
-function calRenderTodaySummary(){
-  var today=new Date().toISOString().split('T')[0];
-  var items=_calData[today]||[];
-  var list=document.getElementById('calTodaySummaryList');
-  if(items.length===0){
-    list.innerHTML='<div class="cal-today-summary-empty">暂无待办事项</div>';
-  }else{
-    var html='';
-    for(var i=0;i<items.length;i++){
-      var it=items[i];
-      var cls=it.completed?'done':'undone';
-      var t=it.title||'';
-      html+='<div class="cal-today-summary-item"><span class="cal-today-summary-dot '+cls+'"></span>'+calEsc(t)+'</div>';
-    }
-    list.innerHTML=html;
-  }
+  boardLoad();
 }
 
 function calEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// === 日历记事本 ===
-let _calNoteTimer=null;
-async function calLoadNote(){
+// === 板块数据加载 ===
+async function boardLoad(){
   try{
-    const r=await fetch('/api/cal-notes?date='+_calSelDate);
-    const d=await r.json();
-    document.getElementById('calNoteText').value=d.note||'';
+    const r=await fetch('/api/schedule-board?date='+_calSelDate);
+    _boardData=await r.json();
+    if(!_boardData||!_boardData.daily_must) _boardData=emptyBoard();
+  }catch(e){console.error(e);_boardData=emptyBoard();}
+  boardRenderAll();
+}
+
+async function boardSave(){
+  try{
+    await fetch('/api/schedule-board',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({date:_calSelDate,board:_boardData})
+    });
   }catch(e){console.error(e);}
 }
-function calNoteAutoSave(){
-  clearTimeout(_calNoteTimer);
-  _calNoteTimer=setTimeout(async function(){
-    const note=document.getElementById('calNoteText').value;
-    const saveDate=_calSelDate;
-    try{
-      const r=await fetch('/api/cal-notes',{
-        method:'PUT',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({date:saveDate,note:note})
-      });
-      if(!r.ok) throw new Error('保存失败');
-      const el=document.getElementById('calNoteSaved');
-      el.style.display='block';
-      setTimeout(function(){el.style.display='none';},1500);
-    }catch(e){console.error(e);showToast('记事本保存失败','error');}
-  },800);
+
+function boardRenderAll(){
+  boardDailyMustRender();
+  boardTodayTodoRender();
+  boardActiveRender();
+  boardPendingRender();
+  boardCollRender();
+  boardPayRender();
+  boardUpdateCalendarDots();
+}
+
+// === 1. 每日必做 ===
+function boardDailyMustRender(){
+  var list=document.getElementById('dailyMustList');
+  var tasks=_boardData.daily_must.tasks;
+  document.getElementById('dailyMustCarry').checked=_boardData.daily_must.carry_over;
+  if(!tasks.length){list.innerHTML='<div class="board-empty">暂无每日必做</div>';return;}
+  var html='';
+  for(var i=0;i<tasks.length;i++){
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardDailyMustEdit(this,'+i+')">'+calEsc(tasks[i].title)+'</span>'
+      +'<span class="board-item-del" onclick="boardDailyMustDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardDailyMustAdd(){
+  var input=document.getElementById('dailyMustInput');
+  var title=input.value.trim();
+  if(!title) return;
+  _boardData.daily_must.tasks.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  input.value='';
+  boardDailyMustRender();
+  boardSave();
+}
+function boardDailyMustEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');
+  el.contentEditable='true';
+  el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.daily_must.tasks[idx].title=t;
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardDailyMustDel(idx){
+  _boardData.daily_must.tasks.splice(idx,1);
+  boardDailyMustRender();
+  boardSave();
+}
+function boardDailyMustCarry(){
+  _boardData.daily_must.carry_over=document.getElementById('dailyMustCarry').checked;
+  boardSave();
+}
+
+// === 2. 今日待办 ===
+function boardTodayTodoRender(){
+  var list=document.getElementById('todayTodoList');
+  var items=_boardData.today_todo.items;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无待办事项</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var cls=it.completed?' done':'';
+    var check=it.completed?'✓':'';
+    var titleCls=it.completed?'':' undone';
+    html+='<div class="board-item'+cls+'">'
+      +'<div class="board-item-check" onclick="boardTodoToggle('+i+')">'+check+'</div>'
+      +'<span class="board-item-title'+titleCls+'" onclick="boardTodoEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
+      +'<span class="board-item-del" onclick="boardTodoDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardTodoAdd(){
+  var input=document.getElementById('todoInput');
+  var title=input.value.trim();
+  if(!title) return;
+  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false};
+  _boardData.today_todo.items.push(item);
+  input.value='';
+  boardTodayTodoRender();
+  boardSave();
+  boardUpdateCalendarDots();
+  // 弹出状态弹窗
+  _boardTodoPending=item;
+  showBoardStatusPopup(input);
+}
+function boardTodoKeydown(e){
+  if(e.key==='Enter'){e.preventDefault();boardTodoAdd();}
+}
+function boardTodoToggle(idx){
+  var it=_boardData.today_todo.items[idx];
+  it.completed=!it.completed;
+  boardTodayTodoRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+function boardTodoEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');
+  el.contentEditable='true';
+  el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.today_todo.items[idx].title=t;
+    boardTodayTodoRender();
+    boardSave();
+    boardUpdateCalendarDots();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardTodoDel(idx){
+  _boardData.today_todo.items.splice(idx,1);
+  boardTodayTodoRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+
+// === 状态弹窗 ===
+function showBoardStatusPopup(el){
+  var popup=document.getElementById('boardStatusPopup');
+  var rect=el.getBoundingClientRect();
+  popup.style.display='block';
+  popup.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
+  popup.style.top=(rect.bottom+5)+'px';
+  setTimeout(function(){document.addEventListener('click',hideBoardStatusPopup,{once:true});},100);
+}
+function hideBoardStatusPopup(e){
+  var popup=document.getElementById('boardStatusPopup');
+  if(!popup.contains(e.target)){popup.style.display='none';_boardTodoPending=null;}
+}
+function boardStatusPick(action){
+  document.getElementById('boardStatusPopup').style.display='none';
+  if(!_boardTodoPending||action==='cancel'){_boardTodoPending=null;return;}
+  if(action==='done') _boardTodoPending.completed=true;
+  _boardTodoPending=null;
+  boardTodayTodoRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+
+// === 3. 执行项目 ===
+function boardActiveRender(){
+  var list=document.getElementById('activeList');
+  var projects=_boardData.active_projects.projects;
+  document.getElementById('activeCount').textContent=projects.length;
+  if(!projects.length){list.innerHTML='<div class="board-empty">暂无执行项目</div>';return;}
+  var html='';
+  for(var i=0;i<projects.length;i++){
+    var p=projects[i];
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardActiveEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
+    if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
+    html+='<span class="board-item-carry"><input type="checkbox"'+(p.carry_over?' checked':'')+' onchange="boardActiveCarry('+i+',this.checked)">延续</span>'
+      +'<span class="board-item-del" onclick="boardActiveDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardActiveAdd(){
+  var name=document.getElementById('activeName').value.trim();
+  var cat=document.getElementById('activeCat').value.trim();
+  if(!name) return;
+  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:cat,carry_over:false});
+  document.getElementById('activeName').value='';
+  document.getElementById('activeCat').value='';
+  boardActiveRender();
+  boardSave();
+}
+function boardActiveEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.active_projects.projects[idx].name=t;
+    boardActiveRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardActiveCarry(idx,val){
+  _boardData.active_projects.projects[idx].carry_over=val;
+  boardSave();
+}
+function boardActiveDel(idx){
+  _boardData.active_projects.projects.splice(idx,1);
+  boardActiveRender();
+  boardSave();
+}
+
+// === 4. 待执行项目 ===
+function boardPendingRender(){
+  var list=document.getElementById('pendingList');
+  var projects=_boardData.pending_projects.projects;
+  document.getElementById('pendingCount').textContent=projects.length;
+  if(!projects.length){list.innerHTML='<div class="board-empty">暂无待执行项目</div>';return;}
+  var html='';
+  for(var i=0;i<projects.length;i++){
+    var p=projects[i];
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardPendingEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
+    if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
+    html+='<button class="board-item-btn" onclick="boardPendingToActive('+i+')">→执行</button>'
+      +'<span class="board-item-del" onclick="boardPendingDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardPendingAdd(){
+  var name=document.getElementById('pendingName').value.trim();
+  var cat=document.getElementById('pendingCat').value.trim();
+  if(!name) return;
+  _boardData.pending_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:cat});
+  document.getElementById('pendingName').value='';
+  document.getElementById('pendingCat').value='';
+  boardPendingRender();
+  boardSave();
+}
+function boardPendingEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.pending_projects.projects[idx].name=t;
+    boardPendingRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardPendingToActive(idx){
+  var p=_boardData.pending_projects.projects.splice(idx,1)[0];
+  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:p.name,category:p.category,carry_over:false});
+  boardPendingRender();
+  boardActiveRender();
+  boardSave();
+  showToast('已移至执行项目','success');
+}
+function boardPendingDel(idx){
+  _boardData.pending_projects.projects.splice(idx,1);
+  boardPendingRender();
+  boardSave();
+}
+
+// === 5. 催款项目 ===
+function boardCollRender(){
+  var list=document.getElementById('collectionList');
+  var items=_boardData.collection.items;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无催款项目</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardCollEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
+      +'<span class="board-item-del" onclick="boardCollDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardCollAdd(){
+  var input=document.getElementById('collInput');
+  var title=input.value.trim();
+  if(!title) return;
+  _boardData.collection.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  input.value='';
+  boardCollRender();
+  boardSave();
+}
+function boardCollEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.collection.items[idx].title=t;
+    boardCollRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardCollDel(idx){
+  _boardData.collection.items.splice(idx,1);
+  boardCollRender();
+  boardSave();
+}
+
+// === 6. 待付款 ===
+function boardPayRender(){
+  var list=document.getElementById('paymentsList');
+  var items=_boardData.payments.items;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无待付款</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardPayEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
+      +'<span class="board-item-del" onclick="boardPayDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardPayAdd(){
+  var input=document.getElementById('payInput');
+  var title=input.value.trim();
+  if(!title) return;
+  _boardData.payments.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  input.value='';
+  boardPayRender();
+  boardSave();
+}
+function boardPayEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.payments.items[idx].title=t;
+    boardPayRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardPayDel(idx){
+  _boardData.payments.items.splice(idx,1);
+  boardPayRender();
+  boardSave();
+}
+
+// === 日历圆点更新 ===
+function boardUpdateCalendarDots(){
+  var today=new Date().toISOString().split('T')[0];
+  if(_calSelDate!==today) return;
+  var items=_boardData.today_todo.items;
+  var dotsEl=document.getElementById('calDots_'+today);
+  var titlesEl=document.getElementById('calTitles_'+today);
+  if(!dotsEl||!titlesEl) return;
+  var undone=items.filter(function(x){return !x.completed;});
+  var done=items.filter(function(x){return x.completed;});
+  var dotsHtml='';var shown=0;
+  for(var i=0;i<undone.length&&shown<3;i++){dotsHtml+='<span class="cal-dot undone"></span>';shown++;}
+  for(var i=0;i<done.length&&shown<3;i++){dotsHtml+='<span class="cal-dot done"></span>';shown++;}
+  var total=items.length;
+  if(total>3) dotsHtml+='<span class="cal-dot-more">+'+ (total-3) +'</span>';
+  dotsEl.innerHTML=dotsHtml;
+  var titlesHtml='';
+  var all=items.slice(0,2);
+  for(var i=0;i<all.length;i++){
+    var t=all[i].title||'';
+    if(t.length>6) t=t.substring(0,6)+'…';
+    titlesHtml+='<div class="cal-cell-title'+(all[i].completed?' done':'')+'">'+calEsc(t)+'</div>';
+  }
+  titlesEl.innerHTML=titlesHtml;
 }
 
 document.addEventListener('DOMContentLoaded',function(){
