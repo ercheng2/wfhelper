@@ -883,6 +883,11 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_schedules', '[]'))
     
+    # Initialize empty daily tasks
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_daily_tasks', '[]'))
+    
     conn.commit()
     conn.close()
 
@@ -1010,24 +1015,78 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/api/schedules':
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
-            conn.close()
             schedules = json.loads(row['value']) if row else []
+            dt_row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
+            daily_tasks = json.loads(dt_row['value']) if dt_row else []
+            conn.close()
             query = urllib.parse.parse_qs(parsed.query)
             date = query.get('date', [None])[0]
             month = query.get('month', [None])[0]
             if month:
-                # 返回整月所有日期的事项汇总（用于日历标记）
                 result = {}
                 for s in schedules:
                     d = s.get('date', '')
                     if d.startswith(month):
                         result.setdefault(d, []).append(s)
+                for d in result:
+                    for dt in daily_tasks:
+                        completed = any(
+                            s.get('dailyTaskId') == dt['id'] and s.get('date') == d and s.get('completed')
+                            for s in schedules
+                        )
+                        result[d].append({
+                            'id': 'daily-' + dt['id'],
+                            'title': dt['title'],
+                            'date': d,
+                            'completed': completed,
+                            'completedAt': None,
+                            'isDaily': True,
+                            'dailyTaskId': dt['id'],
+                            'sortOrder': dt.get('sortOrder', 0)
+                        })
                 self.send_json(result)
             elif date:
                 result = [s for s in schedules if s.get('date') == date]
+                for dt in daily_tasks:
+                    completed = any(
+                        s.get('dailyTaskId') == dt['id'] and s.get('date') == date and s.get('completed')
+                        for s in schedules
+                    )
+                    result.append({
+                        'id': 'daily-' + dt['id'],
+                        'title': dt['title'],
+                        'date': date,
+                        'completed': completed,
+                        'completedAt': None,
+                        'isDaily': True,
+                        'dailyTaskId': dt['id'],
+                        'sortOrder': dt.get('sortOrder', 0)
+                    })
                 self.send_json(result)
             else:
                 self.send_json(schedules)
+            return
+        
+        # API: GET /api/cal-notes?date=YYYY-MM-DD
+        if path == '/api/cal-notes':
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
+            conn.close()
+            notes = json.loads(row['value']) if row else {}
+            query = urllib.parse.parse_qs(parsed.query)
+            date = query.get('date', [None])[0]
+            if date:
+                self.send_json({'note': notes.get(date, '')})
+            else:
+                self.send_json(notes)
+            return
+        
+        # API: GET /api/daily-tasks
+        if path == '/api/daily-tasks':
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
+            conn.close()
+            self.send_json(json.loads(row['value']) if row else [])
             return
         
         # API: GET /api/ocr-test - 测试百度OCR连通性
@@ -1294,13 +1353,58 @@ class Handler(BaseHTTPRequestHandler):
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
             schedules = json.loads(row['value']) if row else []
-            for s in schedules:
-                if s['id'] == sid:
-                    for k, v in body.items():
-                        s[k] = v
-                    break
+            # 处理每日任务勾选：创建/更新 completion record
+            if sid.startswith('daily-'):
+                daily_task_id = sid[6:]
+                date = body.get('date', datetime.now().strftime('%Y-%m-%d'))
+                completed = body.get('completed', False)
+                # 查找已有的 completion record
+                existing = None
+                for s in schedules:
+                    if s.get('dailyTaskId') == daily_task_id and s.get('date') == date:
+                        existing = s
+                        break
+                if existing:
+                    existing['completed'] = completed
+                    existing['completedAt'] = datetime.now().isoformat() if completed else None
+                else:
+                    schedules.append({
+                        'id': str(uuid.uuid4()),
+                        'dailyTaskId': daily_task_id,
+                        'title': '',
+                        'date': date,
+                        'completed': completed,
+                        'completedAt': datetime.now().isoformat() if completed else None,
+                        'sortOrder': 0,
+                        'createdAt': datetime.now().isoformat()
+                    })
+            else:
+                for s in schedules:
+                    if s['id'] == sid:
+                        for k, v in body.items():
+                            s[k] = v
+                        break
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                         ('wfhelper_schedules', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
+        # API: PUT /api/daily-tasks/<id>
+        if path.startswith('/api/daily-tasks/'):
+            dtid = path[len('/api/daily-tasks/'):]
+            body = json.loads(self.read_body().decode('utf-8'))
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
+            daily_tasks = json.loads(row['value']) if row else []
+            for dt in daily_tasks:
+                if dt['id'] == dtid:
+                    for k, v in body.items():
+                        dt[k] = v
+                    break
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_daily_tasks', json.dumps(daily_tasks, ensure_ascii=False)))
             conn.commit()
             conn.close()
             self.send_json({'ok': True})
@@ -1367,18 +1471,24 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True, 'item': new_item})
             return
         
-        # API: GET /api/cal-notes?date=YYYY-MM-DD
-        if path == '/api/cal-notes':
+        # API: POST /api/daily-tasks
+        if path == '/api/daily-tasks':
+            body = json.loads(self.read_body().decode('utf-8'))
             conn = get_db()
-            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_cal_notes'").fetchone()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
+            daily_tasks = json.loads(row['value']) if row else []
+            new_item = {
+                'id': str(uuid.uuid4()),
+                'title': body.get('title', ''),
+                'sortOrder': len(daily_tasks),
+                'createdAt': datetime.now().isoformat()
+            }
+            daily_tasks.append(new_item)
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_daily_tasks', json.dumps(daily_tasks, ensure_ascii=False)))
+            conn.commit()
             conn.close()
-            notes = json.loads(row['value']) if row else {}
-            query = urllib.parse.parse_qs(parsed.query)
-            date = query.get('date', [None])[0]
-            if date:
-                self.send_json({'note': notes.get(date, '')})
-            else:
-                self.send_json(notes)
+            self.send_json({'ok': True, 'item': new_item})
             return
         
         # API: PUT /api/cal-notes
@@ -2018,6 +2128,20 @@ class Handler(BaseHTTPRequestHandler):
             schedules = [s for s in schedules if s['id'] != sid]
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                         ('wfhelper_schedules', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
+        # API: DELETE /api/daily-tasks/<id>
+        if path.startswith('/api/daily-tasks/'):
+            dtid = path[len('/api/daily-tasks/'):]
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
+            daily_tasks = json.loads(row['value']) if row else []
+            daily_tasks = [dt for dt in daily_tasks if dt['id'] != dtid]
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_daily_tasks', json.dumps(daily_tasks, ensure_ascii=False)))
             conn.commit()
             conn.close()
             self.send_json({'ok': True})

@@ -398,30 +398,36 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-dot.done{background:#34a853}
 .cal-dot.undone{background:#ea4335}
 .cal-dot-more{font-size:10px;color:#888;line-height:6px}
-.cal-sidebar{width:340px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
-.cal-sidebar-header{padding:14px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px}
+.cal-sidebar{flex:1;min-width:360px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
+.cal-sidebar-header{padding:10px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .cal-sidebar-date{color:#1a73e8}
 .cal-sidebar-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;padding:24px}
-.cal-note-area{flex:1;display:flex;flex-direction:column;min-height:0;border-bottom:1px solid #eee}
-.cal-note-area textarea{flex:1;border:none;outline:none;resize:none;padding:12px 16px;font-size:13px;line-height:1.7;color:#333;font-family:inherit;background:#fff}
+.cal-note-area{flex:1;display:flex;flex-direction:column;min-height:120px;border-bottom:1px solid #eee}
+.cal-note-area textarea{flex:1;border:none;outline:none;resize:none;padding:10px 16px;font-size:13px;line-height:1.7;color:#333;font-family:inherit;background:#fff}
 .cal-note-area textarea::placeholder{color:#ccc}
-.cal-note-saved{font-size:11px;color:#34a853;padding:2px 16px 6px;background:#fff}
-.cal-todo-section{border-top:1px solid #eee;background:#fff;flex-shrink:0;max-height:40%}
-.cal-todo-title{font-size:12px;font-weight:600;color:#888;padding:10px 16px 6px}
-.cal-detail-add{display:flex;gap:8px;padding:8px 16px}
-.cal-detail-add input{flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
+.cal-note-saved{font-size:11px;color:#34a853;padding:2px 16px 4px;background:#fff;flex-shrink:0}
+.cal-section{flex-shrink:0;background:#fff;border-top:1px solid #eee}
+.cal-section-title{font-size:12px;font-weight:600;color:#888;padding:10px 16px 6px;display:flex;align-items:center;justify-content:space-between}
+.cal-section-title .cal-section-badge{font-size:10px;background:#e8f0fe;color:#1a73e8;padding:1px 6px;border-radius:8px}
+.cal-detail-add{display:flex;gap:6px;padding:6px 16px 8px}
+.cal-detail-add input{flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;outline:none}
 .cal-detail-add input:focus{border-color:#1a73e8}
-.cal-detail-list{padding:4px 16px 12px;overflow-y:auto;max-height:200px}
-.cal-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.cal-detail-list{padding:0 16px 8px;overflow-y:auto;max-height:180px}
+.cal-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5}
 .cal-item:last-child{border-bottom:none}
 .cal-item-check{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
 .cal-item-check:hover{border-color:#34a853}
 .cal-item.done .cal-item-check{background:#34a853;border-color:#34a853;color:#fff}
-.cal-item-title{flex:1;font-size:13px;color:#333}
+.cal-item-title{flex:1;font-size:13px;color:#333;cursor:pointer;padding:2px 4px;border-radius:3px;transition:background .15s}
+.cal-item-title:hover{background:#f0f0f0}
+.cal-item-title.editing{padding:3px 4px;background:#fff;border:1px solid #1a73e8;border-radius:4px;outline:none;cursor:text}
 .cal-item.done .cal-item-title{text-decoration:line-through;color:#999}
+.cal-item-edit{color:#ccc;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;flex-shrink:0;visibility:hidden}
+.cal-item:hover .cal-item-edit{visibility:visible}
+.cal-item-edit:hover{color:#1a73e8;background:#e8f0fe}
 .cal-item-del{color:#ccc;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;flex-shrink:0}
 .cal-item-del:hover{color:#ea4335;background:#fce8e6}
-.cal-empty{text-align:center;color:#bbb;padding:24px;font-size:13px}
+.cal-empty{text-align:center;color:#bbb;padding:16px;font-size:12px}
 </style>
 </head>
 <body>
@@ -814,13 +820,26 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <textarea id="calNoteText" placeholder="📝 记录当天事项..." oninput="calNoteAutoSave()"></textarea>
         <div class="cal-note-saved" id="calNoteSaved" style="display:none">✅ 已自动保存</div>
       </div>
-      <div class="cal-todo-section" id="calTodoSection" style="display:none">
-        <div class="cal-todo-title">☑ 待办事项</div>
-        <div class="cal-detail-add">
-          <input type="text" id="calNewTitle" placeholder="添加待办..." onkeydown="if(event.key==='Enter')calAddItem()">
-          <button class="btn btn-primary btn-sm" onclick="calAddItem()">添加</button>
+      <!-- 每天必做 -->
+      <div class="cal-section" id="calDailySection" style="display:none">
+        <div class="cal-section-title">
+          📌 每天必做
+          <span class="cal-section-badge" id="calDailyBadge"></span>
         </div>
+        <div class="cal-detail-list" id="calDailyList"></div>
+        <div class="cal-detail-add">
+          <input type="text" id="calNewDaily" placeholder="添加每天必做任务..." onkeydown="if(event.key==='Enter')calAddDailyTask()">
+          <button class="btn btn-primary btn-sm" onclick="calAddDailyTask()">+</button>
+        </div>
+      </div>
+      <!-- 临时事项 -->
+      <div class="cal-section" id="calTodoSection" style="display:none">
+        <div class="cal-section-title">☑ 临时事项</div>
         <div class="cal-detail-list" id="calDetailList"></div>
+        <div class="cal-detail-add">
+          <input type="text" id="calNewTitle" placeholder="添加临时事项..." onkeydown="if(event.key==='Enter')calAddItem()">
+          <button class="btn btn-primary btn-sm" onclick="calAddItem()">+</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2279,14 +2298,22 @@ async function applyStamp(){
 function renderAll(){renderHeader();renderTodayList();renderAllList();renderTemplates();refreshStats();renderContractList();renderContractAlerts();espRefreshFileList();espLoadStamps();renderMaint()}
 
 // === 日程管理 ===
-let _calYear, _calMonth, _calData={}, _calSelDate='';
+let _calYear, _calMonth, _calData={}, _calSelDate='', _dailyTasks=[];
 
 function calInit(){
   const now=new Date();
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
+  calLoadDailyTasks();
   calLoadMonth();
+}
+
+async function calLoadDailyTasks(){
+  try{
+    const r=await fetch('/api/daily-tasks');
+    _dailyTasks=await r.json();
+  }catch(e){console.error(e);}
 }
 
 function calRender(){
@@ -2298,13 +2325,11 @@ function calRender(){
   const today=new Date().toISOString().split('T')[0];
   
   let html='';
-  // 填充上月尾巴
   const prevLast=new Date(_calYear,_calMonth-1,0).getDate();
   for(let i=startDow-1;i>=0;i--){
     const d=prevLast-i;
     html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
   }
-  // 当月日期
   for(let d=1;d<=totalDays;d++){
     const ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     let cls='cal-cell';
@@ -2324,7 +2349,6 @@ function calRender(){
     if(total>maxDots) html+='<span class="cal-dot-more">+'+ (total-maxDots) +'</span>';
     html+='</div></div>';
   }
-  // 填充下月头
   const totalCells=startDow+totalDays;
   const remain=totalCells%7===0?0:7-totalCells%7;
   for(let d=1;d<=remain;d++){
@@ -2373,27 +2397,50 @@ function calSelectDate(ds){
   document.getElementById('calSidebarEmpty').style.display='none';
   document.getElementById('calSidebarHeader').style.display='flex';
   document.getElementById('calNoteArea').style.display='flex';
+  document.getElementById('calDailySection').style.display='block';
   document.getElementById('calTodoSection').style.display='block';
   calLoadNote();
   calRenderDetail();
   calRender();
 }
 
+function calRenderItem(s,isDaily){
+  const cls=s.completed?' done':'';
+  const check=s.completed?'✓':'';
+  const did=isDaily?s.dailyTaskId:s.id;
+  const delFn=isDaily?'calDeleteDailyTask':'calDelete';
+  const toggleFn=isDaily?'calToggleDaily':'calToggle';
+  return '<div class="cal-item'+cls+'">'
+    +'<div class="cal-item-check" onclick="'+toggleFn+'(\x27'+did+'\x27)">'+check+'</div>'
+    +'<span class="cal-item-title" onclick="calEditItem(this,\x27'+did+'\x27,'+(isDaily?'true':'false')+')" title="点击编辑">'+calEsc(s.title)+'</span>'
+    +'<span class="cal-item-edit" onclick="calEditItem(this.parentElement.querySelector(\x27.cal-item-title\x27),\x27'+did+'\x27,'+(isDaily?'true':'false')+')" title="编辑">✎</span>'
+    +'<span class="cal-item-del" onclick="'+delFn+'(\x27'+did+'\x27)" title="删除">×</span>'
+    +'</div>';
+}
+
 function calRenderDetail(){
   const items=_calData[_calSelDate]||[];
-  const list=document.getElementById('calDetailList');
-  if(items.length===0){
-    list.innerHTML='<div class="cal-empty">暂无事项，在上方添加</div>';
+  const dailyItems=items.filter(function(s){return s.isDaily;});
+  const tempItems=items.filter(function(s){return !s.isDaily;});
+  
+  // 每天必做
+  const dailyList=document.getElementById('calDailyList');
+  const dailyBadge=document.getElementById('calDailyBadge');
+  if(dailyItems.length===0){
+    dailyList.innerHTML='<div class="cal-empty">暂无每天必做任务</div>';
+    dailyBadge.textContent='';
   }else{
-    list.innerHTML=items.map(function(s){
-      const cls=s.completed?' done':'';
-      const check=s.completed?'✓':'';
-      return '<div class="cal-item'+cls+'">'
-        +'<div class="cal-item-check" onclick="calToggle(\x27'+s.id+'\x27)">'+check+'</div>'
-        +'<span class="cal-item-title">'+calEsc(s.title)+'</span>'
-        +'<span class="cal-item-del" onclick="calDelete(\x27'+s.id+'\x27)" title="删除">×</span>'
-        +'</div>';
-    }).join('');
+    const doneCount=dailyItems.filter(function(s){return s.completed;}).length;
+    dailyBadge.textContent=doneCount+'/'+dailyItems.length;
+    dailyList.innerHTML=dailyItems.map(function(s){return calRenderItem(s,true);}).join('');
+  }
+  
+  // 临时事项
+  const list=document.getElementById('calDetailList');
+  if(tempItems.length===0){
+    list.innerHTML='<div class="cal-empty">暂无临时事项</div>';
+  }else{
+    list.innerHTML=tempItems.map(function(s){return calRenderItem(s,false);}).join('');
   }
 }
 
@@ -2431,6 +2478,22 @@ async function calToggle(id){
   }catch(e){console.error(e);}
 }
 
+async function calToggleDaily(dailyTaskId){
+  const items=_calData[_calSelDate]||[];
+  const s=items.find(function(x){return x.dailyTaskId===dailyTaskId;});
+  if(!s) return;
+  s.completed=!s.completed;
+  try{
+    await fetch('/api/schedules/daily-'+dailyTaskId,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({date:_calSelDate,completed:s.completed})
+    });
+    calRenderDetail();
+    calRender();
+  }catch(e){console.error(e);}
+}
+
 async function calDelete(id){
   if(!confirm('确定删除？')) return;
   try{
@@ -2438,6 +2501,79 @@ async function calDelete(id){
     await calLoadMonth();
     calRenderDetail();
   }catch(e){console.error(e);}
+}
+
+async function calAddDailyTask(){
+  const title=document.getElementById('calNewDaily').value.trim();
+  if(!title) return;
+  try{
+    const r=await fetch('/api/daily-tasks',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:title})
+    });
+    if(r.ok){
+      document.getElementById('calNewDaily').value='';
+      await calLoadDailyTasks();
+      await calLoadMonth();
+      calRenderDetail();
+    }
+  }catch(e){console.error(e);}
+}
+
+async function calDeleteDailyTask(dailyTaskId){
+  if(!confirm('确定删除这个每天必做任务？')) return;
+  try{
+    await fetch('/api/daily-tasks/'+dailyTaskId,{method:'DELETE'});
+    await calLoadDailyTasks();
+    await calLoadMonth();
+    calRenderDetail();
+  }catch(e){console.error(e);}
+}
+
+async function calEditItem(el,id,isDaily){
+  if(el.classList.contains('editing')) return;
+  const origText=el.textContent;
+  el.classList.add('editing');
+  el.contentEditable='true';
+  el.focus();
+  // 选中全部文字
+  const range=document.createRange();
+  range.selectNodeContents(el);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  
+  async function save(){
+    el.contentEditable='false';
+    el.classList.remove('editing');
+    const newTitle=el.textContent.trim();
+    if(!newTitle||newTitle===origText) return;
+    try{
+      if(isDaily){
+        await fetch('/api/daily-tasks/'+id,{
+          method:'PUT',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({title:newTitle})
+        });
+        await calLoadDailyTasks();
+      }else{
+        await fetch('/api/schedules/'+id,{
+          method:'PUT',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({title:newTitle})
+        });
+      }
+      await calLoadMonth();
+      calRenderDetail();
+    }catch(e){console.error(e);}
+  }
+  
+  el.onblur=save;
+  el.onkeydown=function(e){
+    if(e.key==='Enter'){e.preventDefault();el.blur();}
+    if(e.key==='Escape'){el.textContent=origText;el.blur();}
+  };
 }
 
 function calEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
