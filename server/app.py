@@ -1006,16 +1006,28 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_error(503, 'Server memory exhausted')
             return
         
-        # API: GET /api/schedules
+        # API: GET /api/schedules?date=YYYY-MM-DD 或 ?month=YYYY-MM
         if path == '/api/schedules':
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
             conn.close()
             schedules = json.loads(row['value']) if row else []
             query = urllib.parse.parse_qs(parsed.query)
-            date = query.get('date', [datetime.now().strftime('%Y-%m-%d')])[0]
-            result = [s for s in schedules if s.get('type') == 'daily' or s.get('date') == date]
-            self.send_json(result)
+            date = query.get('date', [None])[0]
+            month = query.get('month', [None])[0]
+            if month:
+                # 返回整月所有日期的事项汇总（用于日历标记）
+                result = {}
+                for s in schedules:
+                    d = s.get('date', '')
+                    if d.startswith(month):
+                        result.setdefault(d, []).append(s)
+                self.send_json(result)
+            elif date:
+                result = [s for s in schedules if s.get('date') == date]
+                self.send_json(result)
+            else:
+                self.send_json(schedules)
             return
         
         # API: GET /api/ocr-test - 测试百度OCR连通性
@@ -1341,7 +1353,6 @@ class Handler(BaseHTTPRequestHandler):
             new_item = {
                 'id': str(uuid.uuid4()),
                 'title': body.get('title', ''),
-                'type': body.get('type', 'temp'),
                 'date': body.get('date', datetime.now().strftime('%Y-%m-%d')),
                 'completed': False,
                 'completedAt': None,

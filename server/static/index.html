@@ -369,26 +369,53 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 
 
 
-.schedule-toolbar{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
-.schedule-content{padding:16px;max-height:calc(100vh - 160px);overflow-y:auto}
-.schedule-sections{display:flex;flex-direction:column;gap:16px}
-.schedule-section-header{font-weight:600;font-size:14px;color:#444;padding:8px 12px;background:#f5f7fa;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.schedule-list{display:flex;flex-direction:column;gap:4px}
-.schedule-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #eee;border-radius:8px;transition:all .2s}
-.schedule-item:hover{background:#fafbff;border-color:#d0d9f0}
-.schedule-item.completed{background:#f0faf0;border-color:#c8e6c9;opacity:.7}
-.schedule-item.completed .schedule-title{text-decoration:line-through;color:#999}
-.schedule-check{width:20px;height:20px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:12px}
-.schedule-check:hover{border-color:#34a853}
-.schedule-item.completed .schedule-check{background:#34a853;border-color:#34a853;color:#fff}
-.schedule-title{flex:1;font-size:13px;color:#333}
-.schedule-date{font-size:11px;color:#999;white-space:nowrap}
-.schedule-type{font-size:11px;padding:2px 8px;border-radius:10px;white-space:nowrap}
-.schedule-type.daily{background:#e8f0fe;color:#1a73e8}
-.schedule-type.temp{background:#fef7e0;color:#e37400}
-.schedule-del{color:#ccc;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;transition:all .2s}
-.schedule-del:hover{color:#ea4335;background:#fce8e6}
-.schedule-empty{text-align:center;color:#bbb;padding:20px;font-size:13px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav-btn{width:28px;height:28px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;display:flex;align-items:center;justify-content:center}
+.cal-nav-btn:hover{background:#f0f0f0}
+.cal-title{font-size:16px;font-weight:600;color:#333;min-width:120px;text-align:center}
+.cal-views{display:flex;gap:4px}
+.cal-view-btn{padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555}
+.cal-view-btn:hover{background:#f0f0f0}
+.cal-view-btn.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 16px 0;text-align:center}
+.cal-weekday{font-size:12px;color:#888;font-weight:600;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 16px 16px;gap:2px}
+.cal-cell{min-height:80px;border:1px solid #eee;border-radius:6px;padding:4px 6px;cursor:pointer;position:relative;transition:all .15s;background:#fff}
+.cal-cell:hover{border-color:#1a73e8;background:#f8faff}
+.cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
+.cal-cell.other-month:hover{border-color:#eee;background:#fafafa}
+.cal-cell.today{border-color:#1a73e8;background:#e8f0fe}
+.cal-cell.selected{border-color:#1a73e8;background:#d2e3fc;box-shadow:0 0 0 2px rgba(26,115,232,.2)}
+.cal-cell-num{font-size:13px;font-weight:600;color:#333;margin-bottom:2px}
+.cal-cell.other-month .cal-cell-num{color:#ccc}
+.cal-cell.today .cal-cell-num{color:#1a73e8}
+.cal-cell.selected .cal-cell-num{color:#1a73e8}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+.cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-dot.done{background:#34a853}
+.cal-dot.undone{background:#ea4335}
+.cal-dot-more{font-size:10px;color:#888;line-height:6px}
+.cal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.3);z-index:1000;justify-content:center;align-items:flex-start;padding-top:60px}
+.cal-overlay.show{display:flex}
+.cal-detail{background:#fff;border-radius:12px;width:420px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.cal-detail-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #eee}
+.cal-detail-close{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:16px;color:#999;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.cal-detail-close:hover{background:#f0f0f0;color:#333}
+.cal-detail-add{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid #f0f0f0}
+.cal-detail-add input{flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
+.cal-detail-add input:focus{border-color:#1a73e8}
+.cal-detail-list{padding:8px 18px 18px}
+.cal-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.cal-item:last-child{border-bottom:none}
+.cal-item-check{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.cal-item-check:hover{border-color:#34a853}
+.cal-item.done .cal-item-check{background:#34a853;border-color:#34a853;color:#fff}
+.cal-item-title{flex:1;font-size:13px;color:#333}
+.cal-item.done .cal-item-title{text-decoration:line-through;color:#999}
+.cal-item-del{color:#ccc;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.cal-item-del:hover{color:#ea4335;background:#fce8e6}
+.cal-empty{text-align:center;color:#bbb;padding:24px;font-size:13px}
 </style>
 </head>
 <body>
@@ -753,30 +780,38 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 
 <!-- === 日程管理面板 === -->
 <div class="panel" id="panel-schedule">
-  <div class="schedule-toolbar">
-    <span style="font-weight:600">✅ 日程管理</span>
-    <span style="font-size:12px;color:#888;margin-left:12px" id="scheduleDate"></span>
-    <button class="btn btn-primary btn-sm" onclick="toggleScheduleAdd()" style="margin-left:auto">+ 添加日程</button>
+  <div class="cal-header">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrevMonth()" title="上一月">◀</button>
+      <span class="cal-title" id="calTitle">2026年7月</span>
+      <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
+    </div>
+    <div class="cal-views">
+      <button class="cal-view-btn" onclick="calSetView('day')">日</button>
+      <button class="cal-view-btn" onclick="calSetView('week')">周</button>
+      <button class="cal-view-btn active" id="calViewMonth" onclick="calSetView('month')">月</button>
+      <button class="cal-view-btn" onclick="calGoToday()">今天</button>
+    </div>
   </div>
-  <div class="schedule-content">
-    <div id="scheduleAddForm" style="display:none;background:#f8f9ff;border-radius:8px;padding:14px;margin-bottom:14px;border:1px solid #d0d9f0">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-        <div style="flex:2;min-width:160px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">事项 *</label><input type="text" id="scheduleTitle" placeholder="输入日程事项" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
-        <div style="min-width:100px"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">类型</label><select id="scheduleType" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"><option value="daily">📌 每日必做</option><option value="temp">📝 临时事项</option></select></div>
-        <div style="min-width:120px" id="scheduleDateField"><label style="font-size:11px;color:#888;display:block;margin-bottom:2px">日期</label><input type="date" id="scheduleItemDate" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></div>
-        <div style="display:flex;gap:4px"><button class="btn btn-primary btn-sm" onclick="addSchedule()">✅ 添加</button><button class="btn btn-sm" onclick="toggleScheduleAdd()">取消</button></div>
-      </div>
+  <div class="cal-weekdays">
+    <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
+    <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#ea4335">日</div>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+</div>
+
+<!-- 日期详情弹窗 -->
+<div class="cal-overlay" id="calOverlay" onclick="calCloseDetail()">
+  <div class="cal-detail" id="calDetail" onclick="event.stopPropagation()">
+    <div class="cal-detail-header">
+      <span style="font-weight:600" id="calDetailDate"></span>
+      <button class="cal-detail-close" onclick="calCloseDetail()">✕</button>
     </div>
-    <div class="schedule-sections">
-      <div class="schedule-section">
-        <div class="schedule-section-header">📌 每日必做</div>
-        <div id="dailySchedules" class="schedule-list"></div>
-      </div>
-      <div class="schedule-section">
-        <div class="schedule-section-header">📝 临时事项</div>
-        <div id="tempSchedules" class="schedule-list"></div>
-      </div>
+    <div class="cal-detail-add">
+      <input type="text" id="calNewTitle" placeholder="添加事项..." onkeydown="if(event.key==='Enter')calAddItem()">
+      <button class="btn btn-primary btn-sm" onclick="calAddItem()">添加</button>
     </div>
+    <div class="cal-detail-list" id="calDetailList"></div>
   </div>
 </div>
 
@@ -2233,99 +2268,174 @@ async function applyStamp(){
 function renderAll(){renderHeader();renderTodayList();renderAllList();renderTemplates();refreshStats();renderContractList();renderContractAlerts();espRefreshFileList();espLoadStamps();renderMaint()}
 
 // === 日程管理 ===
-let _schedules=[];
+let _calYear, _calMonth, _calData={}, _calSelDate='';
 
-async function loadSchedules(){
+function calInit(){
+  const now=new Date();
+  _calYear=now.getFullYear();
+  _calMonth=now.getMonth()+1;
+  _calSelDate=now.toISOString().split('T')[0];
+  calRender();
+}
+
+function calRender(){
+  document.getElementById('calTitle').textContent=_calYear+'年'+_calMonth+'月';
+  const firstDay=new Date(_calYear,_calMonth-1,1);
+  const lastDay=new Date(_calYear,_calMonth,0);
+  const startDow=(firstDay.getDay()+6)%7;
+  const totalDays=lastDay.getDate();
+  const today=new Date().toISOString().split('T')[0];
+  
+  let html='';
+  // 填充上月尾巴
+  const prevLast=new Date(_calYear,_calMonth-1,0).getDate();
+  for(let i=startDow-1;i>=0;i--){
+    const d=prevLast-i;
+    html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
+  }
+  // 当月日期
+  for(let d=1;d<=totalDays;d++){
+    const ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    let cls='cal-cell';
+    if(ds===today) cls+=' today';
+    if(ds===_calSelDate) cls+=' selected';
+    html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calOpenDetail(\x27'+ds+'\x27)">';
+    html+='<div class="cal-cell-num">'+d+'</div>';
+    html+='<div class="cal-dots">';
+    const items=_calData[ds]||[];
+    const undone=items.filter(function(x){return !x.completed;});
+    const done=items.filter(function(x){return x.completed;});
+    const maxDots=4;
+    let shown=0;
+    for(let i=0;i<undone.length&&shown<maxDots;i++){html+='<div class="cal-dot undone"></div>';shown++;}
+    for(let i=0;i<done.length&&shown<maxDots;i++){html+='<div class="cal-dot done"></div>';shown++;}
+    const total=undone.length+done.length;
+    if(total>maxDots) html+='<span class="cal-dot-more">+'+ (total-maxDots) +'</span>';
+    html+='</div></div>';
+  }
+  // 填充下月头
+  const totalCells=startDow+totalDays;
+  const remain=totalCells%7===0?0:7-totalCells%7;
+  for(let d=1;d<=remain;d++){
+    html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
+  }
+  document.getElementById('calGrid').innerHTML=html;
+  
+  // 加载当月数据
+  calLoadMonth();
+}
+
+async function calLoadMonth(){
+  const m=_calYear+'-'+String(_calMonth).padStart(2,'0');
   try{
-    const d=document.getElementById('scheduleItemDate');
-    if(d && !d.value) d.value=new Date().toISOString().split('T')[0];
-    const date=d&&d.value?d.value:new Date().toISOString().split('T')[0];
-    document.getElementById('scheduleDate').textContent=date;
-    const r=await fetch('/api/schedules?date='+date);
-    _schedules=await r.json();
-    renderSchedules();
-  }catch(e){console.error('loadSchedules',e);}
-}
-
-function renderSchedules(){
-  const daily=_schedules.filter(s=>s.type==='daily');
-  const temp=_schedules.filter(s=>s.type==='temp');
-  const dailyEl=document.getElementById('dailySchedules');
-  const tempEl=document.getElementById('tempSchedules');
-  dailyEl.innerHTML=daily.length?daily.map(s=>scheduleItemHTML(s)).join(''):'<div class="schedule-empty">暂无每日必做事项，点击右上角添加</div>';
-  tempEl.innerHTML=temp.length?temp.map(s=>scheduleItemHTML(s)).join(''):'<div class="schedule-empty">暂无临时事项</div>';
-}
-
-function scheduleItemHTML(s){
-  const cls=s.completed?' completed':'';
-  const check=s.completed?'✓':'';
-  const dateStr=s.type==='temp'?('<span class="schedule-date">'+s.date+'</span>'):'';
-  const typeLabel=s.type==='daily'?'每日必做':'临时';
-  return '<div class="schedule-item'+cls+'">'
-    +'<div class="schedule-check" onclick="toggleSchedule(\x27'+s.id+'\x27)">'+check+'</div>'
-    +'<span class="schedule-title">'+escHtml(s.title)+'</span>'
-    +dateStr
-    +'<span class="schedule-type '+s.type+'">'+typeLabel+'</span>'
-    +'<span class="schedule-del" onclick="deleteSchedule(\x27'+s.id+'\x27)" title="删除">×</span>'
-    +'</div>';
-}
-
-function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function toggleScheduleAdd(){
-  const f=document.getElementById('scheduleAddForm');
-  const tf=document.getElementById('scheduleType');
-  const df=document.getElementById('scheduleDateField');
-  if(f.style.display==='none'){
-    f.style.display='block';
-    document.getElementById('scheduleTitle').value='';
-    tf.value='temp';
-    updateScheduleDateField();
-    document.getElementById('scheduleTitle').focus();
-  }else{f.style.display='none';}
-}
-
-function updateScheduleDateField(){
-  const t=document.getElementById('scheduleType').value;
-  document.getElementById('scheduleDateField').style.display=t==='daily'?'none':'';
-}
-
-async function addSchedule(){
-  const title=document.getElementById('scheduleTitle').value.trim();
-  if(!title) return alert('请输入事项');
-  const type=document.getElementById('scheduleType').value;
-  const date=document.getElementById('scheduleItemDate').value||new Date().toISOString().split('T')[0];
-  try{
-    const r=await fetch('/api/schedules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,type,date})});
-    if(r.ok){toggleScheduleAdd();loadSchedules();}
+    const r=await fetch('/api/schedules?month='+m);
+    _calData=await r.json();
+    calRender();
   }catch(e){console.error(e);}
 }
 
-async function toggleSchedule(id){
-  const s=_schedules.find(x=>x.id===id);
+function calPrevMonth(){
+  if(_calMonth===1){_calYear--;_calMonth=12;}else{_calMonth--;}
+  calRender();
+}
+function calNextMonth(){
+  if(_calMonth===12){_calYear++;_calMonth=1;}else{_calMonth++;}
+  calRender();
+}
+function calGoToday(){
+  const now=new Date();
+  _calYear=now.getFullYear();
+  _calMonth=now.getMonth()+1;
+  _calSelDate=now.toISOString().split('T')[0];
+  calRender();
+}
+function calSetView(v){
+  if(v==='today'){calGoToday();return;}
+  document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
+  if(v==='month') document.getElementById('calViewMonth').classList.add('active');
+  if(v==='month') calRender();
+}
+
+function calOpenDetail(ds){
+  _calSelDate=ds;
+  document.getElementById('calDetailDate').textContent=ds;
+  document.getElementById('calNewTitle').value='';
+  document.getElementById('calOverlay').classList.add('show');
+  calRenderDetail();
+  calRender();
+}
+
+function calCloseDetail(){
+  document.getElementById('calOverlay').classList.remove('show');
+  calRender();
+}
+
+function calRenderDetail(){
+  const items=_calData[_calSelDate]||[];
+  const list=document.getElementById('calDetailList');
+  if(items.length===0){
+    list.innerHTML='<div class="cal-empty">暂无事项，在上方添加</div>';
+  }else{
+    list.innerHTML=items.map(function(s){
+      const cls=s.completed?' done':'';
+      const check=s.completed?'✓':'';
+      return '<div class="cal-item'+cls+'">'
+        +'<div class="cal-item-check" onclick="calToggle(\x27'+s.id+'\x27)">'+check+'</div>'
+        +'<span class="cal-item-title">'+calEsc(s.title)+'</span>'
+        +'<span class="cal-item-del" onclick="calDelete(\x27'+s.id+'\x27)" title="删除">×</span>'
+        +'</div>';
+    }).join('');
+  }
+}
+
+async function calAddItem(){
+  const title=document.getElementById('calNewTitle').value.trim();
+  if(!title) return;
+  try{
+    const r=await fetch('/api/schedules',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:title,date:_calSelDate})
+    });
+    if(r.ok){
+      document.getElementById('calNewTitle').value='';
+      await calLoadMonth();
+      calRenderDetail();
+    }
+  }catch(e){console.error(e);}
+}
+
+async function calToggle(id){
+  const items=_calData[_calSelDate]||[];
+  const s=items.find(function(x){return x.id===id;});
   if(!s) return;
   s.completed=!s.completed;
   s.completedAt=s.completed?new Date().toISOString():null;
   try{
-    await fetch('/api/schedules/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({completed:s.completed,completedAt:s.completedAt})});
-    renderSchedules();
+    await fetch('/api/schedules/'+id,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({completed:s.completed,completedAt:s.completedAt})
+    });
+    calRenderDetail();
+    calRender();
   }catch(e){console.error(e);}
 }
 
-async function deleteSchedule(id){
-  if(!confirm('确定删除此事项？')) return;
+async function calDelete(id){
+  if(!confirm('确定删除？')) return;
   try{
     await fetch('/api/schedules/'+id,{method:'DELETE'});
-    loadSchedules();
+    await calLoadMonth();
+    calRenderDetail();
   }catch(e){console.error(e);}
 }
 
-// 初始加载时绑定类型切换事件
-document.addEventListener('DOMContentLoaded',function(){
-  const st=document.getElementById('scheduleType');
-  if(st) st.addEventListener('change',updateScheduleDateField);
-});
+function calEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+document.addEventListener('DOMContentLoaded',function(){
+  calInit();
+});
 // === 维保日程提醒 ===
 let _maintCalYear=new Date().getFullYear();
 let _maintCalMonth=new Date().getMonth();
@@ -2942,7 +3052,7 @@ document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=
   window.scrollTo({top:0,behavior:'smooth'});
   // 切换到盖章面板时重新加载印章列表
   if(tab.dataset.tab==='stamp'){espLoadStamps();}
-  if(tab.dataset.tab==='schedule'){loadSchedules();}
+  if(tab.dataset.tab==='schedule'){calInit();}
 })});
 
 const ia=document.getElementById('importArea');
