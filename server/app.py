@@ -1122,12 +1122,12 @@ class Handler(BaseHTTPRequestHandler):
                     }
                     if prev.get('daily_must', {}).get('carry_over'):
                         new_entry['daily_must'] = {
-                            'carry_over': True,
+                            'carry_over': False,
                             'tasks': [dict(t) for t in prev['daily_must']['tasks']]
                         }
                     if prev.get('collection', {}).get('carry_over'):
                         new_entry['collection'] = {
-                            'carry_over': True,
+                            'carry_over': False,
                             'items': [dict(t) for t in prev['collection']['items']]
                         }
                     for p in prev.get('active_projects', {}).get('projects', []):
@@ -1145,13 +1145,13 @@ class Handler(BaseHTTPRequestHandler):
                     changed = False
                     if prev.get('daily_must', {}).get('carry_over') and not entry.get('daily_must', {}).get('tasks'):
                         entry['daily_must'] = {
-                            'carry_over': True,
+                            'carry_over': False,
                             'tasks': [dict(t) for t in prev['daily_must']['tasks']]
                         }
                         changed = True
                     if prev.get('collection', {}).get('carry_over') and not entry.get('collection', {}).get('items'):
                         entry['collection'] = {
-                            'carry_over': True,
+                            'carry_over': False,
                             'items': [dict(t) for t in prev['collection']['items']]
                         }
                         changed = True
