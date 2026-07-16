@@ -403,6 +403,18 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-cell-title.done{color:#a0aec0;text-decoration:line-through}
 /* === 6板块竖条布局 === */
 #panel-schedule.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
+.schedule-main{flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0}
+.schedule-left{width:200px;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;border-right:1px solid #e8ecf1;background:#fafbfd}
+.schedule-left .cal-body{flex:0 0 auto}
+.schedule-left .cal-grid{padding:2px 4px 3px 4px;gap:1px}
+.schedule-left .cal-cell{min-height:24px;padding:0 1px}
+.schedule-left .cal-cell-num{font-size:8px}
+.schedule-left .cal-dot{width:2px;height:2px}
+.schedule-left .cal-dot-more{font-size:6px}
+.schedule-left .cal-cell-title{font-size:6px}
+.schedule-left .board-strip{flex:1;min-height:0;border:none;border-radius:0;border-top:1px solid #e8ecf1}
+.schedule-left .board-strip-header{background:#f5f6fa}
+.schedule-right{flex:1;display:flex;flex-direction:row;gap:5px;padding:5px 6px;overflow-x:auto;overflow-y:hidden}
 .board-container{flex:1;display:flex;flex-direction:row;gap:6px;padding:6px 8px;overflow-x:auto;overflow-y:hidden}
 .board-strip{flex:1;min-width:140px;display:flex;flex-direction:column;border:1px solid #e0e0e0;border-radius:8px;background:#fff;overflow:hidden;transition:border-color .2s}
 .board-strip:hover{border-color:#c0c8d4}
@@ -828,64 +840,68 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
     <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#e53e3e">日</div>
   </div>
-  <div class="cal-body">
-    <div class="cal-grid" id="calGrid"></div>
-  </div>
-  <div class="board-container" id="boardContainer">
-    <!-- 执行项目 -->
-    <div class="board-strip" id="board-active-projects">
-      <div class="board-strip-header"><span class="strip-title">📌 执行项目</span><span class="strip-badge" id="activeCount">0</span></div>
-      <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
-        <div class="btn-row"><input type="text" id="activeCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardActiveAdd()"><button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button></div>
+  <div class="schedule-main">
+    <div class="schedule-left">
+      <div class="cal-body">
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <!-- 每日必做 -->
+      <div class="board-strip" id="board-daily-must">
+        <div class="board-strip-header"><span class="strip-title">📌 每日必做</span></div>
+        <div class="board-strip-body" id="dailyMustList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-toggle"><label><input type="checkbox" id="dailyMustCarry" onchange="boardDailyMustCarry()">延续到明天</label></div>
+        <div class="board-strip-footer">
+          <input type="text" id="dailyMustInput" placeholder="添加任务..." onkeydown="if(event.key==='Enter')boardDailyMustAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardDailyMustAdd()">+</button>
+        </div>
       </div>
     </div>
-    <!-- 待执行项目 -->
-    <div class="board-strip" id="board-pending-projects">
-      <div class="board-strip-header"><span class="strip-title">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
-      <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
-        <div class="btn-row"><input type="text" id="pendingCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardPendingAdd()"><button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button></div>
+    <div class="schedule-right">
+      <!-- 执行项目 -->
+      <div class="board-strip" id="board-active-projects">
+        <div class="board-strip-header"><span class="strip-title">📌 执行项目</span><span class="strip-badge" id="activeCount">0</span></div>
+        <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-footer">
+          <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
+          <div class="btn-row"><input type="text" id="activeCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardActiveAdd()"><button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button></div>
+        </div>
       </div>
-    </div>
-    <!-- 每日必做 -->
-    <div class="board-strip" id="board-daily-must">
-      <div class="board-strip-header"><span class="strip-title">📌 每日必做</span></div>
-      <div class="board-strip-body" id="dailyMustList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-toggle"><label><input type="checkbox" id="dailyMustCarry" onchange="boardDailyMustCarry()">延续到明天</label></div>
-      <div class="board-strip-footer">
-        <input type="text" id="dailyMustInput" placeholder="添加任务..." onkeydown="if(event.key==='Enter')boardDailyMustAdd()">
-        <button class="btn btn-primary btn-sm" onclick="boardDailyMustAdd()">+</button>
+      <!-- 待执行项目 -->
+      <div class="board-strip" id="board-pending-projects">
+        <div class="board-strip-header"><span class="strip-title">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
+        <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-footer">
+          <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
+          <div class="btn-row"><input type="text" id="pendingCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardPendingAdd()"><button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button></div>
+        </div>
       </div>
-    </div>
-    <!-- 今日待办 -->
-    <div class="board-strip" id="board-today-todo">
-      <div class="board-strip-header"><span class="strip-title">📌 今日待办</span></div>
-      <div class="board-strip-body" id="todayTodoList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
-        <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
+      <!-- 今日待办 -->
+      <div class="board-strip" id="board-today-todo">
+        <div class="board-strip-header"><span class="strip-title">📌 今日待办</span></div>
+        <div class="board-strip-body" id="todayTodoList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-footer">
+          <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
+          <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
+        </div>
       </div>
-    </div>
-    <!-- 催款项目 -->
-    <div class="board-strip" id="board-collection">
-      <div class="board-strip-header"><span class="strip-title">📌 催款项目</span></div>
-      <div class="board-strip-body" id="collectionList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label></div>
-      <div class="board-strip-footer">
-        <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
-        <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
+      <!-- 催款项目 -->
+      <div class="board-strip" id="board-collection">
+        <div class="board-strip-header"><span class="strip-title">📌 催款项目</span></div>
+        <div class="board-strip-body" id="collectionList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label></div>
+        <div class="board-strip-footer">
+          <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
+        </div>
       </div>
-    </div>
-    <!-- 待付款 -->
-    <div class="board-strip" id="board-payments">
-      <div class="board-strip-header"><span class="strip-title">📌 待付款</span></div>
-      <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
-        <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
+      <!-- 待付款 -->
+      <div class="board-strip" id="board-payments">
+        <div class="board-strip-header"><span class="strip-title">📌 待付款</span></div>
+        <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
+        <div class="board-strip-footer">
+          <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
+          <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2402,6 +2418,7 @@ function calTodayLunar(){
 // === 日程管理 ===
 let _calYear, _calMonth, _calSelDate='', _calView='month';
 let _boardData=null, _boardTodoPending=null;
+let _boardCache={};
 
 // 默认空板块
 function emptyBoard(){return {
@@ -2458,6 +2475,7 @@ function calRender(){
 
 async function calLoadMonth(){
   calRender();
+  boardUpdateAllCalendarDots();
 }
 
 function calPrevMonth(){
@@ -2499,8 +2517,13 @@ async function boardLoad(){
     const r=await fetch('/api/schedule-board?date='+_calSelDate);
     _boardData=await r.json();
     if(!_boardData||!_boardData.daily_must) _boardData=emptyBoard();
-  }catch(e){console.error(e);_boardData=emptyBoard();}
+    // 加固：确保旧数据格式兼容
+    if(!_boardData.collection) _boardData.collection={carry_over:false,items:[]};
+    if(_boardData.collection.carry_over===undefined) _boardData.collection.carry_over=false;
+    _boardCache[_calSelDate]=_boardData;
+  }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
+  boardUpdateAllCalendarDots();
 }
 
 async function boardSave(){
@@ -2520,7 +2543,6 @@ function boardRenderAll(){
   boardPendingRender();
   boardCollRender();
   boardPayRender();
-  boardUpdateCalendarDots();
 }
 
 // === 1. 每日必做 ===
@@ -2896,6 +2918,36 @@ function boardUpdateCalendarDots(){
     titlesHtml+='<div class="cal-cell-title'+(all[i].completed?' done':'')+'">'+calEsc(t)+'</div>';
   }
   titlesEl.innerHTML=titlesHtml;
+}
+
+// === 全量更新当月所有已缓存日期的圆点 ===
+function boardUpdateAllCalendarDots(){
+  var totalDays=new Date(_calYear,_calMonth,0).getDate();
+  for(var d=1;d<=totalDays;d++){
+    var ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var data=_boardCache[ds];
+    if(!data) continue;
+    var items=data.today_todo.items;
+    var dotsEl=document.getElementById('calDots_'+ds);
+    var titlesEl=document.getElementById('calTitles_'+ds);
+    if(!dotsEl||!titlesEl) continue;
+    var undone=items.filter(function(x){return !x.completed;});
+    var done=items.filter(function(x){return x.completed;});
+    var dotsHtml='';var shown=0;
+    for(var i=0;i<undone.length&&shown<3;i++){dotsHtml+='<span class="cal-dot undone"></span>';shown++;}
+    for(var i=0;i<done.length&&shown<3;i++){dotsHtml+='<span class="cal-dot done"></span>';shown++;}
+    var total=items.length;
+    if(total>3) dotsHtml+='<span class="cal-dot-more">+'+ (total-3) +'</span>';
+    dotsEl.innerHTML=dotsHtml;
+    var titlesHtml='';
+    var all=items.slice(0,2);
+    for(var i=0;i<all.length;i++){
+      var t=all[i].title||'';
+      if(t.length>6) t=t.substring(0,6)+'…';
+      titlesHtml+='<div class="cal-cell-title'+(all[i].completed?' done':'')+'">'+calEsc(t)+'</div>';
+    }
+    titlesEl.innerHTML=titlesHtml;
+  }
 }
 
 document.addEventListener('DOMContentLoaded',function(){
