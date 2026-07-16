@@ -787,8 +787,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
     </div>
     <div class="cal-views">
-      <button class="cal-view-btn" onclick="calSetView('day')">日</button>
-      <button class="cal-view-btn" onclick="calSetView('week')">周</button>
+      <button class="cal-view-btn" id="calViewDay" onclick="calSetView('day')">日</button>
+      <button class="cal-view-btn" id="calViewWeek" onclick="calSetView('week')">周</button>
       <button class="cal-view-btn active" id="calViewMonth" onclick="calSetView('month')">月</button>
       <button class="cal-view-btn" onclick="calGoToday()">今天</button>
     </div>
@@ -2275,7 +2275,7 @@ function calInit(){
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
-  calRender();
+  calLoadMonth();
 }
 
 function calRender(){
@@ -2320,9 +2320,6 @@ function calRender(){
     html+='<div class="cal-cell other-month"><div class="cal-cell-num">'+d+'</div></div>';
   }
   document.getElementById('calGrid').innerHTML=html;
-  
-  // 加载当月数据
-  calLoadMonth();
 }
 
 async function calLoadMonth(){
@@ -2336,24 +2333,26 @@ async function calLoadMonth(){
 
 function calPrevMonth(){
   if(_calMonth===1){_calYear--;_calMonth=12;}else{_calMonth--;}
-  calRender();
+  calLoadMonth();
 }
 function calNextMonth(){
   if(_calMonth===12){_calYear++;_calMonth=1;}else{_calMonth++;}
-  calRender();
+  calLoadMonth();
 }
 function calGoToday(){
   const now=new Date();
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
-  calRender();
+  calLoadMonth();
 }
 function calSetView(v){
   if(v==='today'){calGoToday();return;}
   document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
+  if(v==='day') document.getElementById('calViewDay').classList.add('active');
+  if(v==='week') document.getElementById('calViewWeek').classList.add('active');
   if(v==='month') document.getElementById('calViewMonth').classList.add('active');
-  if(v==='month') calRender();
+  calLoadMonth();
 }
 
 function calOpenDetail(ds){
