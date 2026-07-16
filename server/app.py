@@ -1132,7 +1132,9 @@ class Handler(BaseHTTPRequestHandler):
                         }
                     for p in prev.get('active_projects', {}).get('projects', []):
                         if p.get('carry_over'):
-                            new_entry['active_projects']['projects'].append(dict(p))
+                            copied = dict(p)
+                            copied['carry_over'] = False
+                            new_entry['active_projects']['projects'].append(copied)
                     board[date] = new_entry
                     conn = get_db()
                     conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",

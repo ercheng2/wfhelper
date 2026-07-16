@@ -380,7 +380,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-view-btn:hover{background:#e8f0fe;border-color:#8ab4f8}
 .cal-view-btn.active{background:#4a6fa5;color:#fff;border-color:#4a6fa5}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:3px 3px 0;text-align:center}
-.cal-weekday{font-size:10px;color:#8b96a5;font-weight:600;padding:2px 0}
+.cal-weekday{font-size:10px;color:#8b96a5;font-weight:600;padding:2px 0;transition:all .2s}
+.cal-weekday.today{color:#1a73e8;background:#e3edff;border-radius:4px;font-weight:700}
 .cal-body{display:flex;flex:0 0 auto;min-height:0;overflow:hidden}
 .cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 6px 3px 6px;gap:2px;overflow-y:auto;align-content:start}
 .cal-cell{min-height:28px;border:1px solid #e4e8f0;border-radius:4px;padding:1px 2px;cursor:pointer;position:relative;transition:all .15s;background:#f8faff;overflow:hidden}
@@ -390,6 +391,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}
 .cal-cell.selected{border-color:#4a6fa5;background:#d4e2fc;box-shadow:0 0 0 2px rgba(74,111,165,.25)}
 .cal-cell-num{font-size:9px;font-weight:700;color:#4a5568;margin-bottom:0;line-height:1.1}
+.cal-cell-lunar{font-size:7px;color:#e53e3e;line-height:1;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-cell.other-month .cal-cell-num{color:#c5c9d2}
 .cal-cell.today .cal-cell-num{color:#3b5998}
 .cal-cell.selected .cal-cell-num{color:#2c4a7c}
@@ -409,6 +411,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .schedule-col .cal-grid{flex:1;padding:2px 3px 3px 3px;gap:1px;overflow-y:auto;grid-auto-rows:1fr}
 .schedule-col .cal-cell{padding:1px 2px}
 .schedule-col .cal-cell-num{font-size:10px}
+.schedule-col .cal-cell-lunar{font-size:8px}
 .schedule-col .cal-dot{width:3px;height:3px}
 .schedule-col .cal-dot-more{font-size:7px}
 .schedule-col .cal-cell-title{font-size:7px}
@@ -2438,13 +2441,58 @@ function calInit(){
   boardLoad();
 }
 
+// === 农历日历计算 ===
+var _lunarInfo=[0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a4d0,0x0d150,0x0f252,0x0d520];
+var _lunarMonths=['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+var _lunarDays=['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+var _lunarCache={};
+
+function _lunarYearDays(y){var i,s=348;for(i=0x8000;i>0x8;i>>=1)s+=_lunarInfo[y-1900]&i?1:0;return s+_lunarLeapDays(y);}
+function _lunarLeapMonth(y){return _lunarInfo[y-1900]&0xf;}
+function _lunarLeapDays(y){if(_lunarLeapMonth(y))return _lunarInfo[y-1900]&0x10000?30:29;return 0;}
+function _lunarMonthDays(y,m){return _lunarInfo[y-1900]&(0x10000>>m)?30:29;}
+
+function getLunarDate(date){
+  var y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  var key=y+'-'+m+'-'+d;
+  if(_lunarCache[key])return _lunarCache[key];
+  var base=new Date(1900,0,31);
+  var offset=Math.floor((date-base)/86400000);
+  var ly,lm,ld,leap=false,days=0;
+  for(ly=1900;ly<2100&&offset>0;ly++){days=_lunarYearDays(ly);offset-=days;}
+  if(offset<0){offset+=days;ly--;}
+  var leapM=_lunarLeapMonth(ly),isLeap=false;
+  for(lm=1;lm<13&&offset>0;lm++){
+    if(leapM>0&&lm===leapM+1&&!isLeap){lm--;isLeap=true;days=_lunarLeapDays(ly);}
+    else{days=_lunarMonthDays(ly,lm);}
+    offset-=days;if(isLeap&&lm===leapM+1)isLeap=false;
+  }
+  if(offset===0&&leapM>0&&lm===leapM+1){if(isLeap){isLeap=false;}else{isLeap=true;lm--;}}
+  if(offset<0){offset+=days;lm--;}
+  ld=offset+1;
+  var result=(isLeap?'闰':'')+_lunarMonths[lm-1]+'月'+_lunarDays[ld];
+  _lunarCache[key]=result;
+  return result;
+}
+function getLunarShort(date){
+  var r=getLunarDate(date);
+  return r.replace(/月.*/,'月').length>3?r.slice(0,2):r.replace(/月.*/,'月');
+}
+
 function calRender(){
   document.getElementById('calTitle').textContent=_calYear+'年'+_calMonth+'月';
   var firstDay=new Date(_calYear,_calMonth-1,1);
   var lastDay=new Date(_calYear,_calMonth,0);
   var startDow=(firstDay.getDay()+6)%7;
   var totalDays=lastDay.getDate();
-  var today=new Date().toISOString().split('T')[0];
+  var today=new Date();
+  var todayStr=today.toISOString().split('T')[0];
+  var todayDow=(today.getDay()+6)%7;
+  
+  // 高亮今天星期几
+  var wds=document.querySelectorAll('.cal-weekday');
+  wds.forEach(function(el){el.classList.remove('today');});
+  if(wds[todayDow]) wds[todayDow].classList.add('today');
   
   var html='';
   var prevLast=new Date(_calYear,_calMonth-1,0).getDate();
@@ -2455,10 +2503,16 @@ function calRender(){
   for(var d=1;d<=totalDays;d++){
     var ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var cls='cal-cell';
-    if(ds===today) cls+=' today';
+    var isToday=(ds===todayStr);
+    if(isToday) cls+=' today';
     if(ds===_calSelDate) cls+=' selected';
     html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calSelectDate(\x27'+ds+'\x27)">';
     html+='<div class="cal-cell-num">'+d+'</div>';
+    if(isToday){
+      var lunar=getLunarDate(today);
+      var lunarShort=lunar.replace(/^闰/,'').replace(/月.*/,'月');
+      html+='<div class="cal-cell-lunar">'+lunarShort+'</div>';
+    }
     html+='<div class="cal-dots" id="calDots_'+ds+'"></div>';
     html+='<div class="cal-cell-titles" id="calTitles_'+ds+'"></div>';
     html+='</div>';
