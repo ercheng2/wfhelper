@@ -2262,11 +2262,11 @@ function scheduleItemHTML(s){
   const dateStr=s.type==='temp'?('<span class="schedule-date">'+s.date+'</span>'):'';
   const typeLabel=s.type==='daily'?'每日必做':'临时';
   return '<div class="schedule-item'+cls+'">'
-    +'<div class="schedule-check" onclick="toggleSchedule(''+s.id+'')">'+check+'</div>'
+    +'<div class="schedule-check" onclick="toggleSchedule(\x27'+s.id+'\x27)">'+check+'</div>'
     +'<span class="schedule-title">'+escHtml(s.title)+'</span>'
     +dateStr
     +'<span class="schedule-type '+s.type+'">'+typeLabel+'</span>'
-    +'<span class="schedule-del" onclick="deleteSchedule(''+s.id+'')" title="删除">×</span>'
+    +'<span class="schedule-del" onclick="deleteSchedule(\x27'+s.id+'\x27)" title="删除">×</span>'
     +'</div>';
 }
 
