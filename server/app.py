@@ -1142,7 +1142,50 @@ class Handler(BaseHTTPRequestHandler):
                     conn.commit()
                     conn.close()
                 else:
-                    pass
+                    existing = board[date]
+                    modified = False
+                    prev_dm_carry = prev.get('daily_must', {}).get('carry_over', False)
+                    curr_has_dm = bool(existing.get('daily_must', {}).get('tasks'))
+                    prev_coll_carry = prev.get('collection', {}).get('carry_over', False)
+                    curr_has_coll = bool(existing.get('collection', {}).get('items'))
+                    prev_ap_carry = any(p.get('carry_over') for p in prev.get('active_projects', {}).get('projects', []))
+                    curr_has_ap = bool(existing.get('active_projects', {}).get('projects'))
+                    
+                    # 每日必做：空+前一天有延续→补填 / 有内容+前一天无延续→清脏数据
+                    if not curr_has_dm and prev_dm_carry:
+                        existing['daily_must'] = {'carry_over': False, 'tasks': [dict(t) for t in prev['daily_must']['tasks']]}
+                        modified = True
+                    elif curr_has_dm and not prev_dm_carry:
+                        existing['daily_must'] = {'carry_over': False, 'tasks': []}
+                        modified = True
+                    # 执行项目：空+前一天有延续→补填 / 有内容+前一天无延续→清脏数据
+                    if not curr_has_ap and prev_ap_carry:
+                        if 'active_projects' not in existing:
+                            existing['active_projects'] = {'projects': []}
+                        for p in prev.get('active_projects', {}).get('projects', []):
+                            if p.get('carry_over'):
+                                copied = dict(p)
+                                copied['carry_over'] = False
+                                existing['active_projects']['projects'].append(copied)
+                        modified = True
+                    elif curr_has_ap and not prev_ap_carry:
+                        existing['active_projects'] = {'projects': []}
+                        modified = True
+                    # 收款记录：空+前一天有延续→补填 / 有内容+前一天无延续→清脏数据
+                    if not curr_has_coll and prev_coll_carry:
+                        existing['collection'] = {'carry_over': False, 'items': [dict(t) for t in prev['collection']['items']]}
+                        modified = True
+                    elif curr_has_coll and not prev_coll_carry:
+                        existing['collection'] = {'carry_over': False, 'items': []}
+                        modified = True
+                    
+                    if modified:
+                        board[date] = existing
+                        conn = get_db()
+                        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                                    ('wfhelper_schedule_board', json.dumps(board, ensure_ascii=False)))
+                        conn.commit()
+                        conn.close()
                 self.send_json(board.get(date, {}))
             else:
                 self.send_json(board)
