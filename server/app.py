@@ -1140,36 +1140,8 @@ class Handler(BaseHTTPRequestHandler):
                     conn.commit()
                     conn.close()
                 else:
-                    # 已有日期：检查前一天延续，仅当对应板块为空时合并
-                    entry = board[date]
-                    changed = False
-                    if prev.get('daily_must', {}).get('carry_over') and not entry.get('daily_must', {}).get('tasks'):
-                        entry['daily_must'] = {
-                            'carry_over': False,
-                            'tasks': [dict(t) for t in prev['daily_must']['tasks']]
-                        }
-                        changed = True
-                    if prev.get('collection', {}).get('carry_over') and not entry.get('collection', {}).get('items'):
-                        entry['collection'] = {
-                            'carry_over': False,
-                            'items': [dict(t) for t in prev['collection']['items']]
-                        }
-                        changed = True
-                    for p in prev.get('active_projects', {}).get('projects', []):
-                        if p.get('carry_over'):
-                            existing_ids = [ep.get('id') for ep in entry.get('active_projects', {}).get('projects', [])]
-                            if p.get('id') not in existing_ids:
-                                if 'active_projects' not in entry:
-                                    entry['active_projects'] = {'projects': []}
-                                entry['active_projects']['projects'].append(dict(p))
-                                changed = True
-                    if changed:
-                        board[date] = entry
-                        conn = get_db()
-                        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                                    ('wfhelper_schedule_board', json.dumps(board, ensure_ascii=False)))
-                        conn.commit()
-                        conn.close()
+                    # 已有日期：直接返回，不做自动延续（延续仅首次访问时生效）
+                    pass
                 self.send_json(board.get(date, {}))
             else:
                 self.send_json(board)

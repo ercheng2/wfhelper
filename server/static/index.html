@@ -370,7 +370,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 
 
 
-.cal-header{display:flex;align-items:center;justify-content:space-between;padding:4px 18px;border-bottom:1px solid #e8ecf1;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,#f0f4ff,#faf5ff)}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:4px 20px;border-bottom:1px solid #e8ecf1;flex-wrap:wrap;gap:6px;background:linear-gradient(135deg,#f0f4ff,#faf5ff)}
 .cal-nav{display:flex;align-items:center;gap:6px}
 .cal-nav-btn{width:26px;height:26px;border:1px solid #d0d7e2;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#5f6b7a;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .cal-nav-btn:hover{background:#e8f0fe;border-color:#8ab4f8}
@@ -379,7 +379,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-view-btn{padding:3px 10px;border:1px solid #d0d7e2;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#5f6b7a;transition:all .15s}
 .cal-view-btn:hover{background:#e8f0fe;border-color:#8ab4f8}
 .cal-view-btn.active{background:#4a6fa5;color:#fff;border-color:#4a6fa5}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 18px 0;text-align:center}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:3px 3px 0;text-align:center}
 .cal-weekday{font-size:10px;color:#8b96a5;font-weight:600;padding:2px 0}
 .cal-body{display:flex;flex:0 0 auto;min-height:0;overflow:hidden}
 .cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 6px 3px 6px;gap:2px;overflow-y:auto;align-content:start}
@@ -403,7 +403,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-cell-title.done{color:#a0aec0;text-decoration:line-through}
 /* === 6板块竖条布局 === */
 #panel-schedule.panel.active{display:flex;flex-direction:column;height:calc(100vh - 126px);overflow:hidden}
-.schedule-main{flex:1;display:flex;flex-direction:row;gap:6px;padding:5px 18px;overflow:hidden;min-height:0}
+.schedule-main{flex:1;display:flex;flex-direction:row;gap:6px;padding:5px 20px;overflow:hidden;min-height:0}
 .schedule-col{flex:1;min-width:140px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #e0e0e0;border-radius:8px;background:#fff}
 .schedule-col .cal-body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
 .schedule-col .cal-grid{flex:1;padding:2px 3px 3px 3px;gap:1px;overflow-y:auto;align-content:start}
@@ -413,7 +413,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .schedule-col .cal-dot-more{font-size:7px}
 .schedule-col .cal-cell-title{font-size:7px}
 .schedule-col .cal-dots{gap:1px}
-.schedule-col .board-strip{flex:0 0 auto;max-height:40%;min-height:0;border:none;border-radius:0;border-top:1px solid #e8ecf1}
+.schedule-col .board-strip{flex:1;min-height:0;border:none;border-radius:0;border-top:1px solid #e8ecf1}
 .schedule-col .board-strip-header{background:#f5f6fa}
 .board-container{flex:1;display:flex;flex-direction:row;gap:6px;padding:6px 8px;overflow-x:auto;overflow-y:hidden}
 .board-strip{flex:1;min-width:140px;display:flex;flex-direction:column;border:1px solid #e0e0e0;border-radius:8px;background:#fff;overflow:hidden;transition:border-color .2s}
@@ -836,13 +836,13 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <button class="cal-view-btn" onclick="calGoToday()">今天</button>
     </div>
   </div>
-  <div class="cal-weekdays">
-    <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
-    <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#e53e3e">日</div>
-  </div>
   <div class="schedule-main">
     <!-- 日历+每日必做 -->
     <div class="schedule-col">
+      <div class="cal-weekdays">
+        <div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div>
+        <div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div><div class="cal-weekday" style="color:#e53e3e">日</div>
+      </div>
       <div class="cal-body">
         <div class="cal-grid" id="calGrid"></div>
       </div>
