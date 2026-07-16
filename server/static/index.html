@@ -404,6 +404,23 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-sidebar{flex:1;min-width:360px;flex-shrink:0;border-left:1px solid #eee;display:flex;flex-direction:column;background:#fafbfc;overflow:hidden}
 .cal-sidebar-header{padding:10px 16px;border-bottom:1px solid #eee;background:#fff;font-weight:600;font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .cal-sidebar-date{color:#1a73e8}
+.cal-sidebar-lunar{font-size:11px;color:#999;font-weight:400;margin-left:4px}
+.cal-today-summary{flex-shrink:0;background:#fff;border-top:1px solid #eee;padding:8px 16px}
+.cal-today-summary-title{font-size:12px;font-weight:600;color:#1a73e8;margin-bottom:4px}
+.cal-today-summary-list{font-size:12px;color:#555;line-height:1.7}
+.cal-today-summary-item{display:flex;align-items:center;gap:6px;padding:2px 0}
+.cal-today-summary-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-today-summary-dot.undone{background:#ea4335}
+.cal-today-summary-dot.done{background:#34a853}
+.cal-today-summary-empty{font-size:11px;color:#bbb;padding:4px 0}
+.cal-status-popup{display:none;position:absolute;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:999;font-size:12px;text-align:center;white-space:nowrap}
+.cal-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
+.cal-status-btn-done{background:#34a853;color:#fff}
+.cal-status-btn-done:hover{background:#2d8e47}
+.cal-status-btn-undone{background:#ea4335;color:#fff}
+.cal-status-btn-undone:hover{background:#d33426}
+.cal-status-btn-cancel{background:#f0f0f0;color:#666}
+.cal-status-btn-cancel:hover{background:#e0e0e0}
 .cal-sidebar-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;padding:24px}
 .cal-note-area{flex:1;display:flex;flex-direction:column;min-height:120px;border-bottom:1px solid #eee}
 .cal-note-area textarea{flex:1;border:none;outline:none;resize:none;padding:10px 16px;font-size:13px;line-height:1.7;color:#333;font-family:inherit;background:#fff}
@@ -421,10 +438,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-item-check{width:18px;height:18px;border:2px solid #ccc;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
 .cal-item-check:hover{border-color:#34a853}
 .cal-item.done .cal-item-check{background:#34a853;border-color:#34a853;color:#fff}
-.cal-item-title{flex:1;font-size:13px;color:#333;cursor:pointer;padding:2px 4px;border-radius:3px;transition:background .15s}
+.cal-item-title{flex:1;font-size:13px;color:#ea4335;cursor:pointer;padding:2px 4px;border-radius:3px;transition:background .15s}
 .cal-item-title:hover{background:#f0f0f0}
 .cal-item-title.editing{padding:3px 4px;background:#fff;border:1px solid #1a73e8;border-radius:4px;outline:none;cursor:text}
-.cal-item.done .cal-item-title{text-decoration:line-through;color:#999}
+.cal-item.done .cal-item-title{text-decoration:line-through;color:#34a853}
 .cal-item-edit{color:#ccc;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;flex-shrink:0;visibility:hidden}
 .cal-item:hover .cal-item-edit{visibility:visible}
 .cal-item-edit:hover{color:#1a73e8;background:#e8f0fe}
@@ -817,7 +834,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="cal-sidebar" id="calSidebar">
       <div class="cal-sidebar-empty" id="calSidebarEmpty">👈 点击左侧日期查看和编辑</div>
       <div class="cal-sidebar-header" id="calSidebarHeader" style="display:none">
-        📅 <span class="cal-sidebar-date" id="calDetailDate"></span>
+        📅 <span class="cal-sidebar-date" id="calDetailDate"></span><span class="cal-sidebar-lunar" id="calDetailLunar"></span>
+      </div>
+      <div class="cal-today-summary" id="calTodaySummary" style="display:none">
+        <div class="cal-today-summary-title">📋 今日待办</div>
+        <div class="cal-today-summary-list" id="calTodaySummaryList"></div>
       </div>
       <div class="cal-note-area" id="calNoteArea" style="display:none">
         <textarea id="calNoteText" placeholder="📝 记录当天事项..." oninput="calNoteAutoSave()"></textarea>
@@ -843,6 +864,12 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
           <input type="text" id="calNewTitle" placeholder="添加临时事项..." onkeydown="if(event.key==='Enter')calAddItem()">
           <button class="btn btn-primary btn-sm" onclick="calAddItem()">+</button>
         </div>
+      </div>
+      <div class="cal-status-popup" id="calStatusPopup">
+        <div style="margin-bottom:6px;font-weight:600">标记任务状态</div>
+        <button class="cal-status-btn-done" onclick="calStatusPick('done')">✅ 已完成</button>
+        <button class="cal-status-btn-undone" onclick="calStatusPick('undone')">❌ 未完成</button>
+        <br><button class="cal-status-btn-cancel" onclick="calStatusPick('cancel')">取消</button>
       </div>
     </div>
   </div>
@@ -2300,16 +2327,68 @@ async function applyStamp(){
 
 function renderAll(){renderHeader();renderTodayList();renderAllList();renderTemplates();refreshStats();renderContractList();renderContractAlerts();espRefreshFileList();espLoadStamps();renderMaint()}
 
+// === 农历计算 ===
+var _lunarInfo=[0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06aa0,0x1a6c4,0x0aae0,0x092e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a4d0,0x0d150,0x0f252,0x0d520];
+var _lunarMon='正二三四五六七八九十冬腊';
+function lunarYear(y){
+  var d=_lunarInfo[y-1900];
+  return {days:((d>>16)&1?30:29),leap:(d&0xf),months:[]};
+}
+function lunarByDate(ds){
+  var parts=ds.split('-'),y=parseInt(parts[0]),m=parseInt(parts[1]),d=parseInt(parts[2]);
+  var base=new Date(1900,0,31);
+  var offset=Math.floor((new Date(y,m-1,d).getTime()-base.getTime())/86400000);
+  var ly=1900,lm=1,ld=1,leap=false;
+  for(;ly<2101&&offset>0;ly++){
+    var info=_lunarInfo[ly-1900];
+    var yearDays=0;
+    var monInfo=info;
+    for(var i=0;i<12;i++){yearDays+=((monInfo>>(15-i))&1)?30:29;}
+    var leapMon=info&0xf;
+    if(leapMon) yearDays+=((monInfo>>(15-12))&1)?30:29;
+    if(offset<yearDays) break;
+    offset-=yearDays;
+  }
+  var info=_lunarInfo[ly-1900];
+  var leapMon=info&0xf;
+  for(var i=0;i<12;i++){
+    var monDays=((info>>(15-i))&1)?30:29;
+    if(offset<monDays){lm=i+1;ld=offset+1;break;}
+    offset-=monDays;
+    if(leapMon&&i+1===leapMon){
+      var leapDays=((info>>(15-12))&1)?30:29;
+      if(offset<leapDays){lm=i+1;ld=offset+1;leap=true;break;}
+      offset-=leapDays;
+    }
+  }
+  var monName=(leap?'闰':'')+(_lunarMon[lm-1]||lm)+'月';
+  var dayName='';
+  if(ld===1) dayName=monName;
+  else if(ld<=10) dayName='初'+'十一二三四五六七八九十'[ld];
+  else if(ld<20) dayName='十'+'一二三四五六七八九'[ld-10];
+  else if(ld===20) dayName='二十';
+  else if(ld<30) dayName='廿'+'一二三四五六七八九'[ld-20];
+  else dayName='三十';
+  return dayName;
+}
+function calTodayLunar(){
+  var now=new Date();
+  var ds=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  return lunarByDate(ds);
+}
+
 // === 日程管理 ===
-let _calYear, _calMonth, _calData={}, _calSelDate='', _dailyTasks=[];
+let _calYear, _calMonth, _calData={}, _calSelDate='', _dailyTasks=[], _calView='month';
 
 function calInit(){
   const now=new Date();
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
+  _calView='month';
   calLoadDailyTasks();
   calLoadMonth();
+  calRenderTodaySummary();
 }
 
 async function calLoadDailyTasks(){
@@ -2397,24 +2476,27 @@ function calGoToday(){
 }
 function calSetView(v){
   if(v==='today'){calGoToday();return;}
+  _calView=v;
   document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
-  if(v==='day') document.getElementById('calViewDay').classList.add('active');
-  if(v==='week') document.getElementById('calViewWeek').classList.add('active');
-  if(v==='month') document.getElementById('calViewMonth').classList.add('active');
-  calLoadMonth();
+  if(v==='day'){document.getElementById('calViewDay').classList.add('active');calGoToday();return;}
+  if(v==='week'){document.getElementById('calViewWeek').classList.add('active');calGoToday();_calView='week';}
+  if(v==='month'){document.getElementById('calViewMonth').classList.add('active');calLoadMonth();}
 }
 
 function calSelectDate(ds){
   _calSelDate=ds;
   document.getElementById('calDetailDate').textContent=ds;
+  document.getElementById('calDetailLunar').textContent=lunarByDate(ds);
   document.getElementById('calNewTitle').value='';
   document.getElementById('calSidebarEmpty').style.display='none';
   document.getElementById('calSidebarHeader').style.display='flex';
+  document.getElementById('calTodaySummary').style.display='block';
   document.getElementById('calNoteArea').style.display='flex';
   document.getElementById('calDailySection').style.display='block';
   document.getElementById('calTodoSection').style.display='block';
   calLoadNote();
   calRenderDetail();
+  calRenderTodaySummary();
   calRender();
 }
 
@@ -2471,6 +2553,7 @@ async function calAddItem(){
       document.getElementById('calNewTitle').value='';
       await calLoadMonth();
       calRenderDetail();
+      calRenderTodaySummary();
     }
   }catch(e){console.error(e);}
 }
@@ -2488,6 +2571,7 @@ async function calToggle(id){
       body:JSON.stringify({completed:s.completed,completedAt:s.completedAt})
     });
     calRenderDetail();
+    calRenderTodaySummary();
     calRender();
   }catch(e){console.error(e);}
 }
@@ -2504,6 +2588,7 @@ async function calToggleDaily(dailyTaskId){
       body:JSON.stringify({date:_calSelDate,completed:s.completed})
     });
     calRenderDetail();
+    calRenderTodaySummary();
     calRender();
   }catch(e){console.error(e);}
 }
@@ -2514,6 +2599,7 @@ async function calDelete(id){
     await fetch('/api/schedules/'+id,{method:'DELETE'});
     await calLoadMonth();
     calRenderDetail();
+    calRenderTodaySummary();
   }catch(e){console.error(e);}
 }
 
@@ -2531,6 +2617,7 @@ async function calAddDailyTask(){
       await calLoadDailyTasks();
       await calLoadMonth();
       calRenderDetail();
+      calRenderTodaySummary();
     }
   }catch(e){console.error(e);}
 }
@@ -2542,6 +2629,7 @@ async function calDeleteDailyTask(dailyTaskId){
     await calLoadDailyTasks();
     await calLoadMonth();
     calRenderDetail();
+    calRenderTodaySummary();
   }catch(e){console.error(e);}
 }
 
@@ -2558,22 +2646,24 @@ async function calEditItem(el,id,isDaily){
   sel.removeAllRanges();
   sel.addRange(range);
   
+  var _savedId=id, _savedIsDaily=isDailyBool;
   async function save(){
     el.contentEditable='false';
     el.classList.remove('editing');
+    el.onblur=null;el.onkeydown=null;
     var newTitle=el.textContent.trim();
-    if(!newTitle||newTitle===origText){el.onblur=null;el.onkeydown=null;return;}
+    if(!newTitle||newTitle===origText) return;
     try{
       var r;
-      if(isDailyBool){
-        r=await fetch('/api/daily-tasks/'+id,{
+      if(_savedIsDaily){
+        r=await fetch('/api/daily-tasks/'+_savedId,{
           method:'PUT',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({title:newTitle})
         });
         await calLoadDailyTasks();
       }else{
-        r=await fetch('/api/schedules/'+id,{
+        r=await fetch('/api/schedules/'+_savedId,{
           method:'PUT',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({title:newTitle})
@@ -2582,6 +2672,10 @@ async function calEditItem(el,id,isDaily){
       if(!r.ok) throw new Error('保存失败: '+r.status);
       await calLoadMonth();
       calRenderDetail();
+      calRenderTodaySummary();
+      // 弹出状态标记弹窗
+      _calPendingStatus={id:_savedId,isDaily:_savedIsDaily};
+      showStatusPopup(el);
     }catch(e){console.error(e);showToast('保存失败: '+e.message,'error');}
   }
   
@@ -2590,6 +2684,66 @@ async function calEditItem(el,id,isDaily){
     if(e.key==='Enter'){e.preventDefault();el.blur();}
     if(e.key==='Escape'){el.textContent=origText;el.blur();}
   };
+}
+
+var _calPendingStatus=null;
+function showStatusPopup(el){
+  var popup=document.getElementById('calStatusPopup');
+  var rect=el.getBoundingClientRect();
+  popup.style.display='block';
+  popup.style.position='fixed';
+  popup.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
+  popup.style.top=(rect.bottom+5)+'px';
+  setTimeout(function(){
+    document.addEventListener('click',hideStatusPopupOut,{once:true});
+  },100);
+}
+function hideStatusPopupOut(e){
+  var popup=document.getElementById('calStatusPopup');
+  if(!popup.contains(e.target)){popup.style.display='none';_calPendingStatus=null;}
+}
+async function calStatusPick(action){
+  document.getElementById('calStatusPopup').style.display='none';
+  if(!_calPendingStatus||action==='cancel'){_calPendingStatus=null;return;}
+  var p=_calPendingStatus;_calPendingStatus=null;
+  var completed=(action==='done');
+  try{
+    if(p.isDaily){
+      await fetch('/api/schedules/daily-'+p.id,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({date:_calSelDate,completed:completed})
+      });
+    }else{
+      await fetch('/api/schedules/'+p.id,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({completed:completed,completedAt:completed?new Date().toISOString():null})
+      });
+    }
+    await calLoadMonth();
+    calRenderDetail();
+    calRenderTodaySummary();
+    calRender();
+  }catch(e){console.error(e);showToast('状态更新失败','error');}
+}
+
+function calRenderTodaySummary(){
+  var today=new Date().toISOString().split('T')[0];
+  var items=_calData[today]||[];
+  var list=document.getElementById('calTodaySummaryList');
+  if(items.length===0){
+    list.innerHTML='<div class="cal-today-summary-empty">暂无待办事项</div>';
+  }else{
+    var html='';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      var cls=it.completed?'done':'undone';
+      var t=it.title||'';
+      html+='<div class="cal-today-summary-item"><span class="cal-today-summary-dot '+cls+'"></span>'+calEsc(t)+'</div>';
+    }
+    list.innerHTML=html;
+  }
 }
 
 function calEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
