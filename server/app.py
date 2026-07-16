@@ -1118,6 +1118,7 @@ class Handler(BaseHTTPRequestHandler):
                         'active_projects': {'projects': []},
                         'pending_projects': {'projects': []},
                         'collection': {'carry_over': False, 'items': []},
+                        'temp_events': {'items': []},
                         'payments': {'items': []}
                     }
                     if prev.get('daily_must', {}).get('carry_over'):
