@@ -382,7 +382,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 16px 0;text-align:center}
 .cal-weekday{font-size:12px;color:#888;font-weight:600;padding:4px 0}
 .cal-body{display:flex;flex:1;min-height:0;overflow:hidden}
-.cal-grid{flex:0 0 310px;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 4px 8px 8px;gap:2px;overflow-y:auto;align-content:start}
+.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:4px 4px 8px 8px;gap:2px;overflow-y:auto;align-content:start}
 .cal-cell{min-height:68px;border:1px solid #eee;border-radius:5px;padding:2px 3px;cursor:pointer;position:relative;transition:all .15s;background:#fff;overflow:hidden}
 .cal-cell:hover{border-color:#1a73e8;background:#f8faff}
 .cal-cell.other-month{background:#fafafa;color:#ccc;cursor:default}
@@ -2564,23 +2564,25 @@ async function calEditItem(el,id,isDaily){
     var newTitle=el.textContent.trim();
     if(!newTitle||newTitle===origText){el.onblur=null;el.onkeydown=null;return;}
     try{
+      var r;
       if(isDailyBool){
-        await fetch('/api/daily-tasks/'+id,{
+        r=await fetch('/api/daily-tasks/'+id,{
           method:'PUT',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({title:newTitle})
         });
         await calLoadDailyTasks();
       }else{
-        await fetch('/api/schedules/'+id,{
+        r=await fetch('/api/schedules/'+id,{
           method:'PUT',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({title:newTitle})
         });
       }
+      if(!r.ok) throw new Error('保存失败: '+r.status);
       await calLoadMonth();
       calRenderDetail();
-    }catch(e){console.error(e);}
+    }catch(e){console.error(e);showToast('保存失败: '+e.message,'error');}
   }
   
   el.onblur=save;
@@ -2605,16 +2607,18 @@ function calNoteAutoSave(){
   clearTimeout(_calNoteTimer);
   _calNoteTimer=setTimeout(async function(){
     const note=document.getElementById('calNoteText').value;
+    const saveDate=_calSelDate;
     try{
-      await fetch('/api/cal-notes',{
+      const r=await fetch('/api/cal-notes',{
         method:'PUT',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({date:_calSelDate,note:note})
+        body:JSON.stringify({date:saveDate,note:note})
       });
+      if(!r.ok) throw new Error('保存失败');
       const el=document.getElementById('calNoteSaved');
       el.style.display='block';
       setTimeout(function(){el.style.display='none';},1500);
-    }catch(e){console.error(e);}
+    }catch(e){console.error(e);showToast('记事本保存失败','error');}
   },800);
 }
 
