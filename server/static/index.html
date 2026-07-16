@@ -2510,8 +2510,8 @@ function calRender(){
     html+='<div class="cal-cell-num">'+d+'</div>';
     if(isToday){
       var lunar=getLunarDate(today);
-      var lunarShort=lunar.replace(/^闰/,'').replace(/月.*/,'月');
-      html+='<div class="cal-cell-lunar">'+lunarShort+'</div>';
+      var lunarDay=lunar.replace(/^闰?/,'').replace(/.*月/,'');
+      html+='<div class="cal-cell-lunar">'+lunarDay+'</div>';
     }
     html+='<div class="cal-dots" id="calDots_'+ds+'"></div>';
     html+='<div class="cal-cell-titles" id="calTitles_'+ds+'"></div>';

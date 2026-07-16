@@ -1142,8 +1142,40 @@ class Handler(BaseHTTPRequestHandler):
                     conn.commit()
                     conn.close()
                 else:
-                    # 已有日期：直接返回，不做自动延续（延续仅首次访问时生效）
-                    pass
+                    # 已有日期：检查是否为空，为空则重新尝试延续
+                    existing = board[date]
+                    modified = False
+                    # 每日必做：当前为空且前一天有延续标记
+                    if not existing.get('daily_must', {}).get('tasks') and prev.get('daily_must', {}).get('carry_over'):
+                        existing['daily_must'] = {
+                            'carry_over': False,
+                            'tasks': [dict(t) for t in prev['daily_must']['tasks']]
+                        }
+                        modified = True
+                    # 执行项目：当前为空且前一天有带延续标记的项目
+                    if not existing.get('active_projects', {}).get('projects'):
+                        for p in prev.get('active_projects', {}).get('projects', []):
+                            if p.get('carry_over'):
+                                if 'active_projects' not in existing:
+                                    existing['active_projects'] = {'projects': []}
+                                copied = dict(p)
+                                copied['carry_over'] = False
+                                existing['active_projects']['projects'].append(copied)
+                                modified = True
+                    # 收款记录：当前为空且前一天有延续标记
+                    if not existing.get('collection', {}).get('items') and prev.get('collection', {}).get('carry_over'):
+                        existing['collection'] = {
+                            'carry_over': False,
+                            'items': [dict(t) for t in prev['collection']['items']]
+                        }
+                        modified = True
+                    if modified:
+                        board[date] = existing
+                        conn = get_db()
+                        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                                    ('wfhelper_schedule_board', json.dumps(board, ensure_ascii=False)))
+                        conn.commit()
+                        conn.close()
                 self.send_json(board.get(date, {}))
             else:
                 self.send_json(board)
