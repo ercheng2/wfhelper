@@ -2439,6 +2439,18 @@ function calInit(){
   _calView='month';
   calLoadMonth();
   boardLoad();
+  // 每30秒检查是否跨天，自动刷新日历
+  setInterval(function(){
+    var d=new Date();
+    var ds=d.toISOString().split('T')[0];
+    if(ds!==_calSelDate){
+      _calYear=d.getFullYear();
+      _calMonth=d.getMonth()+1;
+      _calSelDate=ds;
+      calLoadMonth();
+      boardLoad();
+    }
+  },30000);
 }
 
 // === 农历日历计算 ===
