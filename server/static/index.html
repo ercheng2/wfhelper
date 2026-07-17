@@ -452,7 +452,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
 .board-item-btn:hover{background:#4a6fa5;color:#fff}
 .board-status-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
-#board-payments{flex:0.4;min-width:100px}
+#board-payments{flex:1;min-width:0}
+.board-stack{flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px}
+.board-stack .board-strip{flex:1;min-height:0}
 .board-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
 .board-status-btn-done{background:#48bb78;color:#fff}
 .board-status-btn-done:hover{background:#38a169}
@@ -832,12 +834,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <button class="cal-nav-btn" onclick="calPrevMonth()" title="上一月">◀</button>
       <span class="cal-title" id="calTitle">2026年7月</span>
       <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
-    </div>
-    <div class="cal-views">
-      <button class="cal-view-btn" id="calViewDay" onclick="calSetView('day')">日</button>
-      <button class="cal-view-btn" id="calViewWeek" onclick="calSetView('week')">周</button>
-      <button class="cal-view-btn active" id="calViewMonth" onclick="calSetView('month')">月</button>
-      <button class="cal-view-btn" onclick="calGoToday()">今天</button>
+      <button class="cal-nav-btn" onclick="calGoToday()" style="width:auto;padding:4px 10px;font-size:11px">今天</button>
     </div>
   </div>
   <div class="schedule-main">
@@ -897,6 +894,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
       </div>
     </div>
+    <div class="board-stack">
     <!-- 临时事件 -->
     <div class="board-strip" id="board-temp-events">
       <div class="board-strip-header"><span class="strip-title">📌 临时事件</span></div>
@@ -914,6 +912,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
       </div>
+    </div>
     </div>
   </div>
   <div class="board-status-popup" id="boardStatusPopup">
@@ -2591,18 +2590,14 @@ function calGoToday(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   _calView='month';
-  document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('calViewMonth').classList.add('active');
   calLoadMonth();
   boardLoad();
 }
 function calSetView(v){
   if(v==='today'){calGoToday();return;}
   _calView=v;
-  document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
-  if(v==='day'){document.getElementById('calViewDay').classList.add('active');calGoToday();return;}
-  if(v==='week'){document.getElementById('calViewWeek').classList.add('active');calGoToday();_calView='week';}
-  if(v==='month'){document.getElementById('calViewMonth').classList.add('active');calLoadMonth();}
+  if(v==='day'||v==='week'){calGoToday();_calView=v;}
+  if(v==='month'){calLoadMonth();}
 }
 
 function calSelectDate(ds){
