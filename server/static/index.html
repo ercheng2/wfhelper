@@ -2649,30 +2649,13 @@ function calReminderRefresh(){
   var d=new Date(today.getTime()+days*86400000);
   var ds=d.toISOString().split('T')[0];
   var bd=_boardCache[ds];
-  if(!bd){bar.style.display='none';calReminderMarkDots();return;}
-  var hasDaily=bd.daily_must&&bd.daily_must.tasks&&bd.daily_must.tasks.length>0;
-  var hasTodo=bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
-  var hasActive=bd.active_projects&&bd.active_projects.projects&&bd.active_projects.projects.length>0;
-  var hasPending=bd.pending_projects&&bd.pending_projects.projects&&bd.pending_projects.projects.length>0;
-  var hasColl=bd.collection&&bd.collection.items&&bd.collection.items.length>0;
-  var hasTemp=bd.temp_events&&bd.temp_events.items&&bd.temp_events.items.length>0;
-  var hasPay=bd.payments&&bd.payments.items&&bd.payments.items.length>0;
-  if(!(hasDaily||hasTodo||hasActive||hasPending||hasColl||hasTemp||hasPay)){
-    bar.style.display='none';calReminderMarkDots();return;
-  }
+  var hasTodo=bd&&bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
+  if(!hasTodo){bar.style.display='none';calReminderMarkDots();return;}
   var month=d.getMonth()+1;
   var day=d.getDate();
-  var parts=[];
-  if(hasDaily) parts.push(bd.daily_must.tasks.length+'项每日必做');
-  if(hasActive) parts.push(bd.active_projects.projects.length+'个执行项目');
-  if(hasPending) parts.push(bd.pending_projects.projects.length+'个待执行');
-  if(hasTodo) parts.push(bd.today_todo.items.length+'个待办');
-  if(hasColl) parts.push('催款');
-  if(hasTemp) parts.push('临时事件');
-  if(hasPay) parts.push('待付款');
   var label=days===1?'明天':'提前'+days+'天';
   bar.style.display='block';
-  bar.textContent='🔔 '+label+'提醒：'+month+'/'+day+'有 '+parts.join('、');
+  bar.textContent='🔔 '+label+'提醒：'+month+'/'+day+'有 '+bd.today_todo.items.length+'个待办事项';
   bar.dataset.date=ds;
   calReminderMarkDots();
 }
@@ -2685,15 +2668,8 @@ function calReminderMarkDots(){
   var ds=d.toISOString().split('T')[0];
   var bd=_boardCache[ds];
   if(!bd) return;
-  var hasAny=false;
-  if(bd.daily_must&&bd.daily_must.tasks&&bd.daily_must.tasks.length>0) hasAny=true;
-  if(bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0) hasAny=true;
-  if(bd.active_projects&&bd.active_projects.projects&&bd.active_projects.projects.length>0) hasAny=true;
-  if(bd.pending_projects&&bd.pending_projects.projects&&bd.pending_projects.projects.length>0) hasAny=true;
-  if(bd.collection&&bd.collection.items&&bd.collection.items.length>0) hasAny=true;
-  if(bd.temp_events&&bd.temp_events.items&&bd.temp_events.items.length>0) hasAny=true;
-  if(bd.payments&&bd.payments.items&&bd.payments.items.length>0) hasAny=true;
-  if(hasAny){
+  var hasTodo=bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
+  if(hasTodo){
       var cell=document.querySelector('.cal-cell[data-date="'+ds+'"]');
       if(cell) cell.classList.add('reminder');
     }
