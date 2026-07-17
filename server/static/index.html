@@ -2587,8 +2587,8 @@ function calRender(){
   document.getElementById('calGrid').innerHTML=html;
 }
 
-async function calLoadMonth(){
-  await calLocationLoad();
+function calLoadMonth(){
+  calLocationLoad();
   calRender();
   // 加载当月所有板块数据，填充日历圆点
   try{
@@ -2631,6 +2631,8 @@ async function calLocationLoad(){
   try{
     const r=await fetch('/api/calendar-location');
     _calLocationData=await r.json();
+    calRender();
+    boardUpdateAllCalendarDots();
   }catch(e){_calLocationData={};}
 }
 function calLocationOpen(ds){
@@ -2678,6 +2680,7 @@ async function boardLoad(){
     if(!_boardData.collection) _boardData.collection={carry_over:false,items:[]};
     if(_boardData.collection.carry_over===undefined) _boardData.collection.carry_over=false;
     if(!_boardData.temp_events) _boardData.temp_events={items:[]};
+    if(!_boardData.payments) _boardData.payments={items:[]};
     _boardCache[_calSelDate]=_boardData;
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
@@ -2685,6 +2688,7 @@ async function boardLoad(){
 }
 
 async function boardSave(){
+  if(!_boardData||!_boardData.daily_must){console.error('[boardSave] 拒绝保存空数据');return;}
   try{
     await fetch('/api/schedule-board',{
       method:'PUT',
