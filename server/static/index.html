@@ -1202,7 +1202,7 @@ async function addManual(){
   renderAll();showToast('添加成功','success');
 }
 
-function handleFileImport(input){
+async function handleFileImport(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
@@ -1331,7 +1331,7 @@ async function importData(event){
   event.target.value='';
 }
 
-function handleAvatarPaste(event,customerId){
+async function handleAvatarPaste(event,customerId){
   event.preventDefault();
   const items=event.clipboardData&&event.clipboardData.items;
   if(!items)return;
@@ -2465,8 +2465,7 @@ function calInit(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   _calView='month';
-  calLoadMonth();
-  boardLoad();
+  calLoadMonth().then(function(){boardLoad();});
   // 每30秒检查是否跨天，自动刷新日历
   setInterval(function(){
     var d=new Date();
@@ -2475,8 +2474,7 @@ function calInit(){
       _calYear=d.getFullYear();
       _calMonth=d.getMonth()+1;
       _calSelDate=ds;
-      calLoadMonth();
-      boardLoad();
+      calLoadMonth().then(function(){boardLoad();});
     }
   },30000);
   // 页面从后台切回前台时，立即检查日期是否跨天
@@ -2488,8 +2486,7 @@ function calInit(){
         _calYear=d.getFullYear();
         _calMonth=d.getMonth()+1;
         _calSelDate=ds;
-        calLoadMonth();
-        boardLoad();
+        calLoadMonth().then(function(){boardLoad();});
       }
     }
   });
@@ -2587,7 +2584,7 @@ function calRender(){
   document.getElementById('calGrid').innerHTML=html;
 }
 
-function calLoadMonth(){
+async function calLoadMonth(){
   calLocationLoad();
   calRender();
   // 加载当月所有板块数据，填充日历圆点
@@ -2617,8 +2614,7 @@ function calGoToday(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   _calView='month';
-  calLoadMonth();
-  boardLoad();
+  calLoadMonth().then(function(){boardLoad();});
 }
 function calSetView(v){
   if(v==='today'){calGoToday();return;}
