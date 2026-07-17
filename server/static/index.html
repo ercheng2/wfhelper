@@ -451,7 +451,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-item-carry input[type="checkbox"]{width:11px;height:11px;cursor:pointer;margin:0}
 .board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
 .board-item-btn:hover{background:#4a6fa5;color:#fff}
-.board-status-popup{display:none;position:fixed;background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
+.board-status-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
+#board-payments{flex:0.4;min-width:100px}
 .board-status-popup button{padding:5px 16px;margin:3px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:500}
 .board-status-btn-done{background:#48bb78;color:#fff}
 .board-status-btn-done:hover{background:#38a169}
@@ -894,6 +895,15 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-footer">
         <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
+      </div>
+    </div>
+    <!-- 临时事件 -->
+    <div class="board-strip" id="board-temp-events">
+      <div class="board-strip-header"><span class="strip-title">📌 临时事件</span></div>
+      <div class="board-strip-body" id="tempEventsList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="tempEventInput" placeholder="添加临时事件..." onkeydown="if(event.key==='Enter')boardTempEventAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardTempEventAdd()">+</button>
       </div>
     </div>
     <!-- 待付款 -->
@@ -2428,6 +2438,7 @@ function emptyBoard(){return {
   active_projects:{projects:[]},
   pending_projects:{projects:[]},
   collection:{carry_over:false,items:[]},
+  temp_events:{items:[]},
   payments:{items:[]}
 };}
 
@@ -2579,6 +2590,9 @@ function calGoToday(){
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
+  _calView='month';
+  document.querySelectorAll('.cal-view-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('calViewMonth').classList.add('active');
   calLoadMonth();
   boardLoad();
 }
@@ -2608,6 +2622,7 @@ async function boardLoad(){
     // 加固：确保旧数据格式兼容
     if(!_boardData.collection) _boardData.collection={carry_over:false,items:[]};
     if(_boardData.collection.carry_over===undefined) _boardData.collection.carry_over=false;
+    if(!_boardData.temp_events) _boardData.temp_events={items:[]};
     _boardCache[_calSelDate]=_boardData;
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
@@ -2630,6 +2645,7 @@ function boardRenderAll(){
   boardActiveRender();
   boardPendingRender();
   boardCollRender();
+  boardTempEventsRender();
   boardPayRender();
 }
 
@@ -2756,10 +2772,7 @@ function boardTodoDel(idx){
 // === 状态弹窗 ===
 function showBoardStatusPopup(el){
   var popup=document.getElementById('boardStatusPopup');
-  var rect=el.getBoundingClientRect();
   popup.style.display='block';
-  popup.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
-  popup.style.top=(rect.bottom+5)+'px';
   setTimeout(function(){document.addEventListener('click',hideBoardStatusPopup,{once:true});},100);
 }
 function hideBoardStatusPopup(e){
@@ -2980,6 +2993,51 @@ function boardPayEdit(el,idx){
 function boardPayDel(idx){
   _boardData.payments.items.splice(idx,1);
   boardPayRender();
+  boardSave();
+}
+
+// === 7. 临时事件 ===
+function boardTempEventsRender(){
+  var list=document.getElementById('tempEventsList');
+  var items=_boardData.temp_events.items;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无临时事件</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    html+='<div class="board-item">'
+      +'<span class="board-item-title" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
+      +'<span class="board-item-del" onclick="boardTempEventDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardTempEventAdd(){
+  var input=document.getElementById('tempEventInput');
+  var title=input.value.trim();
+  if(!title) return;
+  _boardData.temp_events.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  input.value='';
+  boardTempEventsRender();
+  boardSave();
+}
+function boardTempEventEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.temp_events.items[idx].title=t;
+    boardTempEventsRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardTempEventDel(idx){
+  _boardData.temp_events.items.splice(idx,1);
+  boardTempEventsRender();
   boardSave();
 }
 
