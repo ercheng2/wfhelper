@@ -434,7 +434,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-strip-footer input{width:100%;padding:5px 7px;border:1px solid #e0e4ea;border-radius:6px;font-size:11px;outline:none;box-sizing:border-box}
 .board-strip-footer input:focus{border-color:#8ab4f8}
 .board-strip-footer .btn-row{display:flex;gap:4px}
-.board-strip-footer .btn{padding:3px 8px;font-size:11px;flex:1}
+.board-strip-footer .btn{padding:5px 8px;font-size:12px;width:100%;border-radius:6px}
 .board-strip-toggle{display:flex;align-items:center;gap:4px;padding:3px 8px;border-top:1px solid #eee;flex-shrink:0;background:#fafbfd}
 .board-strip-toggle label{font-size:10px;color:#5f6b7a;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap}
 .board-empty{text-align:center;color:#c0c6d0;padding:20px 8px;font-size:11px}
@@ -580,6 +580,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 <div class="form-row"><label>我的称呼</label><input type="text" id="cfgTitle" value="悦动双成-展厅中控" style="flex:1" onblur="saveConfig()"></div>
 <div class="form-row"><label>盖章保存路径</label><input type="text" id="cfgStampSaveDir" placeholder="如 D:\盖章文件" style="flex:1" onblur="saveConfig()"></div>
 <div class="form-row"><label>维保提醒间隔（月）</label><input type="number" id="cfgMaintInterval" min="1" max="24" value="3" onblur="saveConfig()"></div>
+<div class="form-row"><label>🔔 事项提醒提前</label><div style="display:flex;align-items:center;gap:4px"><input type="number" id="reminderDays" value="1" min="0" max="30" style="width:50px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;text-align:center" onchange="calReminderDaysSet()"> <span style="font-size:12px;color:#8b96a5">天</span></div></div>
 <div class="form-row"><label></label><button class="btn btn-primary" onclick="saveConfig()">💾 保存设置</button></div>
 <h3>📊 统计概览</h3>
 <div class="stats-box" id="statsBox"></div>
@@ -834,8 +835,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         </div>
       </div>
     </div>
-  
-    <div class="setting-item"><label>🔔 事项提醒提前</label><div style="display:flex;align-items:center;gap:4px"><input type="number" id="reminderDays" value="1" min="0" max="30" style="width:50px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;text-align:center" onchange="calReminderDaysSet()"> <span style="font-size:12px;color:#8b96a5">天</span></div></div></div>
+  </div>
 </div>
 
 <!-- === 日程管理面板 === -->
@@ -882,11 +882,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="board-strip" id="board-pending-projects">
       <div class="board-strip-header"><span class="strip-title">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
       <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label></div>
       <div class="board-strip-footer">
         <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button>
       </div>
-      <div class="board-strip-toggle"><label><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label></div>
     </div>
     <!-- 今日待办 -->
     <div class="board-strip" id="board-today-todo">
