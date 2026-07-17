@@ -390,6 +390,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-cell.other-month:hover{border-color:#e4e8f0;background:#f5f5f7}
 .cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}
 .cal-cell.selected{border-color:#4a6fa5;background:#d4e2fc;box-shadow:0 0 0 2px rgba(74,111,165,.25)}
+.cal-cell.out-of-beijing{background:#e6f7e6;border-color:#a3d9a3}
+.cal-cell.out-of-beijing.today{background:#d4edd4;box-shadow:inset 0 0 0 1px rgba(72,187,120,.3)}
+.cal-cell.out-of-beijing.selected{background:#c8e6c8;border-color:#66bb6a;box-shadow:0 0 0 2px rgba(72,187,120,.25)}
+.cal-cell-location{font-size:7px;line-height:1.1;color:#2e7d32;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;margin-top:1px;padding:0 1px}
+.cal-cell-location:hover{background:rgba(0,0,0,.05);border-radius:2px}
 .cal-cell-num{font-size:9px;font-weight:700;color:#4a5568;margin-bottom:0;line-height:1.1}
 .cal-cell-lunar{font-size:7px;color:#e53e3e;line-height:1;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-cell.other-month .cal-cell-num{color:#c5c9d2}
@@ -433,7 +438,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-strip-toggle{display:flex;align-items:center;gap:4px;padding:3px 8px;border-top:1px solid #eee;flex-shrink:0;background:#fafbfd}
 .board-strip-toggle label{font-size:10px;color:#5f6b7a;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap}
 .board-empty{text-align:center;color:#c0c6d0;padding:20px 8px;font-size:11px}
-.board-item{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid #f5f5f5;font-size:11px}
+.board-item{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
 .board-item:last-child{border-bottom:none}
 .board-item-check{width:14px;height:14px;border:2px solid #cbd5e0;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;transition:all .15s}
 .board-item-check:hover{border-color:#48bb78}
@@ -462,6 +467,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-status-btn-undone:hover{background:#e53e3e}
 .board-status-btn-cancel{background:#f0f2f5;color:#5f6b7a}
 .board-status-btn-cancel:hover{background:#e2e6eb}
+.cal-location-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:12px 16px;z-index:9999;font-size:12px;text-align:center}
+.cal-location-popup input{padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:150px;margin-right:6px}
+.cal-location-popup button{padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px}
+.cal-location-popup .btn-save{background:#1a73e8;color:#fff;margin-right:4px}
+.cal-location-popup .btn-del{background:#f56565;color:#fff}
 @media(max-width:1200px){.board-strip{min-width:120px}}
 @media(max-width:900px){.board-container{flex-wrap:wrap}.board-strip{flex:1 1 45%;min-width:0}}
 @media(max-width:600px){.board-container{flex-direction:column}.board-strip{flex:1 1 auto}}
@@ -877,7 +887,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     </div>
     <!-- 今日待办 -->
     <div class="board-strip" id="board-today-todo">
-      <div class="board-strip-header"><span class="strip-title">📌 今日待办</span></div>
+      <div class="board-strip-header"><span class="strip-title">📌 今日待办</span><span class="strip-badge" id="todoCount">0</span></div>
       <div class="board-strip-body" id="todayTodoList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
@@ -886,7 +896,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     </div>
     <!-- 催款项目 -->
     <div class="board-strip" id="board-collection">
-      <div class="board-strip-header"><span class="strip-title">📌 催款项目</span></div>
+      <div class="board-strip-header"><span class="strip-title">📌 催款项目</span><span class="strip-badge" id="collCount">0</span></div>
       <div class="board-strip-body" id="collectionList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label></div>
       <div class="board-strip-footer">
@@ -897,7 +907,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="board-stack">
     <!-- 临时事件 -->
     <div class="board-strip" id="board-temp-events">
-      <div class="board-strip-header"><span class="strip-title">📌 临时事件</span></div>
+      <div class="board-strip-header"><span class="strip-title">📌 临时事件</span><span class="strip-badge" id="tempCount">0</span></div>
       <div class="board-strip-body" id="tempEventsList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="tempEventInput" placeholder="添加临时事件..." onkeydown="if(event.key==='Enter')boardTempEventAdd()">
@@ -906,7 +916,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     </div>
     <!-- 待付款 -->
     <div class="board-strip" id="board-payments">
-      <div class="board-strip-header"><span class="strip-title">📌 待付款</span></div>
+      <div class="board-strip-header"><span class="strip-title">📌 待付款</span><span class="strip-badge" id="payCount">0</span></div>
       <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
@@ -920,6 +930,13 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <button class="board-status-btn-done" onclick="boardStatusPick('done')">✅ 已完成</button>
     <button class="board-status-btn-undone" onclick="boardStatusPick('undone')">❌ 未完成</button>
     <br><button class="board-status-btn-cancel" onclick="boardStatusPick('cancel')">取消</button>
+  </div>
+  <div class="cal-location-popup" id="calLocationPopup">
+    <div style="margin-bottom:6px;font-weight:600">设置地点</div>
+    <div style="margin-bottom:8px;font-size:11px;color:#888" id="calLocationDate"></div>
+    <input type="text" id="calLocationInput" placeholder="输入地点，如：北京" onkeydown="if(event.key==='Enter')calLocationSave()">
+    <button class="btn-save" onclick="calLocationSave()">保存</button>
+    <button class="btn-del" onclick="calLocationDel()">清除</button>
   </div>
 </div>
 
@@ -2429,6 +2446,7 @@ function calTodayLunar(){
 let _calYear, _calMonth, _calSelDate='', _calView='month';
 let _boardData=null, _boardTodoPending=null;
 let _boardCache={};
+let _calLocationData={}, _calLocationEdit='';
 
 // 默认空板块
 function emptyBoard(){return {
@@ -2542,12 +2560,20 @@ function calRender(){
     var isToday=(ds===todayStr);
     if(isToday) cls+=' today';
     if(ds===_calSelDate) cls+=' selected';
+    var loc=_calLocationData[ds]||'';
+    var isOut=loc&&loc!=='北京';
+    if(isOut) cls+=' out-of-beijing';
     html+='<div class="'+cls+'" data-date="'+ds+'" onclick="calSelectDate(\x27'+ds+'\x27)">';
     html+='<div class="cal-cell-num">'+d+'</div>';
     if(isToday){
       var lunar=getLunarDate(today);
       var lunarDay=lunar.replace(/^闰?/,'').replace(/.*月/,'');
       html+='<div class="cal-cell-lunar">'+lunarDay+'</div>';
+    }
+    if(loc){
+      html+='<div class="cal-cell-location" onclick="event.stopPropagation();calLocationOpen(\x27'+ds+'\x27)" title="点击修改地点">📍'+calEsc(loc)+'</div>';
+    } else {
+      html+='<div class="cal-cell-location" style="color:#c0c6d0" onclick="event.stopPropagation();calLocationOpen(\x27'+ds+'\x27)" title="点击设置地点">+地点</div>';
     }
     html+='<div class="cal-dots" id="calDots_'+ds+'"></div>';
     html+='<div class="cal-cell-titles" id="calTitles_'+ds+'"></div>';
@@ -2562,6 +2588,7 @@ function calRender(){
 }
 
 async function calLoadMonth(){
+  await calLocationLoad();
   calRender();
   // 加载当月所有板块数据，填充日历圆点
   try{
@@ -2598,6 +2625,39 @@ function calSetView(v){
   _calView=v;
   if(v==='day'||v==='week'){calGoToday();_calView=v;}
   if(v==='month'){calLoadMonth();}
+}
+
+async function calLocationLoad(){
+  try{
+    const r=await fetch('/api/calendar-location');
+    _calLocationData=await r.json();
+  }catch(e){_calLocationData={};}
+}
+function calLocationOpen(ds){
+  _calLocationEdit=ds;
+  document.getElementById('calLocationDate').textContent='日期：'+ds;
+  document.getElementById('calLocationInput').value=_calLocationData[ds]||'';
+  document.getElementById('calLocationPopup').style.display='block';
+  setTimeout(function(){document.getElementById('calLocationInput').focus();},100);
+}
+async function calLocationSave(){
+  var loc=document.getElementById('calLocationInput').value.trim();
+  document.getElementById('calLocationPopup').style.display='none';
+  if(!_calLocationEdit) return;
+  _calLocationData[_calLocationEdit]=loc;
+  calRender();
+  try{
+    await fetch('/api/calendar-location',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:_calLocationEdit,location:loc})});
+  }catch(e){}
+}
+async function calLocationDel(){
+  document.getElementById('calLocationPopup').style.display='none';
+  if(!_calLocationEdit) return;
+  delete _calLocationData[_calLocationEdit];
+  calRender();
+  try{
+    await fetch('/api/calendar-location',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:_calLocationEdit,location:''})});
+  }catch(e){}
 }
 
 function calSelectDate(ds){
@@ -2653,6 +2713,7 @@ function boardDailyMustRender(){
   var html='';
   for(var i=0;i<tasks.length;i++){
     html+='<div class="board-item">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardDailyMustEdit(this,'+i+')">'+calEsc(tasks[i].title)+'</span>'
       +'<span class="board-item-del" onclick="boardDailyMustDel('+i+')">×</span>'
       +'</div>';
@@ -2699,6 +2760,7 @@ function boardDailyMustCarry(){
 function boardTodayTodoRender(){
   var list=document.getElementById('todayTodoList');
   var items=_boardData.today_todo.items;
+  document.getElementById('todoCount').textContent=items.length;
   if(!items.length){list.innerHTML='<div class="board-empty">暂无待办事项</div>';return;}
   var html='';
   for(var i=0;i<items.length;i++){
@@ -2707,6 +2769,7 @@ function boardTodayTodoRender(){
     var check=it.completed?'✓':'';
     var titleCls=it.completed?'':' undone';
     html+='<div class="board-item'+cls+'">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<div class="board-item-check" onclick="boardTodoToggle('+i+')">'+check+'</div>'
       +'<span class="board-item-title'+titleCls+'" onclick="boardTodoEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
       +'<span class="board-item-del" onclick="boardTodoDel('+i+')">×</span>'
@@ -2794,6 +2857,7 @@ function boardActiveRender(){
   for(var i=0;i<projects.length;i++){
     var p=projects[i];
     html+='<div class="board-item">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardActiveEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
     if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
     html+='<span class="board-item-carry"><input type="checkbox"'+(p.carry_over?' checked':'')+' onchange="boardActiveCarry('+i+',this.checked)">延续</span>'
@@ -2848,6 +2912,7 @@ function boardPendingRender(){
   for(var i=0;i<projects.length;i++){
     var p=projects[i];
     html+='<div class="board-item">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardPendingEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
     if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
     html+='<button class="board-item-btn" onclick="boardPendingToActive('+i+')">→执行</button>'
@@ -2901,10 +2966,12 @@ function boardCollRender(){
   var list=document.getElementById('collectionList');
   var items=_boardData.collection.items;
   document.getElementById('collCarry').checked=_boardData.collection.carry_over;
+  document.getElementById('collCount').textContent=items.length;
   if(!items.length){list.innerHTML='<div class="board-empty">暂无催款项目</div>';return;}
   var html='';
   for(var i=0;i<items.length;i++){
     html+='<div class="board-item">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardCollEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
       +'<span class="board-item-del" onclick="boardCollDel('+i+')">×</span>'
       +'</div>';
@@ -2950,21 +3017,35 @@ function boardCollDel(idx){
 function boardPayRender(){
   var list=document.getElementById('paymentsList');
   var items=_boardData.payments.items;
+  document.getElementById('payCount').textContent=items.length;
   if(!items.length){list.innerHTML='<div class="board-empty">暂无待付款</div>';return;}
   var html='';
   for(var i=0;i<items.length;i++){
-    html+='<div class="board-item">'
-      +'<span class="board-item-title" onclick="boardPayEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
+    var it=items[i];
+    var cls=it.completed?' done':'';
+    var check=it.completed?'✓':'';
+    var titleCls=it.completed?'':' undone';
+    html+='<div class="board-item'+cls+'">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
+      +'<div class="board-item-check" onclick="boardPayToggle('+i+')">'+check+'</div>'
+      +'<span class="board-item-title'+titleCls+'" onclick="boardPayEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
       +'<span class="board-item-del" onclick="boardPayDel('+i+')">×</span>'
       +'</div>';
   }
   list.innerHTML=html;
 }
+function boardPayToggle(idx){
+  var it=_boardData.payments.items[idx];
+  it.completed=!it.completed;
+  boardPayRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
 function boardPayAdd(){
   var input=document.getElementById('payInput');
   var title=input.value.trim();
   if(!title) return;
-  _boardData.payments.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  _boardData.payments.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false});
   input.value='';
   boardPayRender();
   boardSave();
@@ -2995,21 +3076,35 @@ function boardPayDel(idx){
 function boardTempEventsRender(){
   var list=document.getElementById('tempEventsList');
   var items=_boardData.temp_events.items;
+  document.getElementById('tempCount').textContent=items.length;
   if(!items.length){list.innerHTML='<div class="board-empty">暂无临时事件</div>';return;}
   var html='';
   for(var i=0;i<items.length;i++){
-    html+='<div class="board-item">'
-      +'<span class="board-item-title" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(items[i].title)+'</span>'
+    var it=items[i];
+    var cls=it.completed?' done':'';
+    var check=it.completed?'✓':'';
+    var titleCls=it.completed?'':' undone';
+    html+='<div class="board-item'+cls+'">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
+      +'<div class="board-item-check" onclick="boardTempEventToggle('+i+')">'+check+'</div>'
+      +'<span class="board-item-title'+titleCls+'" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
       +'<span class="board-item-del" onclick="boardTempEventDel('+i+')">×</span>'
       +'</div>';
   }
   list.innerHTML=html;
 }
+function boardTempEventToggle(idx){
+  var it=_boardData.temp_events.items[idx];
+  it.completed=!it.completed;
+  boardTempEventsRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
 function boardTempEventAdd(){
   var input=document.getElementById('tempEventInput');
   var title=input.value.trim();
   if(!title) return;
-  _boardData.temp_events.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  _boardData.temp_events.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false});
   input.value='';
   boardTempEventsRender();
   boardSave();

@@ -1402,11 +1402,38 @@ class Handler(BaseHTTPRequestHandler):
                     pass  # 降级为普通静态文件
             self.send_file(filepath)
         else:
+            # API: GET /api/calendar-location
+            if path == '/api/calendar-location':
+                conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_calendar_locations'").fetchone()
+                locations = json.loads(row['value']) if row else {}
+                conn.close()
+                self.send_json(locations)
+                return
             self.send_error(404)
     
     def do_PUT(self):
         parsed = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(parsed.path)
+        
+        # API: PUT /api/calendar-location
+        if path == '/api/calendar-location':
+            body = json.loads(self.read_body().decode('utf-8'))
+            date = body.get('date', '')
+            location = body.get('location', '')
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_calendar_locations'").fetchone()
+            locations = json.loads(row['value']) if row else {}
+            if location:
+                locations[date] = location
+            else:
+                locations.pop(date, None)
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_calendar_locations', json.dumps(locations, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
         
         # API: PUT /api/data/<key>
         if path.startswith('/api/data/'):
