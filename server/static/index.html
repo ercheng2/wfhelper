@@ -388,8 +388,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-cell:hover{border-color:#8ab4f8;background:#eef3ff}
 .cal-cell.other-month{background:#f5f5f7;color:#c5c9d2;cursor:default}
 .cal-cell.other-month:hover{border-color:#e4e8f0;background:#f5f5f7}
-.cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}
-.cal-cell.selected{border-color:#4a6fa5;background:#d4e2fc;box-shadow:0 0 0 2px rgba(74,111,165,.25)}
+.cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}@keyframes calBlink{0%,100%{box-shadow:0 0 0 2px rgba(124,58,237,.4)}50%{box-shadow:0 0 0 6px rgba(124,58,237,.15)}}.cal-cell.reminder{animation:calBlink 1.5s ease-in-out infinite;border-color:#7c3aed}
+.cal-cell.selected{border-color:#7c3aed;background:#ede9fe;box-shadow:0 0 0 2px rgba(124,58,237,.3)}
 .cal-cell.out-of-beijing{background:#e6f7e6;border-color:#a3d9a3}
 .cal-cell.out-of-beijing.today{background:#d4edd4;box-shadow:inset 0 0 0 1px rgba(72,187,120,.3)}
 .cal-cell.out-of-beijing.selected{background:#c8e6c8;border-color:#66bb6a;box-shadow:0 0 0 2px rgba(72,187,120,.25)}
@@ -834,7 +834,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         </div>
       </div>
     </div>
-  </div>
+  
+    <div class="setting-item"><label>🔔 事项提醒提前</label><div style="display:flex;align-items:center;gap:4px"><input type="number" id="reminderDays" value="1" min="0" max="30" style="width:50px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;text-align:center" onchange="calReminderDaysSet()"> <span style="font-size:12px;color:#8b96a5">天</span></div></div></div>
 </div>
 
 <!-- === 日程管理面板 === -->
@@ -847,6 +848,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <button class="cal-nav-btn" onclick="calGoToday()" style="width:auto;padding:4px 10px;font-size:11px">今天</button>
     </div>
   </div>
+  <div id="reminderBar" style="display:none;margin:4px 20px;padding:6px 14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;font-size:12px;color:#92400e;cursor:pointer" onclick="calGoDate(this.dataset.date)" title="点击跳转到提醒日期"></div>
   <div class="schedule-main">
     <!-- 日历+每日必做 -->
     <div class="schedule-col">
@@ -873,7 +875,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
-        <div class="btn-row"><input type="text" id="activeCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardActiveAdd()"><button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button></div>
+        <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button></div>
       </div>
     </div>
     <!-- 待执行项目 -->
@@ -882,7 +884,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
-        <div class="btn-row"><input type="text" id="pendingCat" placeholder="归类" onkeydown="if(event.key==='Enter')boardPendingAdd()"><button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button></div>
+        <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button></div>
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#8b96a5;margin-top:4px;cursor:pointer"><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label>
       </div>
     </div>
     <!-- 今日待办 -->
@@ -2453,7 +2456,7 @@ function emptyBoard(){return {
   daily_must:{carry_over:false,tasks:[]},
   today_todo:{items:[]},
   active_projects:{projects:[]},
-  pending_projects:{projects:[]},
+  pending_projects:{carry_over:false,projects:[]},
   collection:{carry_over:false,items:[]},
   temp_events:{items:[]},
   payments:{items:[]}
@@ -2465,6 +2468,9 @@ function calInit(){
   _calMonth=now.getMonth()+1;
   _calSelDate=now.toISOString().split('T')[0];
   _calView='month';
+  // 初始化提醒天数设置
+  var rd=document.getElementById('reminderDays');
+  if(rd) rd.value=calReminderGetDays();
   calLoadMonth().then(function(){boardLoad();});
   // 每30秒检查是否跨天，自动刷新日历
   setInterval(function(){
@@ -2598,6 +2604,7 @@ async function calLoadMonth(){
     }
   }catch(e){console.error(e);}
   boardUpdateAllCalendarDots();
+  calReminderRefresh();
 }
 
 function calPrevMonth(){
@@ -2621,6 +2628,95 @@ function calSetView(v){
   _calView=v;
   if(v==='day'||v==='week'){calGoToday();_calView=v;}
   if(v==='month'){calLoadMonth();}
+}
+// === 提醒功能 ===
+function calReminderDaysSet(){
+  var v=parseInt(document.getElementById('reminderDays').value)||0;
+  localStorage.setItem('wfhelper_reminder_days',v);
+  calReminderRefresh();
+}
+function calReminderGetDays(){
+  var v=localStorage.getItem('wfhelper_reminder_days');
+  if(v===null) return 1;
+  return parseInt(v)||0;
+}
+function calReminderRefresh(){
+  var bar=document.getElementById('reminderBar');
+  if(!bar) return;
+  var days=calReminderGetDays();
+  if(days<=0){bar.style.display='none';return;}
+  var today=new Date(); today.setHours(0,0,0,0);
+  var msgs=[];
+  var earliestDate=null;
+  for(var i=1;i<=days;i++){
+    var d=new Date(today.getTime()+i*86400000);
+    var ds=d.toISOString().split('T')[0];
+    var bd=_boardCache[ds];
+    if(!bd) continue;
+    var hasDaily=bd.daily_must&&bd.daily_must.tasks&&bd.daily_must.tasks.length>0;
+    var hasTodo=bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
+    var hasActive=bd.active_projects&&bd.active_projects.projects&&bd.active_projects.projects.length>0;
+    var hasPending=bd.pending_projects&&bd.pending_projects.projects&&bd.pending_projects.projects.length>0;
+    var hasColl=bd.collection&&bd.collection.items&&bd.collection.items.length>0;
+    var hasTemp=bd.temp_events&&bd.temp_events.items&&bd.temp_events.items.length>0;
+    var hasPay=bd.payments&&bd.payments.items&&bd.payments.items.length>0;
+    if(hasDaily||hasTodo||hasActive||hasPending||hasColl||hasTemp||hasPay){
+      var month=d.getMonth()+1;
+      var day=d.getDate();
+      var parts=[];
+      if(hasDaily) parts.push(bd.daily_must.tasks.length+'项每日必做');
+      if(hasActive) parts.push(bd.active_projects.projects.length+'个执行项目');
+      if(hasPending) parts.push(bd.pending_projects.projects.length+'个待执行');
+      if(hasTodo) parts.push(bd.today_todo.items.length+'个待办');
+      if(hasColl) parts.push('催款');
+      if(hasTemp) parts.push('临时事件');
+      if(hasPay) parts.push('待付款');
+      msgs.push(month+'/'+day+'有 '+parts.join('、'));
+      if(!earliestDate) earliestDate=ds;
+    }
+  }
+  if(msgs.length>0){
+    bar.style.display='block';
+    bar.textContent='🔔 '+msgs.join(' | ');
+    bar.dataset.date=earliestDate||'';
+  } else {
+    bar.style.display='none';
+  }
+  calReminderMarkDots();
+}
+function calReminderMarkDots(){
+  var days=calReminderGetDays();
+  var today=new Date(); today.setHours(0,0,0,0);
+  document.querySelectorAll('.cal-cell.reminder').forEach(function(el){el.classList.remove('reminder');});
+  if(days<=0) return;
+  for(var i=1;i<=days;i++){
+    var d=new Date(today.getTime()+i*86400000);
+    var ds=d.toISOString().split('T')[0];
+    var bd=_boardCache[ds];
+    if(!bd) continue;
+    var hasAny=false;
+    if(bd.daily_must&&bd.daily_must.tasks&&bd.daily_must.tasks.length>0) hasAny=true;
+    if(bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0) hasAny=true;
+    if(bd.active_projects&&bd.active_projects.projects&&bd.active_projects.projects.length>0) hasAny=true;
+    if(bd.pending_projects&&bd.pending_projects.projects&&bd.pending_projects.projects.length>0) hasAny=true;
+    if(bd.collection&&bd.collection.items&&bd.collection.items.length>0) hasAny=true;
+    if(bd.temp_events&&bd.temp_events.items&&bd.temp_events.items.length>0) hasAny=true;
+    if(bd.payments&&bd.payments.items&&bd.payments.items.length>0) hasAny=true;
+    if(hasAny){
+      var cell=document.querySelector('.cal-cell[data-date="'+ds+'"]');
+      if(cell) cell.classList.add('reminder');
+    }
+  }
+}
+function calGoDate(ds){
+  if(!ds) return;
+  var parts=ds.split('-');
+  _calYear=parseInt(parts[0]);
+  _calMonth=parseInt(parts[1]);
+  _calSelDate=ds;
+  calLoadMonth().then(function(){boardLoad();});
+  var tabs=document.querySelectorAll('.tab');
+  tabs.forEach(function(t){if(t.dataset.tab==='schedule') t.click();});
 }
 
 async function calLocationLoad(){
@@ -2681,6 +2777,9 @@ async function boardLoad(){
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
   boardUpdateAllCalendarDots();
+  // 同步延续勾选框状态
+  var pc=document.getElementById('pendingCarry');if(pc)pc.checked=_boardData.pending_projects.carry_over||false;
+  calReminderRefresh();
 }
 
 async function boardSave(){
@@ -2868,11 +2967,9 @@ function boardActiveRender(){
 }
 function boardActiveAdd(){
   var name=document.getElementById('activeName').value.trim();
-  var cat=document.getElementById('activeCat').value.trim();
   if(!name) return;
-  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:cat,carry_over:false});
+  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:'',carry_over:false});
   document.getElementById('activeName').value='';
-  document.getElementById('activeCat').value='';
   boardActiveRender();
   boardSave();
 }
@@ -2894,6 +2991,10 @@ function boardActiveEdit(el,idx){
 }
 function boardActiveCarry(idx,val){
   _boardData.active_projects.projects[idx].carry_over=val;
+  boardSave();
+}
+function boardPendingCarryToggle(val){
+  _boardData.pending_projects.carry_over=val;
   boardSave();
 }
 function boardActiveDel(idx){
@@ -2923,11 +3024,9 @@ function boardPendingRender(){
 }
 function boardPendingAdd(){
   var name=document.getElementById('pendingName').value.trim();
-  var cat=document.getElementById('pendingCat').value.trim();
   if(!name) return;
-  _boardData.pending_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:cat});
+  _boardData.pending_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:''});
   document.getElementById('pendingName').value='';
-  document.getElementById('pendingCat').value='';
   boardPendingRender();
   boardSave();
 }
