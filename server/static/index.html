@@ -2561,7 +2561,7 @@ async function calLoadMonth(){
     }
   }catch(e){console.error(e);}
   boardUpdateAllCalendarDots();
-  calReminderRefresh();
+  await calReminderRefresh();
 }
 
 function calPrevMonth(){
@@ -2597,26 +2597,29 @@ function calReminderGetDays(){
   if(v===null) return 1;
   return parseInt(v)||0;
 }
-function calReminderRefresh(){
+async function calReminderRefresh(){
   var bar=document.getElementById('reminderBar');
   if(!bar) return;
   var days=calReminderGetDays();
-  if(days<=0){bar.style.display='none';calReminderMarkDots();return;}
+  if(days<=0){bar.style.display='none';await calReminderMarkDots();return;}
   var today=new Date(); today.setHours(0,0,0,0);
   var d=new Date(today.getTime()+days*86400000);
   var ds=d.toISOString().split('T')[0];
   var bd=_boardCache[ds];
+  if(!bd||!bd.today_todo){
+    try{var r=await fetch('/api/schedule-board?date='+ds);bd=await r.json();_boardCache[ds]=bd;}catch(e){}
+  }
   var hasTodo=bd&&bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
-  if(!hasTodo){bar.style.display='none';calReminderMarkDots();return;}
+  if(!hasTodo){bar.style.display='none';await calReminderMarkDots();return;}
   var month=d.getMonth()+1;
   var day=d.getDate();
   var label=days===1?'明天':'提前'+days+'天';
   bar.style.display='block';
   bar.textContent='🔔 '+label+'提醒：'+month+'/'+day+'有 '+bd.today_todo.items.length+'个待办事项';
   bar.dataset.date=ds;
-  calReminderMarkDots();
+  await calReminderMarkDots();
 }
-function calReminderMarkDots(){
+async function calReminderMarkDots(){
   var days=calReminderGetDays();
   var today=new Date(); today.setHours(0,0,0,0);
   document.querySelectorAll('.cal-cell.reminder').forEach(function(el){el.classList.remove('reminder');});
@@ -2624,6 +2627,9 @@ function calReminderMarkDots(){
   var d=new Date(today.getTime()+days*86400000);
   var ds=d.toISOString().split('T')[0];
   var bd=_boardCache[ds];
+  if(!bd||!bd.today_todo){
+    try{var r=await fetch('/api/schedule-board?date='+ds);bd=await r.json();_boardCache[ds]=bd;}catch(e){}
+  }
   if(!bd) return;
   var hasTodo=bd.today_todo&&bd.today_todo.items&&bd.today_todo.items.length>0;
   if(hasTodo){
@@ -2704,7 +2710,7 @@ async function boardLoad(){
   boardUpdateAllCalendarDots();
   // 同步延续勾选框状态
   var pc=document.getElementById('pendingCarry');if(pc)pc.checked=_boardData.pending_projects.carry_over||false;
-  calReminderRefresh();
+  await calReminderRefresh();
 }
 
 async function boardSave(){
