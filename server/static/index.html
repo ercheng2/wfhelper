@@ -472,7 +472,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-location-popup button{padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px}
 .cal-location-popup .btn-save{background:#1a73e8;color:#fff;margin-right:4px}
 .cal-location-popup .btn-del{background:#f56565;color:#fff}
-#headerClock{font-size:12px;color:#e8f0fe;display:flex;align-items:center;gap:8px;white-space:nowrap}
+#headerClock{display:none}
 #headerClock .clock-date{font-weight:600;color:#fff}
 #headerClock .clock-lunar{color:#ffd54f;font-size:11px}
 #headerClock .clock-time{font-weight:700;color:#c084fc;font-size:15px}
@@ -482,10 +482,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .strip-title.editable-title{cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
 .strip-title.editable-title:hover{border-bottom-color:#8ab4f8;color:#1a73e8}
 .strip-title.editable-title:focus{outline:none;border-bottom:1px solid #1a73e8;background:#fff;color:#333;padding:1px 4px;border-radius:3px}
-.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px;visibility:hidden}
-.board-item:hover .board-item-note{visibility:visible}
+.board-item-note{font-size:11px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px}
 .board-item-note:hover{color:#1a73e8;background:#e8f0fe}
-.board-item-note.has-note{color:#7c3aed;visibility:visible}
+.board-item-note.has-note{color:#7c3aed}
 .board-item-note-popup{display:none;position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;min-width:180px}
 .board-item-note-popup textarea{width:100%;min-height:50px;padding:6px;border:1px solid #e0e4ea;border-radius:4px;font-size:11px;resize:vertical;font-family:inherit}
 .board-item-note-popup textarea:focus{outline:none;border-color:#8ab4f8}
