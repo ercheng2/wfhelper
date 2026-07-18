@@ -478,7 +478,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .strip-title.editable-title{cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
 .strip-title.editable-title:hover{border-bottom-color:#8ab4f8;color:#1a73e8}
 .strip-title.editable-title:focus{outline:none;border-bottom:1px solid #1a73e8;background:#fff;color:#333;padding:1px 4px;border-radius:3px}
-.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px;visibility:hidden}
+.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px}
 .board-item:hover .board-item-note{visibility:visible}
 .board-item-note:hover{color:#1a73e8;background:#e8f0fe}
 .board-item-note.has-note{color:#f6ad55;visibility:visible}
@@ -930,16 +930,6 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-footer">
         <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
-      </div>
-    </div>
-    <div class="board-stack">
-    <!-- 临时事件 -->
-    <div class="board-strip" id="board-temp-events">
-      <div class="board-strip-header"><span class="strip-title">📌 临时事件</span><span class="strip-badge" id="tempCount">0</span></div>
-      <div class="board-strip-body" id="tempEventsList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="tempEventInput" placeholder="添加临时事件..." onkeydown="if(event.key==='Enter')boardTempEventAdd()">
-        <button class="btn btn-primary btn-sm" onclick="boardTempEventAdd()">+</button>
       </div>
     </div>
     <!-- 待付款 -->
