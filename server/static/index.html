@@ -902,7 +902,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="board-strip" id="board-pending-projects">
       <div class="board-strip-header"><span class="strip-title editable-title" contenteditable="true" data-board="pending_projects" data-field="title" onblur="boardTitleSave(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
       <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-toggle"><label><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label><button class="btn btn-sm" onclick="boardPendingClearAll()" style="font-size:10px;padding:2px 6px;margin-left:6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
       <div class="board-strip-footer">
         <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button>
@@ -941,7 +941,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="board-strip" id="board-collection">
       <div class="board-strip-header"><span class="strip-title">📌 催款项目</span><span class="strip-badge" id="collCount">0</span></div>
       <div class="board-strip-body" id="collectionList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="collCarry" onchange="boardCollCarry()">延续到明天</label><button class="btn btn-sm" onclick="boardCollClearAll()" style="font-size:10px;padding:2px 6px;margin-left:6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
       <div class="board-strip-footer">
         <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
@@ -2799,7 +2799,7 @@ function boardTodayTodoRender(){
     var cls=it.completed?' done':'';
     var check=it.completed?'✓':'';
     var titleCls=it.completed?'':' undone';
-    var noteIcon=it.note?'📝':'💬';
+    var noteIcon=it.note?'📝\uFE0E':'💬\uFE0E';
     var noteCls=it.note?' has-note':'';
     html+='<div class="board-item'+cls+'">'
       +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
@@ -2872,7 +2872,7 @@ function boardTempEventsRender(){
     var cls=it.completed?' done':'';
     var check=it.completed?'✓':'';
     var titleCls=it.completed?'':' undone';
-    var noteIcon=it.note?'📝':'💬';
+    var noteIcon=it.note?'📝\uFE0E':'💬\uFE0E';
     var noteCls=it.note?' has-note':'';
     html+='<div class="board-item'+cls+'">'
       +'<div class="board-item-check" onclick="boardTempEventToggle('+i+')">'+check+'</div>'
@@ -3051,6 +3051,13 @@ function boardPendingCarryToggle(val){
   _boardData.pending_projects.carry_over=val;
   boardSave();
 }
+function boardPendingClearAll(){
+  if(!_boardData.pending_projects.projects.length) return;
+  if(!confirm('确定要删除待执行项目的全部 '+_boardData.pending_projects.projects.length+' 项吗？')) return;
+  _boardData.pending_projects.projects=[];
+  boardPendingRender();
+  boardSave();
+}
 function boardActiveDel(idx){
   _boardData.active_projects.projects.splice(idx,1);
   boardActiveRender();
@@ -3133,6 +3140,13 @@ function boardCollRender(){
 }
 function boardCollCarry(){
   _boardData.collection.carry_over=document.getElementById('collCarry').checked;
+  boardSave();
+}
+function boardCollClearAll(){
+  if(!_boardData.collection.items.length) return;
+  if(!confirm('确定要删除催款项目的全部 '+_boardData.collection.items.length+' 项吗？')) return;
+  _boardData.collection.items=[];
+  boardCollRender();
   boardSave();
 }
 function boardCollAdd(){
