@@ -866,9 +866,10 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
       <button class="cal-nav-btn" onclick="calGoToday()" style="width:auto;padding:4px 10px;font-size:11px">今天</button>
       <span id="calClock"></span>
+      <span id="reminderBar" style="display:none;margin-left:12px;padding:2px 10px;background:#fef3c7;border:1px solid #f59e0b;border-radius:4px;font-size:11px;color:#92400e;cursor:pointer" onclick="calGoDate(this.dataset.date)" title="点击跳转到提醒日期"></span>
     </div>
+    <div id="reminderSetting" style="text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
   </div>
-  <div id="reminderBar" style="display:none;margin:4px 20px;padding:6px 14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;font-size:12px;color:#92400e;cursor:pointer" onclick="calGoDate(this.dataset.date)" title="点击跳转到提醒日期"></div><div id="reminderSetting" style="margin:0 20px 2px;text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
   <div class="schedule-main">
     <!-- 日历+每日必做 -->
     <div class="schedule-col">
@@ -2749,9 +2750,12 @@ function boardDailyMustRender(){
   if(!tasks.length){list.innerHTML='<div class="board-empty">暂无每日必做</div>';return;}
   var html='';
   for(var i=0;i<tasks.length;i++){
+    var noteIcon=tasks[i].note?'📝\uFE0E':'💬\uFE0E';
+    var noteCls=tasks[i].note?' has-note':'';
     html+='<div class="board-item">'
       +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardDailyMustEdit(this,'+i+')">'+calEsc(tasks[i].title)+'</span>'
+      +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'daily_must\','+i+')" title="批注">'+noteIcon+'</span>'
       +'<span class="board-item-del" onclick="boardDailyMustDel('+i+')">×</span>'
       +'</div>';
   }
@@ -2964,7 +2968,7 @@ function boardNoteOpen(e,boardKey,idx){
     popup.innerHTML='<textarea id="noteTextarea" placeholder="添加批注..."></textarea><div class="note-actions"><button class="save" onclick="boardNoteSave()">保存</button><button onclick="boardNoteClose()">取消</button></div>';
     document.body.appendChild(popup);
   }
-  var item=_boardData[boardKey].items[idx];
+  var item=boardKey==='daily_must'?_boardData.daily_must.tasks[idx]:_boardData[boardKey].items[idx];
   document.getElementById('noteTextarea').value=item.note||'';
   _noteTarget={boardKey:boardKey,idx:idx};
   popup.style.display='block';
@@ -2976,11 +2980,13 @@ function boardNoteOpen(e,boardKey,idx){
 function boardNoteSave(){
   if(!_noteTarget) return;
   var note=document.getElementById('noteTextarea').value.trim();
-  _boardData[_noteTarget.boardKey].items[_noteTarget.idx].note=note;
   var bk=_noteTarget.boardKey;
+  if(bk==='daily_must'){_boardData.daily_must.tasks[_noteTarget.idx].note=note;}
+  else{_boardData[bk].items[_noteTarget.idx].note=note;}
   boardNoteClose();
   if(bk==='today_todo') boardTodayTodoRender();
   else if(bk==='temp_events') boardTempEventsRender();
+  else if(bk==='daily_must') boardDailyMustRender();
   boardSave();
 }
 function boardNoteClose(){
