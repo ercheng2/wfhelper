@@ -472,6 +472,22 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-location-popup button{padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px}
 .cal-location-popup .btn-save{background:#1a73e8;color:#fff;margin-right:4px}
 .cal-location-popup .btn-del{background:#f56565;color:#fff}
+#headerClock{font-size:12px;color:#e8f0fe;display:flex;align-items:center;gap:8px;white-space:nowrap}
+#headerClock .clock-date{font-weight:600;color:#fff}
+#headerClock .clock-lunar{color:#ffd54f;font-size:11px}
+.strip-title.editable-title{cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
+.strip-title.editable-title:hover{border-bottom-color:#8ab4f8;color:#1a73e8}
+.strip-title.editable-title:focus{outline:none;border-bottom:1px solid #1a73e8;background:#fff;color:#333;padding:1px 4px;border-radius:3px}
+.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px;visibility:hidden}
+.board-item:hover .board-item-note{visibility:visible}
+.board-item-note:hover{color:#1a73e8;background:#e8f0fe}
+.board-item-note.has-note{color:#f6ad55;visibility:visible}
+.board-item-note-popup{display:none;position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;min-width:180px}
+.board-item-note-popup textarea{width:100%;min-height:50px;padding:6px;border:1px solid #e0e4ea;border-radius:4px;font-size:11px;resize:vertical;font-family:inherit}
+.board-item-note-popup textarea:focus{outline:none;border-color:#8ab4f8}
+.board-item-note-popup .note-actions{display:flex;gap:4px;justify-content:flex-end;margin-top:4px}
+.board-item-note-popup .note-actions button{font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #ddd;cursor:pointer;background:#fff}
+.board-item-note-popup .note-actions button.save{background:#1a73e8;color:#fff;border-color:#1a73e8}
 @media(max-width:1200px){.board-strip{min-width:120px}}
 @media(max-width:900px){.board-container{flex-wrap:wrap}.board-strip{flex:1 1 45%;min-width:0}}
 @media(max-width:600px){.board-container{flex-direction:column}.board-strip{flex:1 1 auto}}
@@ -483,7 +499,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 <div class="top-bar-inner">
 <div class="header">
 <h1>📋 微信好友助手 v2.0</h1>
-<div class="header-stats" id="headerStats"><span id="contractAlertBadge" style="display:none;background:#ea4335;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">⚠ 合同逾期</span></div>
+<div class="header-stats" id="headerStats"><span id="headerClock"></span><span id="contractAlertBadge" style="display:none;background:#ea4335;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">⚠ 合同逾期</span></div>
 </div>
 <div class="tabs">
 <div class="tab active" data-tab="today">📋 今日任务</div>
@@ -880,7 +896,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     </div>
     <!-- 待执行项目 -->
     <div class="board-strip" id="board-pending-projects">
-      <div class="board-strip-header"><span class="strip-title">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
+      <div class="board-strip-header"><span class="strip-title editable-title" contenteditable="true" data-board="pending_projects" data-field="title" onblur="boardTitleSave(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">📌 待执行项目</span><span class="strip-badge" id="pendingCount">0</span></div>
       <div class="board-strip-body" id="pendingList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-toggle"><label><input type="checkbox" id="pendingCarry" onchange="boardPendingCarryToggle(this.checked)">延续到明天</label></div>
       <div class="board-strip-footer">
@@ -890,11 +906,20 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     </div>
     <!-- 今日待办 -->
     <div class="board-strip" id="board-today-todo">
-      <div class="board-strip-header"><span class="strip-title">📌 今日待办</span><span class="strip-badge" id="todoCount">0</span></div>
+      <div class="board-strip-header"><span class="strip-title editable-title" contenteditable="true" data-board="today_todo" data-field="title" onblur="boardTitleSave(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">📌 今日待办</span><span class="strip-badge" id="todoCount">0</span></div>
       <div class="board-strip-body" id="todayTodoList"><div class="board-empty">暂无</div></div>
       <div class="board-strip-footer">
         <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
         <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
+      </div>
+    </div>
+    <!-- 临时事件 -->
+    <div class="board-strip" id="board-temp-events">
+      <div class="board-strip-header"><span class="strip-title editable-title" contenteditable="true" data-board="temp_events" data-field="title" onblur="boardTitleSave(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">📌 临时事件</span></div>
+      <div class="board-strip-body" id="tempEventsList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="tempEventInput" placeholder="添加临时事件..." onkeydown="boardTempEventKeydown(event)">
+        <button class="btn btn-primary btn-sm" onclick="boardTempEventAdd()">+</button>
       </div>
     </div>
     <!-- 催款项目 -->
@@ -2445,6 +2470,24 @@ function calTodayLunar(){
   return lunarByDate(ds);
 }
 
+// === 顶部时钟 ===
+function updateHeaderClock(){
+  var now=new Date();
+  var y=now.getFullYear();
+  var m=String(now.getMonth()+1).padStart(2,'0');
+  var d=String(now.getDate()).padStart(2,'0');
+  var h=String(now.getHours()).padStart(2,'0');
+  var min=String(now.getMinutes()).padStart(2,'0');
+  var s=String(now.getSeconds()).padStart(2,'0');
+  var week='日一二三四五六'[now.getDay()];
+  var ds=y+'-'+m+'-'+d;
+  var lunar=lunarByDate(ds);
+  var el=document.getElementById('headerClock');
+  if(el) el.innerHTML='<span class="clock-date">'+y+'年'+m+'月'+d+'日 周'+week+' '+h+':'+min+':'+s+'</span><span class="clock-lunar">'+lunar+'</span>';
+}
+setInterval(updateHeaderClock,1000);
+updateHeaderClock();
+
 // === 日程管理 ===
 let _calYear, _calMonth, _calSelDate='', _calView='month';
 let _boardData=null, _boardTodoPending=null;
@@ -2738,10 +2781,10 @@ async function boardSave(){
 function boardRenderAll(){
   boardDailyMustRender();
   boardTodayTodoRender();
+  boardTempEventsRender();
   boardActiveRender();
   boardPendingRender();
   boardCollRender();
-  boardTempEventsRender();
   boardPayRender();
 }
 
@@ -2809,10 +2852,13 @@ function boardTodayTodoRender(){
     var cls=it.completed?' done':'';
     var check=it.completed?'✓':'';
     var titleCls=it.completed?'':' undone';
+    var noteIcon=it.note?'📝':'💬';
+    var noteCls=it.note?' has-note':'';
     html+='<div class="board-item'+cls+'">'
       +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<div class="board-item-check" onclick="boardTodoToggle('+i+')">'+check+'</div>'
       +'<span class="board-item-title'+titleCls+'" onclick="boardTodoEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
+      +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'today_todo\','+i+')" title="批注">'+noteIcon+'</span>'
       +'<span class="board-item-del" onclick="boardTodoDel('+i+')">×</span>'
       +'</div>';
   }
@@ -2822,7 +2868,7 @@ function boardTodoAdd(){
   var input=document.getElementById('todoInput');
   var title=input.value.trim();
   if(!title) return;
-  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false};
+  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:''};
   _boardData.today_todo.items.push(item);
   input.value='';
   boardTodayTodoRender();
@@ -2866,6 +2912,124 @@ function boardTodoDel(idx){
   boardTodayTodoRender();
   boardSave();
   boardUpdateCalendarDots();
+}
+
+// === 临时事件 ===
+function boardTempEventsRender(){
+  var list=document.getElementById('tempEventsList');
+  var items=_boardData.temp_events.items;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无临时事件</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var cls=it.completed?' done':'';
+    var check=it.completed?'✓':'';
+    var titleCls=it.completed?'':' undone';
+    var noteIcon=it.note?'📝':'💬';
+    var noteCls=it.note?' has-note':'';
+    html+='<div class="board-item'+cls+'">'
+      +'<div class="board-item-check" onclick="boardTempEventToggle('+i+')">'+check+'</div>'
+      +'<span class="board-item-title'+titleCls+'" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
+      +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'temp_events\','+i+')" title="批注">'+noteIcon+'</span>'
+      +'<span class="board-item-del" onclick="boardTempEventDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardTempEventAdd(){
+  var input=document.getElementById('tempEventInput');
+  var title=input.value.trim();
+  if(!title) return;
+  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:''};
+  _boardData.temp_events.items.push(item);
+  input.value='';
+  boardTempEventsRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+function boardTempEventKeydown(e){
+  if(e.key==='Enter'){e.preventDefault();boardTempEventAdd();}
+}
+function boardTempEventToggle(idx){
+  var it=_boardData.temp_events.items[idx];
+  it.completed=!it.completed;
+  boardTempEventsRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+function boardTempEventEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');
+  el.contentEditable='true';
+  el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.temp_events.items[idx].title=t;
+    boardTempEventsRender();
+    boardSave();
+    boardUpdateCalendarDots();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardTempEventDel(idx){
+  _boardData.temp_events.items.splice(idx,1);
+  boardTempEventsRender();
+  boardSave();
+  boardUpdateCalendarDots();
+}
+
+// === 标题编辑 ===
+function boardTitleSave(el){
+  var boardKey=el.getAttribute('data-board');
+  var title=el.textContent.trim();
+  if(!title) title='📌 未命名';
+  if(!_boardData[boardKey]._meta) _boardData[boardKey]._meta={};
+  _boardData[boardKey]._meta.title=title;
+  boardSave();
+}
+
+// === 批注 ===
+var _noteTarget=null;
+function boardNoteOpen(e,boardKey,idx){
+  var popup=document.getElementById('boardNotePopup');
+  if(!popup){
+    popup=document.createElement('div');
+    popup.id='boardNotePopup';
+    popup.className='board-item-note-popup';
+    popup.innerHTML='<textarea id="noteTextarea" placeholder="添加批注..."></textarea><div class="note-actions"><button class="save" onclick="boardNoteSave()">保存</button><button onclick="boardNoteClose()">取消</button></div>';
+    document.body.appendChild(popup);
+  }
+  var item=_boardData[boardKey].items[idx];
+  document.getElementById('noteTextarea').value=item.note||'';
+  _noteTarget={boardKey:boardKey,idx:idx};
+  popup.style.display='block';
+  var rect=e.target.getBoundingClientRect();
+  popup.style.left=Math.min(rect.left,window.innerWidth-200)+'px';
+  popup.style.top=(rect.bottom+5)+'px';
+  setTimeout(function(){document.addEventListener('click',boardNoteClickOutside,{once:true});},100);
+}
+function boardNoteSave(){
+  if(!_noteTarget) return;
+  var note=document.getElementById('noteTextarea').value.trim();
+  _boardData[_noteTarget.boardKey].items[_noteTarget.idx].note=note;
+  boardNoteClose();
+  if(_noteTarget.boardKey==='today_todo') boardTodayTodoRender();
+  else if(_noteTarget.boardKey==='temp_events') boardTempEventsRender();
+  boardSave();
+}
+function boardNoteClose(){
+  var popup=document.getElementById('boardNotePopup');
+  if(popup) popup.style.display='none';
+  _noteTarget=null;
+}
+function boardNoteClickOutside(e){
+  var popup=document.getElementById('boardNotePopup');
+  if(popup&&!popup.contains(e.target)){boardNoteClose();}
 }
 
 // === 状态弹窗 ===
@@ -3175,7 +3339,7 @@ function boardTempEventDel(idx){
 // === 日历圆点更新（支持历史日期） ===
 function boardUpdateCalendarDots(){
   var ds=_calSelDate;
-  var items=_boardData.today_todo.items;
+  var items=_boardData.today_todo.items.concat(_boardData.temp_events.items);
   var dotsEl=document.getElementById('calDots_'+ds);
   var titlesEl=document.getElementById('calTitles_'+ds);
   if(!dotsEl||!titlesEl) return;
@@ -3204,7 +3368,7 @@ function boardUpdateAllCalendarDots(){
     var ds=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var data=_boardCache[ds];
     if(!data) continue;
-    var items=data.today_todo.items;
+    var items=(data.today_todo.items||[]).concat(data.temp_events?data.temp_events.items||[]:[]);
     var dotsEl=document.getElementById('calDots_'+ds);
     var titlesEl=document.getElementById('calTitles_'+ds);
     if(!dotsEl||!titlesEl) continue;
