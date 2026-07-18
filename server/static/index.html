@@ -894,6 +894,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
     <div class="board-strip" id="board-active-projects">
       <div class="board-strip-header"><span class="strip-title">📌 执行项目</span><span class="strip-badge" id="activeCount">0</span></div>
       <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-toggle"><button class="btn btn-sm" onclick="boardActiveClearAll()" style="font-size:10px;padding:2px 6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
       <div class="board-strip-footer">
         <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button>
@@ -3079,6 +3080,13 @@ function boardPendingClearAll(){
 }
 function boardActiveDel(idx){
   _boardData.active_projects.projects.splice(idx,1);
+  boardActiveRender();
+  boardSave();
+}
+function boardActiveClearAll(){
+  if(!_boardData.active_projects.projects.length) return;
+  if(!confirm('确定要删除执行项目的全部 '+_boardData.active_projects.projects.length+' 项吗？')) return;
+  _boardData.active_projects.projects=[];
   boardActiveRender();
   boardSave();
 }
