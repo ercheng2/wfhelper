@@ -381,24 +381,24 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .cal-view-btn.active{background:#4a6fa5;color:#fff;border-color:#4a6fa5}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:3px 3px 0;text-align:center}
 .cal-weekday{font-size:10px;color:#8b96a5;font-weight:600;padding:2px 0;transition:all .2s}
-.cal-weekday.today{color:#1a73e8;background:#e3edff;border-radius:4px;font-weight:700}
+.cal-weekday.today{color:#b45309;background:#fef3c7;border-radius:4px;font-weight:700}
 .cal-body{display:flex;flex:0 0 auto;min-height:0;overflow:hidden}
 .cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);padding:2px 6px 3px 6px;gap:2px;overflow-y:auto;align-content:start}
 .cal-cell{min-height:28px;border:1px solid #e4e8f0;border-radius:4px;padding:1px 2px;cursor:pointer;position:relative;transition:all .15s;background:#f8faff;overflow:hidden}
 .cal-cell:hover{border-color:#8ab4f8;background:#eef3ff}
 .cal-cell.other-month{background:#f5f5f7;color:#c5c9d2;cursor:default}
 .cal-cell.other-month:hover{border-color:#e4e8f0;background:#f5f5f7}
-.cal-cell.today{border-color:#6c8ebf;background:#e3edff;box-shadow:inset 0 0 0 1px rgba(108,142,191,.3)}@keyframes calBlink{0%,100%{box-shadow:0 0 0 2px rgba(124,58,237,.4)}50%{box-shadow:0 0 0 6px rgba(124,58,237,.15)}}.cal-cell.reminder{animation:calBlink 1.5s ease-in-out infinite;border-color:#7c3aed}
+.cal-cell.today{border-color:#d97706;background:#fffbeb;box-shadow:inset 0 0 0 1px rgba(217,119,6,.3)}@keyframes calBlink{0%,100%{box-shadow:0 0 0 2px rgba(124,58,237,.4)}50%{box-shadow:0 0 0 6px rgba(124,58,237,.15)}}.cal-cell.reminder{animation:calBlink 1.5s ease-in-out infinite;border-color:#7c3aed}
 .cal-cell.selected{border-color:#7c3aed;background:#ede9fe;box-shadow:0 0 0 2px rgba(124,58,237,.3)}
 .cal-cell.out-of-beijing{background:#e6f7e6;border-color:#a3d9a3}
-.cal-cell.out-of-beijing.today{background:#d4edd4;box-shadow:inset 0 0 0 1px rgba(72,187,120,.3)}
+.cal-cell.out-of-beijing.today{background:#fef9e7;box-shadow:inset 0 0 0 1px rgba(217,119,6,.3)}
 .cal-cell.out-of-beijing.selected{background:#c8e6c8;border-color:#66bb6a;box-shadow:0 0 0 2px rgba(72,187,120,.25)}
 .cal-cell-location{font-size:7px;line-height:1.1;color:#2e7d32;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;margin-top:1px;padding:0 1px}
 .cal-cell-location:hover{background:rgba(0,0,0,.05);border-radius:2px}
 .cal-cell-num{font-size:9px;font-weight:700;color:#4a5568;margin-bottom:0;line-height:1.1}
 .cal-cell-lunar{font-size:7px;color:#e53e3e;line-height:1;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal-cell.other-month .cal-cell-num{color:#c5c9d2}
-.cal-cell.today .cal-cell-num{color:#3b5998}
+.cal-cell.today .cal-cell-num{color:#92400e}
 .cal-cell.selected .cal-cell-num{color:#2c4a7c}
 .cal-dots{display:flex;flex-wrap:wrap;gap:1px;margin-top:0}
 .cal-dot{width:3px;height:3px;border-radius:50%;flex-shrink:0}
@@ -2484,10 +2484,10 @@ function emptyBoard(){return {
 };}
 
 function calInit(){
-  const now=new Date();
+  var now=new Date();
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
-  _calSelDate=now.toISOString().split('T')[0];
+  _calSelDate=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   _calView='month';
   // 初始化提醒天数设置
   var rd=document.getElementById('reminderDays');
@@ -2502,7 +2502,7 @@ function calRender(){
   var startDow=(firstDay.getDay()+6)%7;
   var totalDays=lastDay.getDate();
   var today=new Date();
-  var todayStr=today.toISOString().split('T')[0];
+  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   var todayDow=(today.getDay()+6)%7;
   
   // 高亮今天星期几
@@ -2575,10 +2575,10 @@ function calNextMonth(){
   calLoadMonth();
 }
 function calGoToday(){
-  const now=new Date();
+  var now=new Date();
   _calYear=now.getFullYear();
   _calMonth=now.getMonth()+1;
-  _calSelDate=now.toISOString().split('T')[0];
+  _calSelDate=_calYear+'-'+String(_calMonth).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   _calView='month';
   calLoadMonth().then(function(){boardLoad();});
 }
@@ -2606,7 +2606,7 @@ async function calReminderRefresh(){
   if(days<=0){bar.style.display='none';await calReminderMarkDots();return;}
   var today=new Date(); today.setHours(0,0,0,0);
   var d=new Date(today.getTime()+days*86400000);
-  var ds=d.toISOString().split('T')[0];
+  var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   var bd=_boardCache[ds];
   if(!bd||!bd.today_todo){
     try{var r=await fetch('/api/schedule-board?date='+ds);bd=await r.json();_boardCache[ds]=bd;}catch(e){}
@@ -2627,7 +2627,7 @@ async function calReminderMarkDots(){
   document.querySelectorAll('.cal-cell.reminder').forEach(function(el){el.classList.remove('reminder');});
   if(days<=0) return;
   var d=new Date(today.getTime()+days*86400000);
-  var ds=d.toISOString().split('T')[0];
+  var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   var bd=_boardCache[ds];
   if(!bd||!bd.today_todo){
     try{var r=await fetch('/api/schedule-board?date='+ds);bd=await r.json();_boardCache[ds]=bd;}catch(e){}
