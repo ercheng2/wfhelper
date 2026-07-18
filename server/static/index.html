@@ -475,13 +475,17 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 #headerClock{font-size:12px;color:#e8f0fe;display:flex;align-items:center;gap:8px;white-space:nowrap}
 #headerClock .clock-date{font-weight:600;color:#fff}
 #headerClock .clock-lunar{color:#ffd54f;font-size:11px}
+#headerClock .clock-time{font-weight:700;color:#c084fc;font-size:15px}
+#calClock{font-size:11px;color:#5f6b7a;margin-left:4px}
+#calClock .clock-time{font-weight:700;color:#7c3aed;font-size:14px}
+#calClock .clock-lunar{color:#8b5cf6}
 .strip-title.editable-title{cursor:pointer;border-bottom:1px dashed transparent;transition:all .15s}
 .strip-title.editable-title:hover{border-bottom-color:#8ab4f8;color:#1a73e8}
 .strip-title.editable-title:focus{outline:none;border-bottom:1px solid #1a73e8;background:#fff;color:#333;padding:1px 4px;border-radius:3px}
-.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px}
+.board-item-note{font-size:10px;margin-left:4px;color:#cbd5e0;cursor:pointer;flex-shrink:0;padding:0 3px;border-radius:3px;visibility:hidden}
 .board-item:hover .board-item-note{visibility:visible}
 .board-item-note:hover{color:#1a73e8;background:#e8f0fe}
-.board-item-note.has-note{color:#f6ad55;visibility:visible}
+.board-item-note.has-note{color:#7c3aed;visibility:visible}
 .board-item-note-popup{display:none;position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;min-width:180px}
 .board-item-note-popup textarea{width:100%;min-height:50px;padding:6px;border:1px solid #e0e4ea;border-radius:4px;font-size:11px;resize:vertical;font-family:inherit}
 .board-item-note-popup textarea:focus{outline:none;border-color:#8ab4f8}
@@ -862,7 +866,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <span class="cal-title" id="calTitle">2026年7月</span>
       <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
       <button class="cal-nav-btn" onclick="calGoToday()" style="width:auto;padding:4px 10px;font-size:11px">今天</button>
-      <span id="calClock" style="font-size:11px;color:#5f6b7a;margin-left:4px"></span>
+      <span id="calClock"></span>
     </div>
   </div>
   <div id="reminderBar" style="display:none;margin:4px 20px;padding:6px 14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;font-size:12px;color:#92400e;cursor:pointer" onclick="calGoDate(this.dataset.date)" title="点击跳转到提醒日期"></div><div id="reminderSetting" style="margin:0 20px 2px;text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
@@ -2449,13 +2453,13 @@ function lunarByDate(ds){
   }
   var monName=(leap?'闰':'')+(_lunarMon[lm-1]||lm)+'月';
   var dayName='';
-  if(ld===1) dayName=monName;
+  if(ld===1) dayName='初一';
   else if(ld<=10) dayName='初'+'十一二三四五六七八九十'[ld];
   else if(ld<20) dayName='十'+'一二三四五六七八九'[ld-10];
   else if(ld===20) dayName='二十';
   else if(ld<30) dayName='廿'+'一二三四五六七八九'[ld-20];
   else dayName='三十';
-  return dayName;
+  return monName+dayName;
 }
 function calTodayLunar(){
   var now=new Date();
@@ -2476,9 +2480,9 @@ function updateHeaderClock(){
   var ds=y+'-'+m+'-'+d;
   var lunar=lunarByDate(ds);
   var el=document.getElementById('headerClock');
-  if(el) el.innerHTML='<span class="clock-date">'+y+'年'+m+'月'+d+'日 周'+week+' '+h+':'+min+':'+s+'</span><span class="clock-lunar">'+lunar+'</span>';
+  if(el) el.innerHTML='<span class="clock-date">'+y+'年'+m+'月'+d+'日 周'+week+'</span> <span class="clock-time">'+h+':'+min+':'+s+'</span> <span class="clock-lunar">'+lunar+'</span>';
   var cel=document.getElementById('calClock');
-  if(cel) cel.textContent=y+'年'+m+'月'+d+'日 周'+week+' '+h+':'+min+':'+s+' '+lunar;
+  if(cel) cel.innerHTML='<span class="clock-date">'+y+'年'+m+'月'+d+'日 周'+week+'</span> <span class="clock-time">'+h+':'+min+':'+s+'</span> <span class="clock-lunar">'+lunar+'</span>';
 }
 setInterval(updateHeaderClock,1000);
 updateHeaderClock();
