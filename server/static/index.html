@@ -2707,6 +2707,13 @@ async function boardLoad(){
     _boardCache[_calSelDate]=_boardData;
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
+  // 恢复可编辑标题（待执行项目/今日待办/临时事件）
+  ['pending_projects','today_todo','temp_events'].forEach(function(bk){
+    var el=document.querySelector('.strip-title[data-board="'+bk+'"]');
+    if(el && _boardData[bk] && _boardData[bk]._meta && _boardData[bk]._meta.title){
+      el.textContent=_boardData[bk]._meta.title;
+    }
+  });
   boardUpdateAllCalendarDots();
   // 同步延续勾选框状态
   var pc=document.getElementById('pendingCarry');if(pc)pc.checked=_boardData.pending_projects.carry_over||false;
