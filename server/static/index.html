@@ -862,6 +862,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <span class="cal-title" id="calTitle">2026年7月</span>
       <button class="cal-nav-btn" onclick="calNextMonth()" title="下一月">▶</button>
       <button class="cal-nav-btn" onclick="calGoToday()" style="width:auto;padding:4px 10px;font-size:11px">今天</button>
+      <span id="calClock" style="font-size:11px;color:#5f6b7a;margin-left:4px"></span>
     </div>
   </div>
   <div id="reminderBar" style="display:none;margin:4px 20px;padding:6px 14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;font-size:12px;color:#92400e;cursor:pointer" onclick="calGoDate(this.dataset.date)" title="点击跳转到提醒日期"></div><div id="reminderSetting" style="margin:0 20px 2px;text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
@@ -913,6 +914,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
       </div>
     </div>
+    <div class="board-stack">
     <!-- 临时事件 -->
     <div class="board-strip" id="board-temp-events">
       <div class="board-strip-header"><span class="strip-title editable-title" contenteditable="true" data-board="temp_events" data-field="title" onblur="boardTitleSave(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">📌 临时事件</span></div>
@@ -922,6 +924,16 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <button class="btn btn-primary btn-sm" onclick="boardTempEventAdd()">+</button>
       </div>
     </div>
+    <!-- 待付款 -->
+    <div class="board-strip" id="board-payments">
+      <div class="board-strip-header"><span class="strip-title">📌 待付款</span><span class="strip-badge" id="payCount">0</span></div>
+      <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-footer">
+        <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
+      </div>
+    </div>
+    </div>
     <!-- 催款项目 -->
     <div class="board-strip" id="board-collection">
       <div class="board-strip-header"><span class="strip-title">📌 催款项目</span><span class="strip-badge" id="collCount">0</span></div>
@@ -930,15 +942,6 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-footer">
         <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
-      </div>
-    </div>
-    <!-- 待付款 -->
-    <div class="board-strip" id="board-payments">
-      <div class="board-strip-header"><span class="strip-title">📌 待付款</span><span class="strip-badge" id="payCount">0</span></div>
-      <div class="board-strip-body" id="paymentsList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-footer">
-        <input type="text" id="payInput" placeholder="添加待付款..." onkeydown="if(event.key==='Enter')boardPayAdd()">
-        <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
       </div>
     </div>
     </div>
@@ -2474,6 +2477,8 @@ function updateHeaderClock(){
   var lunar=lunarByDate(ds);
   var el=document.getElementById('headerClock');
   if(el) el.innerHTML='<span class="clock-date">'+y+'年'+m+'月'+d+'日 周'+week+' '+h+':'+min+':'+s+'</span><span class="clock-lunar">'+lunar+'</span>';
+  var cel=document.getElementById('calClock');
+  if(cel) cel.textContent=y+'年'+m+'月'+d+'日 周'+week+' '+h+':'+min+':'+s+' '+lunar;
 }
 setInterval(updateHeaderClock,1000);
 updateHeaderClock();
@@ -2748,6 +2753,8 @@ async function boardLoad(){
     if(_boardData.collection.carry_over===undefined) _boardData.collection.carry_over=false;
     if(!_boardData.temp_events) _boardData.temp_events={items:[]};
     if(!_boardData.payments) _boardData.payments={items:[]};
+    if(!_boardData.active_projects) _boardData.active_projects={projects:[]};
+    if(!_boardData.pending_projects) _boardData.pending_projects={carry_over:false,projects:[]};
     _boardCache[_calSelDate]=_boardData;
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
   boardRenderAll();
@@ -3264,65 +3271,6 @@ function boardPayEdit(el,idx){
 function boardPayDel(idx){
   _boardData.payments.items.splice(idx,1);
   boardPayRender();
-  boardSave();
-}
-
-// === 7. 临时事件 ===
-function boardTempEventsRender(){
-  var list=document.getElementById('tempEventsList');
-  var items=_boardData.temp_events.items;
-  document.getElementById('tempCount').textContent=items.length;
-  if(!items.length){list.innerHTML='<div class="board-empty">暂无临时事件</div>';return;}
-  var html='';
-  for(var i=0;i<items.length;i++){
-    var it=items[i];
-    var cls=it.completed?' done':'';
-    var check=it.completed?'✓':'';
-    var titleCls=it.completed?'':' undone';
-    html+='<div class="board-item'+cls+'">'
-      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
-      +'<div class="board-item-check" onclick="boardTempEventToggle('+i+')">'+check+'</div>'
-      +'<span class="board-item-title'+titleCls+'" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
-      +'<span class="board-item-del" onclick="boardTempEventDel('+i+')">×</span>'
-      +'</div>';
-  }
-  list.innerHTML=html;
-}
-function boardTempEventToggle(idx){
-  var it=_boardData.temp_events.items[idx];
-  it.completed=!it.completed;
-  boardTempEventsRender();
-  boardSave();
-  boardUpdateCalendarDots();
-}
-function boardTempEventAdd(){
-  var input=document.getElementById('tempEventInput');
-  var title=input.value.trim();
-  if(!title) return;
-  _boardData.temp_events.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false});
-  input.value='';
-  boardTempEventsRender();
-  boardSave();
-}
-function boardTempEventEdit(el,idx){
-  if(el.classList.contains('editing')) return;
-  var orig=el.textContent;
-  el.classList.add('editing');el.contentEditable='true';el.focus();
-  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
-  function save(){
-    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
-    var t=el.textContent.trim();
-    if(!t){el.textContent=orig;return;}
-    _boardData.temp_events.items[idx].title=t;
-    boardTempEventsRender();
-    boardSave();
-  }
-  el.onblur=save;
-  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
-}
-function boardTempEventDel(idx){
-  _boardData.temp_events.items.splice(idx,1);
-  boardTempEventsRender();
   boardSave();
 }
 
