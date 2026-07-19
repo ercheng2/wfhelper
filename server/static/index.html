@@ -454,6 +454,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-item-tag{font-size:9px;padding:1px 5px;border-radius:8px;background:#e8f0fe;color:#4a6fa5;white-space:nowrap;flex-shrink:0}
 .board-item-carry{display:flex;align-items:center;gap:1px;font-size:9px;color:#8b96a5;cursor:pointer;flex-shrink:0;white-space:nowrap}
 .board-item-carry input[type="checkbox"]{width:11px;height:11px;cursor:pointer;margin:0}
+.board-item-time{flex-basis:100%;font-size:10px;color:#a0aec0;padding-left:20px;margin-top:-2px}
 .board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
 .board-item-btn:hover{background:#4a6fa5;color:#fff}
 .board-status-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
@@ -2806,6 +2807,7 @@ function boardDailyMustClearAll(){
 }
 
 // === 2. 今日待办 ===
+function boardFmtTime(ts){if(!ts)return'';var d=new Date(ts);return String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function boardTodayTodoRender(){
   var list=document.getElementById('todayTodoList');
   var items=_boardData.today_todo.items;
@@ -2825,6 +2827,7 @@ function boardTodayTodoRender(){
       +'<span class="board-item-title'+titleCls+'" onclick="boardTodoEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
       +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'today_todo\','+i+')" title="批注">'+noteIcon+'</span>'
       +'<span class="board-item-del" onclick="boardTodoDel('+i+')">×</span>'
+      +(it.createdAt?'<div class="board-item-time">'+boardFmtTime(it.createdAt)+'</div>':'')
       +'</div>';
   }
   list.innerHTML=html;
@@ -2833,7 +2836,7 @@ function boardTodoAdd(){
   var input=document.getElementById('todoInput');
   var title=input.value.trim();
   if(!title) return;
-  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:''};
+  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:'',createdAt:new Date().toISOString()};
   _boardData.today_todo.items.push(item);
   input.value='';
   boardTodayTodoRender();
@@ -2897,6 +2900,7 @@ function boardTempEventsRender(){
       +'<span class="board-item-title'+titleCls+'" onclick="boardTempEventEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
       +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'temp_events\','+i+')" title="批注">'+noteIcon+'</span>'
       +'<span class="board-item-del" onclick="boardTempEventDel('+i+')">×</span>'
+      +(it.createdAt?'<div class="board-item-time">'+boardFmtTime(it.createdAt)+'</div>':'')
       +'</div>';
   }
   list.innerHTML=html;
@@ -2905,7 +2909,7 @@ function boardTempEventAdd(){
   var input=document.getElementById('tempEventInput');
   var title=input.value.trim();
   if(!title) return;
-  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:''};
+  var item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title,completed:false,note:'',createdAt:new Date().toISOString()};
   _boardData.temp_events.items.push(item);
   input.value='';
   boardTempEventsRender();
