@@ -457,6 +457,15 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-item-time{flex-basis:100%;font-size:10px;color:#a0aec0;padding-left:20px;margin-top:-2px}
 .board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
 .board-item-btn:hover{background:#4a6fa5;color:#fff}
+.amount-convert{margin-top:4px;padding-top:4px;border-top:1px dashed #e0e4ea}
+.amount-convert .ac-label{font-size:10px;color:#8b96a5;margin-bottom:2px;display:block}
+.amount-convert .ac-row{display:flex;gap:4px;align-items:center}
+.amount-convert .ac-row input{flex:1;padding:4px 6px;border:1px solid #e0e4ea;border-radius:4px;font-size:11px;font-family:Consolas,monospace;outline:none}
+.amount-convert .ac-row input:focus{border-color:#8ab4f8}
+.amount-convert .ac-result{display:flex;align-items:center;gap:4px;margin-top:2px;padding:3px 6px;background:#fffef5;border-radius:4px;border:1px solid #f0ecd8;font-size:11px;color:#b8860b;min-height:22px;word-break:break-all}
+.amount-convert .ac-copy{font-size:10px;padding:1px 6px;border:1px solid #d4a017;border-radius:3px;background:#fff;color:#b8860b;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.amount-convert .ac-copy:hover{background:#b8860b;color:#fff}
+.amount-convert .ac-copy.copied{background:#34a853;color:#fff;border-color:#34a853}
 .board-status-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
 #board-payments{flex:1;min-width:0}
 .board-stack{flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px}
@@ -918,6 +927,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <div class="board-strip-footer">
         <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="boardTodoKeydown(event)">
         <button class="btn btn-primary btn-sm" onclick="boardTodoAdd()">+</button>
+        <div class="amount-convert">
+          <span class="ac-label">💰 金额转大写</span>
+          <div class="ac-row"><input type="text" id="amountInput" placeholder="输入金额，如 1234.56" oninput="amountConvert()"></div>
+          <div class="ac-result" id="amountResult" style="display:none"><span id="amountText"></span><button class="ac-copy" onclick="amountCopy()">复制</button></div>
+        </div>
       </div>
     </div>
     <div class="board-stack">
@@ -2806,6 +2820,71 @@ function boardDailyMustClearAll(){
   boardSave();
 }
 
+// === 金额转大写 ===
+function amountConvert(){
+  var v=document.getElementById('amountInput').value.trim();
+  var res=document.getElementById('amountResult');
+  var txt=document.getElementById('amountText');
+  if(!v){res.style.display='none';return;}
+  var s=amountToChinese(v);
+  if(!s){res.style.display='none';return;}
+  txt.textContent=s;
+  res.style.display='flex';
+}
+function amountToChinese(num){
+  num=String(num).replace(/[^\d.]/g,'');
+  if(!num||isNaN(parseFloat(num)))return'';
+  var d=['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'];
+  var u=['','拾','佰','仟'];
+  var w=['','万','亿'];
+  var parts=num.split('.');
+  var intPart=parts[0];
+  var decPart=parts[1]||'';
+  if(intPart==='0'&&!decPart)return'零元整';
+  if(intPart.length>16)return'金额过大';
+  // 整数部分
+  var intStr='';
+  var intLen=intPart.length;
+  var zero=false;
+  for(var i=0;i<intLen;i++){
+    var n=parseInt(intPart[i]);
+    var pos=intLen-i-1;
+    var q=Math.floor(pos/4);
+    var r=pos%4;
+    if(n===0){zero=true;}
+    else{
+      if(zero){intStr+='零';zero=false;}
+      intStr+=d[n]+u[r];
+    }
+    if(r===0){
+      if(!zero||(q>0&&intStr[intStr.length-1]!=='零'))intStr+=w[q];
+      zero=false;
+    }
+  }
+  // 清理末尾零
+  intStr=intStr.replace(/零+$/,'');
+  intStr+=intStr?'元':'';
+  // 小数部分
+  if(!decPart){intStr+='整';}
+  else{
+    var jiao=decPart[0]?d[parseInt(decPart[0])]+'角':'';
+    var fen=decPart[1]?d[parseInt(decPart[1])]+'分':'';
+    if(!jiao&&!fen)intStr+='整';
+    else if(!jiao&&fen)intStr+='零'+fen;
+    else intStr+=jiao+(fen||'');
+  }
+  return intStr;
+}
+function amountCopy(){
+  var txt=document.getElementById('amountText').textContent;
+  if(!txt)return;
+  navigator.clipboard.writeText(txt).then(function(){
+    var btn=document.querySelector('.ac-copy');
+    btn.textContent='已复制';
+    btn.classList.add('copied');
+    setTimeout(function(){btn.textContent='复制';btn.classList.remove('copied');},1500);
+  });
+}
 // === 2. 今日待办 ===
 function boardFmtTime(ts){if(!ts)return'';var d=new Date(ts);return String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function boardTodayTodoRender(){
