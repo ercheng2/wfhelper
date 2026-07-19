@@ -2826,10 +2826,29 @@ function amountConvert(){
   var res=document.getElementById('amountResult');
   var btn=document.getElementById('amountCopyBtn');
   if(!v){res.textContent='';btn.style.display='none';return;}
+  var num=v.replace(/,/g,'').replace(/[^\d.]/g,'');
+  if(!num||isNaN(parseFloat(num))){res.textContent='';btn.style.display='none';return;}
+  var fmt=amountFormat(num);
   var s=amountToChinese(v);
   if(!s){res.textContent='';btn.style.display='none';return;}
-  res.textContent=s;
+  res.innerHTML='<span style="color:#333;font-size:28px">¥'+fmt+'</span>  <span style="color:#b8860b">'+s+'</span>';
+  res.dataset.chinese=s;
   btn.style.display='inline-block';
+}
+function amountFormat(num){
+  num=String(num).replace(/,/g,'').replace(/[^\d.]/g,'');
+  if(!num||isNaN(parseFloat(num)))return'';
+  var parts=num.split('.');
+  var intPart=parts[0].replace(/^0+/,'')||'0';
+  var decPart=(parts[1]||'').substring(0,2);
+  while(decPart.length<2)decPart+='0';
+  var fmt='';
+  var len=intPart.length;
+  for(var i=0;i<len;i++){
+    if(i>0&&(len-i)%3===0)fmt+=',';
+    fmt+=intPart[i];
+  }
+  return fmt+'.'+decPart;
 }
 function amountToChinese(num){
   num=String(num).replace(/,/g,'').replace(/[^\d.]/g,'');
@@ -2874,7 +2893,7 @@ function amountToChinese(num){
   return intStr;
 }
 function amountCopy(){
-  var txt=document.getElementById('amountResult').textContent;
+  var txt=document.getElementById('amountResult').dataset.chinese;
   if(!txt)return;
   var btn=document.getElementById('amountCopyBtn');
   navigator.clipboard.writeText(txt).then(function(){
