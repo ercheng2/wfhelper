@@ -457,12 +457,12 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .board-item-time{flex-basis:100%;font-size:10px;color:#a0aec0;padding-left:20px;margin-top:-2px}
 .board-item-btn{font-size:9px;padding:2px 7px;border:1px solid #4a6fa5;border-radius:4px;background:#fff;color:#4a6fa5;cursor:pointer;white-space:nowrap;transition:all .15s}
 .board-item-btn:hover{background:#4a6fa5;color:#fff}
-.amount-convert{display:flex;align-items:center;gap:8px;flex:1;max-width:600px;margin:0 12px}
+.amount-convert{display:flex;align-items:center;gap:8px;flex:1;max-width:700px;margin:0 12px}
 .amount-convert .ac-label{font-size:14px;white-space:nowrap;flex-shrink:0}
-.amount-convert .ac-input{width:180px;padding:6px 10px;border:1px solid #d0d7e2;border-radius:4px;font-size:33px;font-family:Consolas,monospace;outline:none;background:#fff}
+.amount-convert .ac-input{width:130px;padding:4px 8px;border:1px solid #d0d7e2;border-radius:4px;font-size:16px;font-family:Consolas,monospace;outline:none;background:#fff;flex-shrink:0}
 .amount-convert .ac-input:focus{border-color:#8ab4f8;box-shadow:0 0 0 2px rgba(138,180,248,.15)}
-.amount-convert .ac-result{font-size:36px;color:#b8860b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;font-weight:700}
-.amount-convert .ac-copy{font-size:22px;padding:4px 12px;border:1px solid #d4a017;border-radius:4px;background:#fff;color:#b8860b;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:60px;text-align:center}
+.amount-convert .ac-result{font-size:18px;color:#b8860b;min-width:0;flex:1;font-weight:700;word-break:break-all}
+.amount-convert .ac-copy{font-size:13px;padding:4px 12px;border:1px solid #d4a017;border-radius:4px;background:#fff;color:#b8860b;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:56px;text-align:center}
 .amount-convert .ac-copy:hover{background:#b8860b;color:#fff}
 .amount-convert .ac-copy.copied{background:#34a853;color:#fff;border-color:#34a853}
 .board-status-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid #e0e4ea;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 14px;z-index:9999;font-size:12px;text-align:center;white-space:nowrap}
@@ -2831,7 +2831,7 @@ function amountConvert(){
   var fmt=amountFormat(num);
   var s=amountToChinese(v);
   if(!s){res.textContent='';btn.style.display='none';return;}
-  res.innerHTML='<span style="color:#333;font-size:28px">¥'+fmt+'</span>  <span style="color:#b8860b">'+s+'</span>';
+  res.innerHTML='<span style="color:#333;font-size:16px">¥'+fmt+'</span>  <span style="color:#b8860b">'+s+'</span>';
   res.dataset.chinese=s;
   btn.style.display='inline-block';
 }
