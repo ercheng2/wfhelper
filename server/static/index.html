@@ -953,7 +953,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <button class="btn btn-primary btn-sm" onclick="boardPayAdd()">+</button>
       </div>
     </div>
-    </div>
+    <div class="board-stack">
     <!-- 催款项目 -->
     <div class="board-strip" id="board-collection">
       <div class="board-strip-header"><span class="strip-title">📌 催款项目</span><span class="strip-badge" id="collCount">0</span></div>
@@ -963,6 +963,17 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
         <input type="text" id="collInput" placeholder="添加催款..." onkeydown="if(event.key==='Enter')boardCollAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardCollAdd()">+</button>
       </div>
+    </div>
+    <!-- 售后服务 -->
+    <div class="board-strip" id="board-after-sales">
+      <div class="board-strip-header"><span class="strip-title">📌 售后服务</span><span class="strip-badge" id="asCount">0</span></div>
+      <div class="board-strip-body" id="afterSalesList"><div class="board-empty">暂无</div></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="asCarry" onchange="boardAsCarry()">延续到明天</label><button class="btn btn-sm" onclick="boardAsClearAll()" style="font-size:10px;padding:2px 6px;margin-left:6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
+      <div class="board-strip-footer">
+        <input type="text" id="asInput" placeholder="添加售后服务..." onkeydown="if(event.key==='Enter')boardAsAdd()">
+        <button class="btn btn-primary btn-sm" onclick="boardAsAdd()">+</button>
+      </div>
+    </div>
     </div>
     </div>
   </div>
@@ -2494,6 +2505,7 @@ function emptyBoard(){return {
   active_projects:{projects:[]},
   pending_projects:{carry_over:false,projects:[]},
   collection:{carry_over:false,items:[]},
+  after_sales:{carry_over:false,items:[]},
   temp_events:{items:[]},
   payments:{items:[]}
 };}
@@ -2717,6 +2729,8 @@ async function boardLoad(){
     // 加固：确保旧数据格式兼容
     if(!_boardData.collection) _boardData.collection={carry_over:false,items:[]};
     if(_boardData.collection.carry_over===undefined) _boardData.collection.carry_over=false;
+    if(!_boardData.after_sales) _boardData.after_sales={carry_over:false,items:[]};
+    if(_boardData.after_sales.carry_over===undefined) _boardData.after_sales.carry_over=false;
     if(!_boardData.temp_events) _boardData.temp_events={items:[]};
     if(!_boardData.payments) _boardData.payments={items:[]};
     if(!_boardData.active_projects) _boardData.active_projects={projects:[]};
@@ -2755,6 +2769,7 @@ function boardRenderAll(){
   boardActiveRender();
   boardPendingRender();
   boardCollRender();
+  boardAsRender();
   boardPayRender();
 }
 
@@ -3099,6 +3114,7 @@ function boardNoteSave(){
   if(bk==='today_todo') boardTodayTodoRender();
   else if(bk==='temp_events') boardTempEventsRender();
   else if(bk==='daily_must') boardDailyMustRender();
+  else if(bk==='after_sales') boardAsRender();
   boardSave();
 }
 function boardNoteClose(){
@@ -3315,6 +3331,69 @@ function boardCollEdit(el,idx){
 function boardCollDel(idx){
   _boardData.collection.items.splice(idx,1);
   boardCollRender();
+  boardSave();
+}
+
+// === 5.5 售后服务 ===
+function boardAsRender(){
+  var list=document.getElementById('afterSalesList');
+  var items=_boardData.after_sales.items;
+  document.getElementById('asCarry').checked=_boardData.after_sales.carry_over;
+  document.getElementById('asCount').textContent=items.length;
+  if(!items.length){list.innerHTML='<div class="board-empty">暂无售后服务</div>';return;}
+  var html='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var noteIcon=it.note?'📝\uFE0E':'💬\uFE0E';
+    var noteCls=it.note?' has-note':'';
+    html+='<div class="board-item">'
+      +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
+      +'<span class="board-item-title" onclick="boardAsEdit(this,'+i+')">'+calEsc(it.title)+'</span>'
+      +'<span class="board-item-note'+noteCls+'" onclick="event.stopPropagation();boardNoteOpen(event,\'after_sales\','+i+')" title="批注">'+noteIcon+'</span>'
+      +'<span class="board-item-del" onclick="boardAsDel('+i+')">×</span>'
+      +'</div>';
+  }
+  list.innerHTML=html;
+}
+function boardAsCarry(){
+  _boardData.after_sales.carry_over=document.getElementById('asCarry').checked;
+  boardSave();
+}
+function boardAsClearAll(){
+  if(!_boardData.after_sales.items.length) return;
+  if(!confirm('确定要删除售后服务的全部 '+_boardData.after_sales.items.length+' 项吗？')) return;
+  _boardData.after_sales.items=[];
+  boardAsRender();
+  boardSave();
+}
+function boardAsAdd(){
+  var input=document.getElementById('asInput');
+  var title=input.value.trim();
+  if(!title) return;
+  _boardData.after_sales.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title});
+  input.value='';
+  boardAsRender();
+  boardSave();
+}
+function boardAsEdit(el,idx){
+  if(el.classList.contains('editing')) return;
+  var orig=el.textContent;
+  el.classList.add('editing');el.contentEditable='true';el.focus();
+  var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  function save(){
+    el.contentEditable='false';el.classList.remove('editing');el.onblur=null;el.onkeydown=null;
+    var t=el.textContent.trim();
+    if(!t){el.textContent=orig;return;}
+    _boardData.after_sales.items[idx].title=t;
+    boardAsRender();
+    boardSave();
+  }
+  el.onblur=save;
+  el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
+}
+function boardAsDel(idx){
+  _boardData.after_sales.items.splice(idx,1);
+  boardAsRender();
   boardSave();
 }
 
