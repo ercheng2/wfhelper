@@ -1118,6 +1118,7 @@ class Handler(BaseHTTPRequestHandler):
                         'active_projects': {'projects': []},
                         'pending_projects': {'projects': []},
                         'collection': {'carry_over': False, 'items': []},
+                        'after_sales': {'carry_over': False, 'items': []},
                         'temp_events': {'items': []},
                         'payments': {'items': []}
                     }
@@ -1130,6 +1131,11 @@ class Handler(BaseHTTPRequestHandler):
                         new_entry['collection'] = {
                             'carry_over': False,
                             'items': [dict(t) for t in prev['collection']['items']]
+                        }
+                    if prev.get('after_sales', {}).get('carry_over'):
+                        new_entry['after_sales'] = {
+                            'carry_over': False,
+                            'items': [dict(t) for t in prev['after_sales']['items']]
                         }
                     for p in prev.get('active_projects', {}).get('projects', []):
                         if p.get('carry_over'):
@@ -1149,6 +1155,8 @@ class Handler(BaseHTTPRequestHandler):
                     curr_has_dm = bool(existing.get('daily_must', {}).get('tasks'))
                     prev_coll_carry = prev.get('collection', {}).get('carry_over', False)
                     curr_has_coll = bool(existing.get('collection', {}).get('items'))
+                    prev_as_carry = prev.get('after_sales', {}).get('carry_over', False)
+                    curr_has_as = bool(existing.get('after_sales', {}).get('items'))
                     prev_ap_carry = any(p.get('carry_over') for p in prev.get('active_projects', {}).get('projects', []))
                     curr_has_ap = bool(existing.get('active_projects', {}).get('projects'))
                     prev_pp_carry = prev.get('pending_projects', {}).get('carry_over', False)
@@ -1175,6 +1183,10 @@ class Handler(BaseHTTPRequestHandler):
                     # 收款记录：空+前一天有延续→补填
                     if not curr_has_coll and prev_coll_carry:
                         existing['collection'] = {'carry_over': False, 'items': [dict(t) for t in prev['collection']['items']]}
+                        modified = True
+                    # 售后服务：空+前一天有延续→补填
+                    if not curr_has_as and prev_as_carry:
+                        existing['after_sales'] = {'carry_over': False, 'items': [dict(t) for t in prev['after_sales']['items']]}
                         modified = True
                     
                     if modified:
