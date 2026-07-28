@@ -810,7 +810,11 @@ def init_db():
     if not _need_preset:
         # 标记存在但数据为空→也重新加载（防止覆盖安装后数据丢失）
         _row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
-        if not _row or not json.loads(_row['value']):
+        try:
+            _data_ok = _row and json.loads(_row['value'])
+        except (json.JSONDecodeError, Exception):
+            _data_ok = False
+        if not _data_ok:
             _need_preset = True
             conn.execute("DELETE FROM kv_store WHERE key='wfhelper_preset_loaded'")
             conn.execute("DELETE FROM kv_store WHERE key='wfhelper_extra_loaded'")
@@ -832,7 +836,10 @@ def init_db():
             with open(extra_path, 'r', encoding='utf-8') as f:
                 extra = json.load(f)
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
-            existing = json.loads(row['value']) if row else []
+            try:
+                existing = json.loads(row['value']) if row else []
+            except (json.JSONDecodeError, Exception):
+                existing = []
             exist_phones = {c['phone'] for c in existing}
             to_add = [c for c in extra if c['phone'] not in exist_phones]
             merged = existing + to_add
@@ -912,7 +919,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_data'").fetchone()
-            existing = json.loads(row['value']) if row else []
+            try:
+                existing = json.loads(row['value']) if row else []
+            except (json.JSONDecodeError, Exception):
+                existing = []
             exist_phones = {c.get('phone','') for c in existing}
             exist_ids = {c.get('id','') for c in existing}
             added = 0
