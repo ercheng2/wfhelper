@@ -799,6 +799,27 @@ def get_db():
     return conn
 
 def init_db():
+    # === 自动备份：每次启动前备份当前数据库 ===
+    import shutil, glob
+    backup_dir = os.path.join(DATA_DIR, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    if os.path.exists(DB_PATH):
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_path = os.path.join(backup_dir, f'wfhelper_{ts}.db')
+        try:
+            shutil.copy2(DB_PATH, backup_path)
+            print(f'[备份] 已备份到 {backup_path}')
+        except Exception as e:
+            print(f'[备份] 备份失败: {e}')
+        # 只保留最近7个备份
+        try:
+            backups = sorted(glob.glob(os.path.join(backup_dir, 'wfhelper_*.db')), reverse=True)
+            for old in backups[7:]:
+                os.remove(old)
+                print(f'[备份] 清理旧备份: {os.path.basename(old)}')
+        except Exception:
+            pass
+    
     conn = get_db()
     conn.execute('''CREATE TABLE IF NOT EXISTS kv_store (
         key TEXT PRIMARY KEY,
