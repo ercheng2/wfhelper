@@ -1,6 +1,7 @@
 {
     "host": "0.0.0.0",
     "port": 8199,
+    "api_token": "6f4e2234203ade99240c1c32c40c7252",
     "open_browser": true,
     "minimize_to_tray":  true
 }

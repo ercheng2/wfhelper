@@ -735,6 +735,7 @@ HOST = _APP_CONFIG.get('host', '0.0.0.0')
 PORT = _APP_CONFIG.get('port', 8199)
 OPEN_BROWSER = _APP_CONFIG.get('open_browser', True)
 MINIMIZE_TO_TRAY = _APP_CONFIG.get('minimize_to_tray', False)
+API_TOKEN = _APP_CONFIG.get('api_token', '')
 
 BASE_DIR = _EXE_DIR
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -975,6 +976,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Cache-Control', 'no-cache, no-store')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -984,6 +988,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header('Content-Type', content_type)
         self.send_header('Cache-Control', 'no-cache, no-store')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1006,6 +1011,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_header('Content-Type', mime + '; charset=utf-8')
         self.send_header('Cache-Control', 'no-cache, no-store')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-Length', str(size))
         if inline:
             self.send_header('Content-Disposition', 'inline')
@@ -1020,6 +1026,14 @@ class Handler(BaseHTTPRequestHandler):
     def read_body(self):
         length = int(self.headers.get('Content-Length', 0))
         return self.rfile.read(length) if length > 0 else b''
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
     
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
@@ -1653,6 +1667,8 @@ class Handler(BaseHTTPRequestHandler):
         # API: POST /api/schedules
         if path == '/api/schedules':
             body = json.loads(self.read_body().decode('utf-8'))
+            if API_TOKEN and body.get('token') != API_TOKEN:
+                self.send_json({'error': 'Invalid token'}, 403); return
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_schedules'").fetchone()
             schedules = json.loads(row['value']) if row else []
@@ -1676,6 +1692,8 @@ class Handler(BaseHTTPRequestHandler):
         # API: POST /api/daily-tasks
         if path == '/api/daily-tasks':
             body = json.loads(self.read_body().decode('utf-8'))
+            if API_TOKEN and body.get('token') != API_TOKEN:
+                self.send_json({'error': 'Invalid token'}, 403); return
             conn = get_db()
             row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_daily_tasks'").fetchone()
             daily_tasks = json.loads(row['value']) if row else []
