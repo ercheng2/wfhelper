@@ -5353,7 +5353,7 @@ function teamCellEdit(td){
   td.querySelector('input').focus();
 }
 
-function teamCellSave(input){
+async function teamCellSave(input){
   var td=input.parentElement;
   var val=input.value.trim();
   var sid=td.dataset.sid;
@@ -5367,7 +5367,7 @@ function teamCellSave(input){
     delete _teamSchedule[sid][day];
   }
   td.textContent=val;
-  teamSaveSchedule();
+  await teamSaveSchedule();
 }
 
 async function teamAddStaff(){
