@@ -922,6 +922,14 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_schedule_board', '{}'))
     
+    # Initialize team staff and schedule
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_staff'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_team_staff', '[]'))
+    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone():
+        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                    ('wfhelper_team_schedule', '{}'))
+    
     conn.commit()
     conn.close()
 
@@ -1473,6 +1481,28 @@ class Handler(BaseHTTPRequestHandler):
                 conn.close()
                 self.send_json(locations)
                 return
+            # API: GET /api/team-staff
+            if path == '/api/team-staff':
+                conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_staff'").fetchone()
+                staff = json.loads(row['value']) if row else []
+                conn.close()
+                self.send_json(staff)
+                return
+            
+            # API: GET /api/team-schedule?month=YYYY-MM
+            if path == '/api/team-schedule':
+                month = params.get('month', [''])[0]
+                conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+                schedules = json.loads(row['value']) if row else {}
+                conn.close()
+                if month:
+                    self.send_json({month: schedules.get(month, {})})
+                else:
+                    self.send_json(schedules)
+                return
+            
             self.send_error(404)
     
     def do_PUT(self):
@@ -2287,6 +2317,40 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 print(f'[OCR] 严重错误: {e}')
                 self.send_json({'error': f'OCR处理异常: {e}'}, 500)
+            return
+        
+        # API: POST /api/team-staff
+        if path == '/api/team-staff':
+            body = json.loads(self.read_body().decode('utf-8'))
+            if API_TOKEN and body.get('token', '') != API_TOKEN:
+                self.send_json({'error': 'Invalid token'}, 403)
+                return
+            staff = body.get('staff', [])
+            conn = get_db()
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_team_staff', json.dumps(staff, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
+            return
+        
+        # API: POST /api/team-schedule
+        if path == '/api/team-schedule':
+            body = json.loads(self.read_body().decode('utf-8'))
+            if API_TOKEN and body.get('token', '') != API_TOKEN:
+                self.send_json({'error': 'Invalid token'}, 403)
+                return
+            month = body.get('month', '')
+            data = body.get('data', {})
+            conn = get_db()
+            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+            schedules = json.loads(row['value']) if row else {}
+            schedules[month] = data
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        ('wfhelper_team_schedule', json.dumps(schedules, ensure_ascii=False)))
+            conn.commit()
+            conn.close()
+            self.send_json({'ok': True})
             return
         
         self.send_error(404)

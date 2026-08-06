@@ -503,6 +503,29 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 @media(max-width:1200px){.board-strip{min-width:120px}}
 @media(max-width:900px){.board-container{flex-wrap:wrap}.board-strip{flex:1 1 45%;min-width:0}}
 @media(max-width:600px){.board-container{flex-direction:column}.board-strip{flex:1 1 auto}}
+/* === 全员日程安排 === */
+.team-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center}
+.team-modal{background:#fff;border-radius:12px;width:95vw;height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.team-modal-header{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid #e8ecf1;background:linear-gradient(135deg,#f0f4ff,#faf5ff);flex-shrink:0}
+.team-modal-header button{padding:4px 10px;border:1px solid #d0d5dd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;transition:all .15s}
+.team-modal-header button:hover{background:#f0f2f5}
+.team-modal-header #teamMonthTitle{font-size:16px;font-weight:700;color:#1a73e8;min-width:100px;text-align:center}
+.team-modal-body{flex:1;overflow:auto;padding:4px 8px}
+.team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px}
+.team-table th,.team-table td{border:1px solid #e0e4ea;padding:3px 5px;text-align:center;min-width:62px;max-width:120px;overflow:hidden}
+.team-table th{background:#f0f4ff;font-weight:600;color:#3c4043;position:sticky;top:0;z-index:2}
+.team-table th.today{background:#fef3c7;color:#92400e}
+.team-table th small{font-weight:400;color:#888;font-size:10px}
+.team-table td.team-staff-name{position:sticky;left:0;background:#fafbfd;z-index:1;font-weight:500;text-align:left;min-width:100px;white-space:nowrap}
+.team-table td.team-staff-group{background:#e8ecf2;font-weight:700;font-size:13px;color:#1a73e8;text-align:left;padding:6px 8px;position:sticky;left:0;z-index:1}
+.team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#e8ecf2;min-width:100px}
+.team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.team-table td.team-cell:hover{background:#e8f0fe}
+.team-table td.team-cell.today{background:#fef9e7}
+.team-table td.team-cell.editing{padding:0}
+.team-edit-input{width:100%;border:2px solid #1a73e8;padding:3px 4px;font-size:12px;outline:none;box-sizing:border-box;border-radius:2px;background:#fff}
+.team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
+.team-add-btn:hover{background:#e8f0fe}
 </style>
 </head>
 <body>
@@ -882,6 +905,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
       <input type="text" class="ac-input" id="amountInput" placeholder="金额" oninput="amountConvert()">
       <span class="ac-result" id="amountResult"></span>
       <button class="ac-copy" id="amountCopyBtn" onclick="amountCopy()" style="display:none">复制</button>
+    </div>
+    <div style="text-align:center;flex:1">
+      <a href="javascript:void(0)" onclick="teamOpen()" style="color:#e53e3e;font-size:14px;font-weight:700;text-decoration:none">📋 全员日程安排</a>
     </div>
     <div id="reminderSetting" style="text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
   </div>
@@ -5230,7 +5256,169 @@ function espAddFileToContract(d, opt){
     }
   }
 }
+// === 全员日程安排 ===
+let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={};
+
+async function teamLoadStaff(){
+  try{const r=await fetch('/api/team-staff');_teamStaff=await r.json();}catch(e){_teamStaff=[];}
+}
+
+async function teamSaveStaff(){
+  await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
+}
+
+async function teamLoadSchedule(){
+  const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+  try{const r=await fetch('/api/team-schedule?month='+m);const d=await r.json();_teamSchedule=d[m]||{};}catch(e){_teamSchedule={};}
+}
+
+async function teamSaveSchedule(){
+  const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+  await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
+}
+
+async function teamOpen(){
+  var now=new Date();
+  _teamYear=now.getFullYear();
+  _teamMonth=now.getMonth()+1;
+  await teamLoadStaff();
+  await teamLoadSchedule();
+  teamRender();
+  document.getElementById('teamModalOverlay').style.display='flex';
+}
+
+function teamClose(){
+  document.getElementById('teamModalOverlay').style.display='none';
+}
+
+function teamPrevMonth(){if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+function teamNextMonth(){if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+function teamGoToday(){var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+
+async function teamReload(){
+  await teamLoadSchedule();
+  teamRender();
+}
+
+function teamRender(){
+  document.getElementById('teamMonthTitle').textContent=_teamYear+'年'+_teamMonth+'月';
+  var lastDay=new Date(_teamYear,_teamMonth,0).getDate();
+  var today=new Date();
+  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  
+  var html='<table class="team-table"><thead><tr><th class="team-staff-col">人员</th>';
+  for(var d=1;d<=lastDay;d++){
+    var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var isToday=(ds===todayStr);
+    var dow=['日','一','二','三','四','五','六'][new Date(_teamYear,_teamMonth-1,d).getDay()];
+    html+='<th class="'+(isToday?'today':'')+'">'+d+'<br><small>'+dow+'</small></th>';
+  }
+  html+='</tr></thead><tbody>';
+  
+  var groups={};
+  _teamStaff.forEach(function(s){
+    var g=s.group||'未分组';
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(s);
+  });
+  
+  for(var g in groups){
+    html+='<tr class="team-staff-group"><td colspan="'+(lastDay+1)+'">'+teamEsc(g)+'</td></tr>';
+    groups[g].forEach(function(s){
+      html+='<tr><td class="team-staff-name">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="teamDelStaff(\x27'+s.id+'\x27)">✕</span></td>';
+      var ss=_teamSchedule[s.id]||{};
+      for(var d=1;d<=lastDay;d++){
+        var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var isToday=(ds===todayStr);
+        var val=ss[d]||'';
+        html+='<td class="team-cell'+(isToday?' today':'')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)">'+teamEsc(val)+'</td>';
+      }
+      html+='</tr>';
+    });
+  }
+  
+  if(_teamStaff.length===0){
+    html+='<tr><td colspan="'+(lastDay+1)+'" style="text-align:center;color:#999;padding:40px">暂无人员，点击"+ 添加人员"添加</td></tr>';
+  }
+  
+  html+='</tbody></table>';
+  document.getElementById('teamTableContainer').innerHTML=html;
+}
+
+function teamCellEdit(td){
+  if(td.querySelector('input')) return;
+  var orig=td.textContent;
+  td.classList.add('editing');
+  td.innerHTML='<input class="team-edit-input" value="'+teamEsc(orig)+'" onblur="teamCellSave(this)" onkeydown="if(event.key===\x27Enter\x27)this.blur()">';
+  td.querySelector('input').focus();
+}
+
+function teamCellSave(input){
+  var td=input.parentElement;
+  var val=input.value.trim();
+  var sid=td.dataset.sid;
+  var day=td.dataset.day;
+  td.classList.remove('editing');
+  
+  if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+  if(val){
+    _teamSchedule[sid][day]=val;
+  }else{
+    delete _teamSchedule[sid][day];
+  }
+  td.textContent=val;
+  teamSaveSchedule();
+}
+
+function teamAddStaff(){
+  var name=prompt('请输入人员姓名：');
+  if(!name||!name.trim()) return;
+  var group=prompt('请输入分组（如：项目工程人员、程序及ui设计）：','项目工程人员');
+  if(!group||!group.trim()) group='未分组';
+  _teamStaff.push({id:'s'+Date.now(),group:group.trim(),name:name.trim(),sortOrder:_teamStaff.length});
+  teamSaveStaff();
+  teamRender();
+}
+
+function teamEditStaff(sid){
+  var s=_teamStaff.find(function(x){return x.id===sid;});
+  if(!s) return;
+  var name=prompt('修改姓名：',s.name);
+  if(name===null) return;
+  var group=prompt('修改分组：',s.group);
+  if(group===null) return;
+  s.name=name.trim()||s.name;
+  s.group=group.trim()||s.group;
+  teamSaveStaff();
+  teamRender();
+}
+
+function teamDelStaff(sid){
+  if(!confirm('确定删除该人员及其排班数据？')) return;
+  _teamStaff=_teamStaff.filter(function(x){return x.id!==sid;});
+  delete _teamSchedule[sid];
+  teamSaveStaff();
+  teamSaveSchedule();
+  teamRender();
+}
+
+function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
 </script>
+<!-- === 全员日程安排模态窗口 === -->
+<div class="team-modal-overlay" id="teamModalOverlay" style="display:none">
+  <div class="team-modal">
+    <div class="team-modal-header">
+      <button onclick="teamPrevMonth()">◀</button>
+      <span id="teamMonthTitle">2026年7月</span>
+      <button onclick="teamNextMonth()">▶</button>
+      <button onclick="teamGoToday()">今天</button>
+      <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
+      <button onclick="teamClose()" style="margin-left:auto">✕</button>
+    </div>
+    <div class="team-modal-body" id="teamTableContainer"></div>
+  </div>
+</div>
 </body>
 </html>
 
