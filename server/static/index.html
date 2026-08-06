@@ -510,9 +510,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-modal-header button{padding:4px 10px;border:1px solid #d0d5dd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;transition:all .15s}
 .team-modal-header button:hover{background:#f0f2f5}
 .team-modal-header #teamMonthTitle{font-size:16px;font-weight:700;color:#1a73e8;min-width:100px;text-align:center}
-.team-modal-body{flex:1;overflow:auto;padding:4px 8px}
+.team-modal-body{flex:1;overflow:auto;padding:8px 16px}
 .team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px}
-.team-table th,.team-table td{border:1px solid #e0e4ea;padding:3px 5px;text-align:center;min-width:62px;max-width:120px;overflow:hidden}
+.team-table th,.team-table td{border:1px solid #b0b8c4;padding:3px 5px;text-align:center;min-width:62px;max-width:120px;overflow:hidden}
 .team-table th{background:#f0f4ff;font-weight:600;color:#3c4043;position:sticky;top:0;z-index:2}
 .team-table th.today{background:#fef3c7;color:#92400e}
 .team-table th small{font-weight:400;color:#888;font-size:10px}
@@ -5370,17 +5370,17 @@ function teamCellSave(input){
   teamSaveSchedule();
 }
 
-function teamAddStaff(){
+async function teamAddStaff(){
   var name=prompt('请输入人员姓名：');
   if(!name||!name.trim()) return;
   var group=prompt('请输入分组（如：项目工程人员、程序及ui设计）：','项目工程人员');
   if(!group||!group.trim()) group='未分组';
   _teamStaff.push({id:'s'+Date.now(),group:group.trim(),name:name.trim(),sortOrder:_teamStaff.length});
-  teamSaveStaff();
+  await teamSaveStaff();
   teamRender();
 }
 
-function teamEditStaff(sid){
+async function teamEditStaff(sid){
   var s=_teamStaff.find(function(x){return x.id===sid;});
   if(!s) return;
   var name=prompt('修改姓名：',s.name);
@@ -5389,16 +5389,16 @@ function teamEditStaff(sid){
   if(group===null) return;
   s.name=name.trim()||s.name;
   s.group=group.trim()||s.group;
-  teamSaveStaff();
+  await teamSaveStaff();
   teamRender();
 }
 
-function teamDelStaff(sid){
+async function teamDelStaff(sid){
   if(!confirm('确定删除该人员及其排班数据？')) return;
   _teamStaff=_teamStaff.filter(function(x){return x.id!==sid;});
   delete _teamSchedule[sid];
-  teamSaveStaff();
-  teamSaveSchedule();
+  await teamSaveStaff();
+  await teamSaveSchedule();
   teamRender();
 }
 

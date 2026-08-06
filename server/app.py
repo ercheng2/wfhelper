@@ -2322,9 +2322,6 @@ class Handler(BaseHTTPRequestHandler):
         # API: POST /api/team-staff
         if path == '/api/team-staff':
             body = json.loads(self.read_body().decode('utf-8'))
-            if API_TOKEN and body.get('token', '') != API_TOKEN:
-                self.send_json({'error': 'Invalid token'}, 403)
-                return
             staff = body.get('staff', [])
             conn = get_db()
             conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
@@ -2337,9 +2334,6 @@ class Handler(BaseHTTPRequestHandler):
         # API: POST /api/team-schedule
         if path == '/api/team-schedule':
             body = json.loads(self.read_body().decode('utf-8'))
-            if API_TOKEN and body.get('token', '') != API_TOKEN:
-                self.send_json({'error': 'Invalid token'}, 403)
-                return
             month = body.get('month', '')
             data = body.get('data', {})
             conn = get_db()
