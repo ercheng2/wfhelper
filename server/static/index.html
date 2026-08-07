@@ -5390,7 +5390,7 @@ function teamRender(){
         else if(isWeekend) cls.push('weekend');
         var cellHtml=teamEsc(cd.v);
         if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
-        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)" ondblclick="teamCellNote(this)" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
+        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
     });
@@ -5402,6 +5402,35 @@ function teamRender(){
   
   html+='</tbody></table>';
   document.getElementById('teamTableContainer').innerHTML=html;
+  // 事件委托：统一处理单元格点击/双击
+  if(!window._teamTableDelegated){
+    window._teamTableDelegated=true;
+    var tc=document.getElementById('teamTableContainer');
+    tc.addEventListener('click',function(e){
+      var td=e.target.closest('.team-cell');
+      if(!td) return;
+      if(td.querySelector('input')||td.querySelector('textarea')) return;
+      teamCellEdit(td);
+    });
+    tc.addEventListener('dblclick',function(e){
+      var td=e.target.closest('.team-cell');
+      if(!td) return;
+      var inp=td.querySelector('input');
+      if(inp){
+        var val=inp.value.trim();
+        var sid=td.dataset.sid;
+        var day=td.dataset.day;
+        if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+        var pn=td._teamPreNote||'';
+        if(val||pn){_teamSchedule[sid][day]={v:val,note:pn};}
+        else{delete _teamSchedule[sid][day];}
+        inp.remove();
+        td.classList.remove('editing');
+      }
+      if(td.querySelector('textarea')) return;
+      teamCellNote(td);
+    });
+  }
 }
 
 function teamGetCellData(val){
@@ -5489,9 +5518,6 @@ async function teamCellSaveNote(ta){
   // 重新渲染单元格
   var cd=teamGetCellData(_teamSchedule[sid][day]);
   td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  td.onclick=function(){teamCellEdit(this);};
-  td.ondblclick=function(){teamCellNote(this);};
-  td.title='单击编辑文字，双击编辑批注';
   console.log('[team] noteSave',sid,day,note);
   await teamSaveSchedule();
 }
@@ -5516,9 +5542,6 @@ async function teamCellSave(inp){
   
   var cd=teamGetCellData(_teamSchedule[sid][day]);
   td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  td.onclick=function(){teamCellEdit(this);};
-  td.ondblclick=function(){teamCellNote(this);};
-  td.title='单击编辑文字，双击编辑批注';
   console.log('[team] cellSave',sid,day,val);
   await teamSaveSchedule();
   console.log('[team] cellSave done');
@@ -5568,7 +5591,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix12</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix13</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
