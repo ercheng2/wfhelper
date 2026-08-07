@@ -534,13 +534,17 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
 .team-add-btn:hover{background:#e8f0fe}
 .team-sub-label{position:sticky;left:0;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:80px;padding:2px 4px;white-space:nowrap}
+.team-cell-placeholder{min-width:48px;max-width:90px}
+.team-cell-placeholder.today{background:#fef9e7}
+.team-cell-placeholder.weekend{background:#fef5f5}
+.team-cell-placeholder.holiday{background:#ffe0e0}
 .team-staff-row.highlight td{background:#c8e6c9!important}
 .team-staff-row.highlight td.weekend{background:#d7f0d8!important}
 .team-staff-row.highlight td.holiday{background:#c8e6c9!important}
 .team-staff-row.highlight td.team-staff-name{background:#a5d6a7!important}
 .team-staff-row.highlight td.team-sub-label{background:#a5d6a7!important}
-.team-staff-name[rowspan]{cursor:pointer}
-.team-staff-name[rowspan]:hover{background:#d5dce6!important}
+.team-staff-name{cursor:pointer}
+.team-staff-name:hover{background:#d5dce6!important}
 </style>
 </head>
 <body>
@@ -5378,8 +5382,21 @@ function teamRender(){
     html+='<tr class="team-staff-group"><td colspan="'+(lastDay+1)+'">'+teamEsc(g)+'</td></tr>';
     groups[g].forEach(function(s){
       var ss=_teamSchedule[s.id]||{};
-      // 人名行（rowspan=3，只占第一列）
-      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-staff-name" rowspan="3" onclick="teamToggleHighlight(\x27'+s.id+'\x27)">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="event.stopPropagation();teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="event.stopPropagation();teamDelStaff(\x27'+s.id+'\x27)">✕</span></td></tr>';
+      // 人名行
+      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-staff-name" onclick="teamToggleHighlight(\x27'+s.id+'\x27)">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="event.stopPropagation();teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="event.stopPropagation();teamDelStaff(\x27'+s.id+'\x27)">✕</span></td>';
+      for(var d=1;d<=lastDay;d++){
+        var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var isToday=(ds===todayStr);
+        var wd=new Date(_teamYear,_teamMonth-1,d).getDay();
+        var isWeekend=(wd===0||wd===6);
+        var isHoliday=teamIsHoliday(ds);
+        var cls=['team-cell-placeholder'];
+        if(isToday) cls.push('today');
+        if(isHoliday) cls.push('holiday');
+        else if(isWeekend) cls.push('weekend');
+        html+='<td class="'+cls.join(' ')+'"></td>';
+      }
+      html+='</tr>';
       // 上午行
       html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-sub-label">上午</td>';
       for(var d=1;d<=lastDay;d++){
@@ -5603,7 +5620,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix21</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix22</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
