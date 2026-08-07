@@ -5265,37 +5265,30 @@ function espAddFileToContract(d, opt){
 }
 // === 全员日程安排 ===
 let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
-const LS_TEAM_STAFF='wfhelper_ls_team_staff', LS_TEAM_SCHEDULE='wfhelper_ls_team_schedule';
 
 async function teamLoadStaff(){
   try{
     const r=await fetch('/api/team-staff?_t='+Date.now());
-    if(r.ok){_teamStaff=await r.json();console.log('[team] staff从服务器加载',_teamStaff.length+'人');
-      try{localStorage.setItem(LS_TEAM_STAFF,JSON.stringify(_teamStaff));}catch(e){}
-      return;}
-  }catch(e){console.error('[team] staff服务器加载失败:',e);}
-  try{var ls=localStorage.getItem(LS_TEAM_STAFF);if(ls){_teamStaff=JSON.parse(ls);console.log('[team] staff从localStorage加载',_teamStaff.length+'人');}}catch(e){_teamStaff=[];}
+    if(r.ok){_teamStaff=await r.json();console.log('[team] staff从服务器加载',_teamStaff.length+'人');return;}
+    throw new Error('HTTP '+r.status);
+  }catch(e){console.error('[team] staff加载失败:',e);showToast('人员列表加载失败，请刷新重试','error');_teamStaff=[];}
 }
 
 async function teamSaveStaff(){
-  try{localStorage.setItem(LS_TEAM_STAFF,JSON.stringify(_teamStaff));}catch(e){}
   try{
     const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
-    if(!r.ok){throw new Error('HTTP '+r.status);}
-  }catch(e){console.error('teamSaveStaff失败:',e);showToast('人员列表保存到服务器失败，仅保存在本机','error');}
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    console.log('[team] staff已保存到服务器');
+  }catch(e){console.error('teamSaveStaff失败:',e);showToast('人员列表保存失败！','error');}
 }
 
 async function teamLoadSchedule(){
   const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
   try{
     const r=await fetch('/api/team-schedule?month='+m+'&_t='+Date.now());
-    if(r.ok){const d=await r.json();_teamSchedule=d[m]||{};console.log('[team] schedule从服务器加载',m,Object.keys(_teamSchedule).length+'人');
-      // 同步到localStorage，保证跨设备一致性
-      try{var ls=localStorage.getItem(LS_TEAM_SCHEDULE);var all=ls?JSON.parse(ls):{};all[m]=_teamSchedule;localStorage.setItem(LS_TEAM_SCHEDULE,JSON.stringify(all));}catch(e){}
-      return;}
-  }catch(e){console.error('[team] schedule服务器加载失败:',e);}
-  // 服务器不可达才用localStorage兜底
-  try{var ls=localStorage.getItem(LS_TEAM_SCHEDULE);if(ls){var all=JSON.parse(ls);_teamSchedule=all[m]||{};console.log('[team] schedule从localStorage加载',Object.keys(_teamSchedule).length+'人');}}catch(e){_teamSchedule={};}
+    if(r.ok){const d=await r.json();_teamSchedule=d[m]||{};console.log('[team] schedule从服务器加载',m,Object.keys(_teamSchedule).length+'人');return;}
+    throw new Error('HTTP '+r.status);
+  }catch(e){console.error('[team] schedule加载失败:',e);showToast('日程数据加载失败，请刷新重试','error');_teamSchedule={};}
 }
 
 async function teamSaveSchedule(){
@@ -5303,13 +5296,10 @@ async function teamSaveSchedule(){
   _teamSaving=true;
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-    // 先写localStorage保底
-    try{var ls=localStorage.getItem(LS_TEAM_SCHEDULE);var all=ls?JSON.parse(ls):{};all[m]=_teamSchedule;localStorage.setItem(LS_TEAM_SCHEDULE,JSON.stringify(all));console.log('[team] localStorage已保存',m);}catch(e){}
-    // 再写服务器
     const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
     console.log('[team] saveSchedule',r.status);
-    if(!r.ok){throw new Error('HTTP '+r.status);}
-  }catch(e){console.error('[team] saveSchedule失败:',e);showToast('保存到服务器失败，数据仅保存在本机','error');}
+    if(!r.ok) throw new Error('HTTP '+r.status);
+  }catch(e){console.error('[team] saveSchedule失败:',e);showToast('保存失败！请检查网络后重试','error');}
   finally{_teamSaving=false;}
 }
 
@@ -5350,6 +5340,14 @@ async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.te
 async function teamReload(){
   await teamLoadSchedule();
   teamRender();
+}
+
+async function teamSync(){
+  showToast('正在从服务器同步...','info',1500);
+  await teamLoadStaff();
+  await teamLoadSchedule();
+  teamRender();
+  showToast('同步完成','success');
 }
 
 function teamRender(){
@@ -5563,7 +5561,8 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix9</span>
+      <button onclick="teamSync()" style="margin-left:6px;background:#34a853;color:#fff;border-color:#34a853" title="从服务器重新加载数据">🔄 同步</button>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix10</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
