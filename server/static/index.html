@@ -533,6 +533,14 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-note-indicator{position:absolute;top:1px;right:2px;width:6px;height:6px;background:#e67e22;border-radius:50%}
 .team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
 .team-add-btn:hover{background:#e8f0fe}
+.team-sub-label{position:sticky;left:0;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:80px;padding:2px 4px;white-space:nowrap}
+.team-staff-row.highlight td{background:#c8e6c9!important}
+.team-staff-row.highlight td.weekend{background:#d7f0d8!important}
+.team-staff-row.highlight td.holiday{background:#c8e6c9!important}
+.team-staff-row.highlight td.team-staff-name{background:#a5d6a7!important}
+.team-staff-row.highlight td.team-sub-label{background:#a5d6a7!important}
+.team-staff-name[rowspan]{cursor:pointer}
+.team-staff-name[rowspan]:hover{background:#d5dce6!important}
 </style>
 </head>
 <body>
@@ -5316,16 +5324,11 @@ async function teamOpen(){
 async function teamClose(){
   var ae=document.querySelector('.team-edit-input,.team-edit-textarea');
   if(ae){
-    var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;
-    if(!_teamSchedule[sid])_teamSchedule[sid]={};
-    var ex=_teamSchedule[sid][day];
-    if(ae.tagName==='TEXTAREA'){
-      var ov=(typeof ex==='object'&&ex)?ex.v||'':'';
-      if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}
-    }else{
-      var on=(typeof ex==='object'&&ex)?ex.note||'':'';
-      if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}
-    }
+    var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';
+    var ex=teamEnsureCellData(sid,day);
+    if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}
+    else{ex[sub]=val;}
+    teamCleanCellData(sid,day,ex);
     td.classList.remove('editing');ae.remove();
   }
   while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}
@@ -5333,9 +5336,9 @@ async function teamClose(){
   document.getElementById('teamModalOverlay').style.display='none';
 }
 
-async function teamPrevMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
-async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
-async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+async function teamPrevMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
   await teamLoadSchedule();
@@ -5374,8 +5377,11 @@ function teamRender(){
   for(var g in groups){
     html+='<tr class="team-staff-group"><td colspan="'+(lastDay+1)+'">'+teamEsc(g)+'</td></tr>';
     groups[g].forEach(function(s){
-      html+='<tr><td class="team-staff-name">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="teamDelStaff(\x27'+s.id+'\x27)">✕</span></td>';
       var ss=_teamSchedule[s.id]||{};
+      // 人名行（rowspan=3，只占第一列）
+      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-staff-name" rowspan="3" onclick="teamToggleHighlight(\x27'+s.id+'\x27)">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="event.stopPropagation();teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="event.stopPropagation();teamDelStaff(\x27'+s.id+'\x27)">✕</span></td></tr>';
+      // 上午行
+      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-sub-label">上午</td>';
       for(var d=1;d<=lastDay;d++){
         var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         var isToday=(ds===todayStr);
@@ -5388,9 +5394,28 @@ function teamRender(){
         if(isToday) cls.push('today');
         if(isHoliday) cls.push('holiday');
         else if(isWeekend) cls.push('weekend');
-        var cellHtml=teamEsc(cd.v);
+        var cellHtml=teamEsc(cd.am);
         if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
-        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
+        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" data-sub="am" title="单击编辑上午排班，双击编辑批注">'+cellHtml+'</td>';
+      }
+      html+='</tr>';
+      // 下午行
+      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-sub-label">下午</td>';
+      for(var d=1;d<=lastDay;d++){
+        var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        var isToday=(ds===todayStr);
+        var wd=new Date(_teamYear,_teamMonth-1,d).getDay();
+        var isWeekend=(wd===0||wd===6);
+        var isHoliday=teamIsHoliday(ds);
+        var raw=ss[d]||'';
+        var cd=teamGetCellData(raw);
+        var cls=['team-cell'];
+        if(isToday) cls.push('today');
+        if(isHoliday) cls.push('holiday');
+        else if(isWeekend) cls.push('weekend');
+        var cellHtml=teamEsc(cd.pm);
+        if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
+        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" data-sub="pm" title="单击编辑下午排班，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
     });
@@ -5402,7 +5427,7 @@ function teamRender(){
   
   html+='</tbody></table>';
   document.getElementById('teamTableContainer').innerHTML=html;
-  // 给每个单元格直接绑定事件，不依赖事件委托
+  // 给每个单元格直接绑定事件
   document.querySelectorAll('#teamTableContainer td.team-cell').forEach(function(td){
     var t=null;
     td.addEventListener('click',function(){
@@ -5412,10 +5437,28 @@ function teamRender(){
   });
 }
 
+function teamToggleHighlight(uid){
+  var rows=document.querySelectorAll('#teamTableContainer tr[data-uid="'+uid+'"]');
+  var active=rows[0]&&rows[0].classList.contains('team-highlight');
+  rows.forEach(function(r){r.classList.toggle('team-highlight',!active);});
+}
+
 function teamGetCellData(val){
-  if(!val) return {v:'',note:''};
-  if(typeof val==='string') return {v:val,note:''};
-  return {v:val.v||'',note:val.note||''};
+  if(!val) return {am:'',pm:'',note:''};
+  if(typeof val==='string') return {am:val,pm:'',note:''};
+  if('am' in val||'pm' in val) return {am:val.am||'',pm:val.pm||'',note:val.note||''};
+  return {am:val.v||'',pm:'',note:val.note||''};
+}
+function teamEnsureCellData(sid,day){
+  if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+  var ex=_teamSchedule[sid][day];
+  if(typeof ex!=='object'||!ex) ex={am:'',pm:'',note:''};
+  else if(!('am' in ex)&&!('pm' in ex)) ex={am:ex.v||'',pm:'',note:ex.note||''};
+  return ex;
+}
+function teamCleanCellData(sid,day,ex){
+  if(!ex.am&&!ex.pm&&!ex.note){delete _teamSchedule[sid][day];}
+  else{_teamSchedule[sid][day]=ex;}
 }
 
 // 节假日判断（2026年中国法定节假日）
@@ -5436,13 +5479,14 @@ function teamCellEdit(td){
   if(td.querySelector('input')||td.querySelector('textarea')) return;
   var sid=td.dataset.sid;
   var day=td.dataset.day;
+  var sub=td.dataset.sub||'am';
   var cd=teamGetCellData(_teamSchedule[sid]?.[day]);
   td.classList.add('editing');
   td._teamPreNote=cd.note||'';
   td.innerHTML='';
   var inp=document.createElement('input');
   inp.className='team-edit-input';
-  inp.value=cd.v;
+  inp.value=sub==='am'?cd.am:cd.pm;
   inp.addEventListener('blur',function(){teamCellSave(inp);});
   inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
   td.appendChild(inp);
@@ -5450,16 +5494,17 @@ function teamCellEdit(td){
 }
 
 function teamCellNote(td){
-  // 如果单击已经开了输入框，先把文字值保存再切批注
   var inp=td.querySelector('input');
+  var sub=td.dataset.sub||'am';
   if(inp){
     var val=inp.value.trim();
     var sid=td.dataset.sid;
     var day=td.dataset.day;
-    if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+    var ex=teamEnsureCellData(sid,day);
+    ex[sub]=val;
     var pn=td._teamPreNote||'';
-    if(val||pn){_teamSchedule[sid][day]={v:val,note:pn};}
-    else{delete _teamSchedule[sid][day];}
+    if(pn) ex.note=pn;
+    teamCleanCellData(sid,day,ex);
     inp.remove();
     td.classList.remove('editing');
   }
@@ -5483,20 +5528,16 @@ async function teamCellSaveNote(ta){
   var note=ta.value.trim();
   var sid=td.dataset.sid;
   var day=td.dataset.day;
+  var sub=td.dataset.sub||'am';
   td.classList.remove('editing');
   ta.remove();
   
-  if(!_teamSchedule[sid]) _teamSchedule[sid]={};
-  var existing=_teamSchedule[sid][day];
-  if(typeof existing!=='object'||!existing) existing={v:typeof existing==='string'?existing:'',note:''};
-  if(note){existing.note=note;}else{delete existing.note;}
-  if(existing.v||existing.note){_teamSchedule[sid][day]=existing;}
-  else{delete _teamSchedule[sid][day];}
+  var ex=teamEnsureCellData(sid,day);
+  if(note){ex.note=note;}else{delete ex.note;}
+  teamCleanCellData(sid,day,ex);
   
-  // 重新渲染单元格
   var cd=teamGetCellData(_teamSchedule[sid][day]);
-  td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  console.log('[team] noteSave',sid,day,note);
+  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
   await teamSaveSchedule();
 }
 
@@ -5505,24 +5546,17 @@ async function teamCellSave(inp){
   var val=inp.value.trim();
   var sid=td.dataset.sid;
   var day=td.dataset.day;
+  var sub=td.dataset.sub||'am';
   td.classList.remove('editing');
   inp.remove();
   
-  if(!_teamSchedule[sid]) _teamSchedule[sid]={};
-  var existing=_teamSchedule[sid][day];
-  var note=(typeof existing==='object'&&existing)?existing.note||'':'';
-  if(val||note){
-    _teamSchedule[sid][day]={v:val,note:note};
-    if(!note) _teamSchedule[sid][day]={v:val};
-  }else{
-    delete _teamSchedule[sid][day];
-  }
+  var ex=teamEnsureCellData(sid,day);
+  ex[sub]=val;
+  teamCleanCellData(sid,day,ex);
   
   var cd=teamGetCellData(_teamSchedule[sid][day]);
-  td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  console.log('[team] cellSave',sid,day,val);
+  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
   await teamSaveSchedule();
-  console.log('[team] cellSave done');
 }
 
 async function teamAddStaff(){
@@ -5569,7 +5603,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix20</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix21</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
