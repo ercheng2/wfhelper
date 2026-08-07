@@ -5257,26 +5257,30 @@ function espAddFileToContract(d, opt){
   }
 }
 // === 全员日程安排 ===
-let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={};
+let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
 
 async function teamLoadStaff(){
-  try{const r=await fetch('/api/team-staff');_teamStaff=await r.json();}catch(e){_teamStaff=[];}
+  try{const r=await fetch('/api/team-staff?_t='+Date.now());_teamStaff=await r.json();}catch(e){_teamStaff=[];}
 }
 
 async function teamSaveStaff(){
   const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
-  if(!r.ok) console.error('teamSaveStaff failed:',r.status);
+  if(!r.ok){alert('人员保存失败！请查看控制台');console.error('teamSaveStaff failed:',r.status);}
 }
 
 async function teamLoadSchedule(){
   const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-  try{const r=await fetch('/api/team-schedule?month='+m);const d=await r.json();_teamSchedule=d[m]||{};}catch(e){_teamSchedule={};}
+  try{const r=await fetch('/api/team-schedule?month='+m+'&_t='+Date.now());const d=await r.json();_teamSchedule=d[m]||{};}catch(e){_teamSchedule={};}
 }
 
 async function teamSaveSchedule(){
-  const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-  const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
-  if(!r.ok) console.error('teamSaveSchedule failed:',r.status);
+  if(_teamSaving) return;
+  _teamSaving=true;
+  try{
+    const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+    const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
+    if(!r.ok){alert('排班保存失败！请查看控制台');console.error('teamSaveSchedule failed:',r.status);}
+  }finally{_teamSaving=false;}
 }
 
 async function teamOpen(){

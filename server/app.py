@@ -2321,30 +2321,41 @@ class Handler(BaseHTTPRequestHandler):
         
         # API: POST /api/team-staff
         if path == '/api/team-staff':
-            body = json.loads(self.read_body().decode('utf-8'))
-            staff = body.get('staff', [])
-            conn = get_db()
-            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                        ('wfhelper_team_staff', json.dumps(staff, ensure_ascii=False)))
-            conn.commit()
-            conn.close()
-            self.send_json({'ok': True})
+            try:
+                body = json.loads(self.read_body().decode('utf-8'))
+                staff = body.get('staff', [])
+                print(f'[team-staff] 保存 {len(staff)} 人')
+                conn = get_db()
+                conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                            ('wfhelper_team_staff', json.dumps(staff, ensure_ascii=False)))
+                conn.commit()
+                conn.close()
+                self.send_json({'ok': True})
+            except Exception as e:
+                print(f'[team-staff] 保存失败: {e}')
+                self.send_json({'error': str(e)}, 500)
             return
         
         # API: POST /api/team-schedule
         if path == '/api/team-schedule':
-            body = json.loads(self.read_body().decode('utf-8'))
-            month = body.get('month', '')
-            data = body.get('data', {})
-            conn = get_db()
-            row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
-            schedules = json.loads(row['value']) if row else {}
-            schedules[month] = data
-            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                        ('wfhelper_team_schedule', json.dumps(schedules, ensure_ascii=False)))
-            conn.commit()
-            conn.close()
-            self.send_json({'ok': True})
+            try:
+                body = json.loads(self.read_body().decode('utf-8'))
+                month = body.get('month', '')
+                data = body.get('data', {})
+                cell_count = sum(len(v) for v in data.values()) if isinstance(data, dict) else 0
+                print(f'[team-schedule] 保存 {month}，{len(data)} 人，{cell_count} 个单元格')
+                conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+                schedules = json.loads(row['value']) if row else {}
+                schedules[month] = data
+                conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                            ('wfhelper_team_schedule', json.dumps(schedules, ensure_ascii=False)))
+                conn.commit()
+                conn.close()
+                self.send_json({'ok': True})
+            except Exception as e:
+                print(f'[team-schedule] 保存失败: {e}')
+                self.send_json({'error': str(e)}, 500)
             return
         
         self.send_error(404)
