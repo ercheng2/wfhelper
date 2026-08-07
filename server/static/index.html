@@ -5311,6 +5311,7 @@ async function teamOpen(){
   await teamLoadSchedule();
   teamRender();
   document.getElementById('teamModalOverlay').style.display='flex';
+  console.log('[DEBUG] teamOpen完成，点击任意单元格查看控制台');
 }
 
 async function teamClose(){
@@ -5425,12 +5426,14 @@ function teamIsHoliday(ds){
 }
 
 function teamCellEdit(td){
-  if(td.querySelector('input')||td.querySelector('textarea')) return;
+  console.log('[DEBUG] teamCellEdit 被调用',td.dataset.sid,td.dataset.day);
+  if(td.querySelector('input')||td.querySelector('textarea')){console.log('[DEBUG] 已有input/textarea，跳过');return;}
   var sid=td.dataset.sid;
   var day=td.dataset.day;
+  console.log('[DEBUG] sid='+sid+' day='+day+' schedule=',_teamSchedule[sid]);
   var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
+  console.log('[DEBUG] cd=',cd);
   td.classList.add('editing');
-  // 记下当前值，双击切批注时用
   td._teamPreNote=cd.note||'';
   td.innerHTML='';
   var inp=document.createElement('input');
@@ -5440,6 +5443,7 @@ function teamCellEdit(td){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
   td.appendChild(inp);
   inp.focus();
+  console.log('[DEBUG] input已创建并聚焦');
 }
 
 function teamCellNote(td){
@@ -5562,7 +5566,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix14</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix15_debug</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
