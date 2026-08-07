@@ -5258,19 +5258,34 @@ function espAddFileToContract(d, opt){
 }
 // === 全员日程安排 ===
 let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
+const LS_TEAM_STAFF='wfhelper_ls_team_staff', LS_TEAM_SCHEDULE='wfhelper_ls_team_schedule';
 
 async function teamLoadStaff(){
-  try{const r=await fetch('/api/team-staff?_t='+Date.now());_teamStaff=await r.json();}catch(e){_teamStaff=[];}
+  try{
+    const r=await fetch('/api/team-staff?_t='+Date.now());
+    if(r.ok){_teamStaff=await r.json();return;}
+  }catch(e){}
+  // localStorage兜底
+  try{var ls=localStorage.getItem(LS_TEAM_STAFF);if(ls){_teamStaff=JSON.parse(ls);console.log('[team] staff从localStorage加载',_teamStaff.length+'人');}}catch(e){_teamStaff=[];}
 }
 
 async function teamSaveStaff(){
-  const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
-  if(!r.ok){alert('人员保存失败！请查看控制台');console.error('teamSaveStaff failed:',r.status);}
+  // 先写localStorage保底
+  try{localStorage.setItem(LS_TEAM_STAFF,JSON.stringify(_teamStaff));}catch(e){}
+  try{
+    const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
+    if(!r.ok){console.error('teamSaveStaff failed:',r.status);}
+  }catch(e){console.error('teamSaveStaff网络错误:',e);}
 }
 
 async function teamLoadSchedule(){
   const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-  try{const r=await fetch('/api/team-schedule?month='+m+'&_t='+Date.now());const d=await r.json();_teamSchedule=d[m]||{};}catch(e){_teamSchedule={};}
+  try{
+    const r=await fetch('/api/team-schedule?month='+m+'&_t='+Date.now());
+    if(r.ok){const d=await r.json();if(d[m]&&Object.keys(d[m]).length>0){_teamSchedule=d[m];return;}}
+  }catch(e){}
+  // localStorage兜底
+  try{var ls=localStorage.getItem(LS_TEAM_SCHEDULE);if(ls){var all=JSON.parse(ls);_teamSchedule=all[m]||{};console.log('[team] schedule从localStorage加载',Object.keys(_teamSchedule).length+'人');}}catch(e){_teamSchedule={};}
 }
 
 async function teamSaveSchedule(){
@@ -5278,11 +5293,14 @@ async function teamSaveSchedule(){
   _teamSaving=true;
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-    console.log('[team] saveSchedule',m,JSON.stringify(_teamSchedule).length+'chars');
+    // 先写localStorage保底
+    try{var ls=localStorage.getItem(LS_TEAM_SCHEDULE);var all=ls?JSON.parse(ls):{};all[m]=_teamSchedule;localStorage.setItem(LS_TEAM_SCHEDULE,JSON.stringify(all));console.log('[team] localStorage已保存',m);}catch(e){}
+    // 再写服务器
     const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
-    console.log('[team] saveSchedule response',r.status);
-    if(!r.ok){alert('排班保存失败！请查看控制台');console.error('teamSaveSchedule failed:',r.status);}
-  }finally{_teamSaving=false;}
+    console.log('[team] saveSchedule',r.status);
+    if(!r.ok){console.error('teamSaveSchedule failed:',r.status);}
+  }catch(e){console.error('[team] saveSchedule网络错误:',e);}
+  finally{_teamSaving=false;}
 }
 
 async function teamOpen(){
@@ -5448,6 +5466,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix7</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
