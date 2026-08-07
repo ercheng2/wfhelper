@@ -5278,7 +5278,9 @@ async function teamSaveSchedule(){
   _teamSaving=true;
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+    console.log('[team] saveSchedule',m,JSON.stringify(_teamSchedule).length+'chars');
     const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
+    console.log('[team] saveSchedule response',r.status);
     if(!r.ok){alert('排班保存失败！请查看控制台');console.error('teamSaveSchedule failed:',r.status);}
   }finally{_teamSaving=false;}
 }
@@ -5293,13 +5295,17 @@ async function teamOpen(){
   document.getElementById('teamModalOverlay').style.display='flex';
 }
 
-function teamClose(){
+async function teamClose(){
+  var activeInput=document.querySelector('.team-edit-input');
+  if(activeInput) activeInput.blur();
+  await new Promise(function(r){setTimeout(r,150);});
+  await teamSaveSchedule();
   document.getElementById('teamModalOverlay').style.display='none';
 }
 
-function teamPrevMonth(){if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
-function teamNextMonth(){if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
-function teamGoToday(){var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+async function teamPrevMonth(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+async function teamNextMonth(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+async function teamGoToday(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
   await teamLoadSchedule();
@@ -5380,7 +5386,9 @@ async function teamCellSave(inp){
     delete _teamSchedule[sid][day];
   }
   td.textContent=val;
+  console.log('[team] cellSave',sid,day,val);
   await teamSaveSchedule();
+  console.log('[team] cellSave done');
 }
 
 async function teamAddStaff(){

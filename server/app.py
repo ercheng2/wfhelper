@@ -1498,7 +1498,9 @@ class Handler(BaseHTTPRequestHandler):
                 schedules = json.loads(row['value']) if row else {}
                 conn.close()
                 if month:
-                    self.send_json({month: schedules.get(month, {})})
+                    data = schedules.get(month, {})
+                    print(f'[team-schedule] GET {month}，{len(data)} 人')
+                    self.send_json({month: data})
                 else:
                     self.send_json(schedules)
                 return
@@ -2343,7 +2345,7 @@ class Handler(BaseHTTPRequestHandler):
                 month = body.get('month', '')
                 data = body.get('data', {})
                 cell_count = sum(len(v) for v in data.values()) if isinstance(data, dict) else 0
-                print(f'[team-schedule] 保存 {month}，{len(data)} 人，{cell_count} 个单元格')
+                print(f'[team-schedule] POST 保存 {month}，{len(data)} 人，{cell_count} 个单元格，data keys: {list(data.keys())[:3]}...')
                 conn = get_db()
                 row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
                 schedules = json.loads(row['value']) if row else {}
