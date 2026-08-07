@@ -5311,7 +5311,6 @@ async function teamOpen(){
   await teamLoadSchedule();
   teamRender();
   document.getElementById('teamModalOverlay').style.display='flex';
-  console.log('[DEBUG] teamOpen完成，点击任意单元格查看控制台');
 }
 
 async function teamClose(){
@@ -5426,13 +5425,10 @@ function teamIsHoliday(ds){
 }
 
 function teamCellEdit(td){
-  console.log('[DEBUG] teamCellEdit 被调用',td.dataset.sid,td.dataset.day);
-  if(td.querySelector('input')||td.querySelector('textarea')){console.log('[DEBUG] 已有input/textarea，跳过');return;}
+  if(td.querySelector('input')||td.querySelector('textarea')) return;
   var sid=td.dataset.sid;
   var day=td.dataset.day;
-  console.log('[DEBUG] sid='+sid+' day='+day+' schedule=',_teamSchedule[sid]);
   var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
-  console.log('[DEBUG] cd=',cd);
   td.classList.add('editing');
   td._teamPreNote=cd.note||'';
   td.innerHTML='';
@@ -5443,7 +5439,6 @@ function teamCellEdit(td){
   inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
   td.appendChild(inp);
   inp.focus();
-  console.log('[DEBUG] input已创建并聚焦');
 }
 
 function teamCellNote(td){
