@@ -5264,7 +5264,7 @@ function espAddFileToContract(d, opt){
   }
 }
 // === 全员日程安排 ===
-let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false, _teamClickTimer=null, _teamBound=false;
+let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
 
 async function teamLoadStaff(){
   try{
@@ -5402,24 +5402,14 @@ function teamRender(){
   
   html+='</tbody></table>';
   document.getElementById('teamTableContainer').innerHTML=html;
-  // 事件委托：只绑定一次，避免重复绑定导致状态错乱
-  if(!_teamBound){
-    _teamBound=true;
-    document.getElementById('teamTableContainer').addEventListener('click',function(e){
-      var td=e.target.closest('td.team-cell');
-      if(!td) return;
-      if(_teamClickTimer){
-        clearTimeout(_teamClickTimer);
-        _teamClickTimer=null;
-        teamCellNote(td);
-      }else{
-        _teamClickTimer=setTimeout(function(){
-          _teamClickTimer=null;
-          teamCellEdit(td);
-        },300);
-      }
+  // 给每个单元格直接绑定事件，不依赖事件委托
+  document.querySelectorAll('#teamTableContainer td.team-cell').forEach(function(td){
+    var t=null;
+    td.addEventListener('click',function(){
+      if(t){clearTimeout(t);t=null;teamCellNote(td);}
+      else{t=setTimeout(function(){t=null;teamCellEdit(td);},300);}
     });
-  }
+  });
 }
 
 function teamGetCellData(val){
@@ -5579,7 +5569,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix18</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix19</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
