@@ -5296,16 +5296,29 @@ async function teamOpen(){
 }
 
 async function teamClose(){
-  var activeInput=document.querySelector('.team-edit-input');
-  if(activeInput) activeInput.blur();
-  await new Promise(function(r){setTimeout(r,150);});
+  // 直接取值更新_teamSchedule（不依赖blur），消除竞态
+  var ai=document.querySelector('.team-edit-input');
+  if(ai){
+    var td=ai.parentElement;
+    var val=ai.value.trim();
+    var sid=td.dataset.sid;
+    var day=td.dataset.day;
+    if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+    if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}
+    td.classList.remove('editing');
+    ai.remove();
+    td.textContent=val;
+    console.log('[team] teamClose直接取值',sid,day,val);
+  }
+  // 等之前的保存完成
+  while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}
   await teamSaveSchedule();
   document.getElementById('teamModalOverlay').style.display='none';
 }
 
-async function teamPrevMonth(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
-async function teamNextMonth(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
-async function teamGoToday(){var activeInput=document.querySelector('.team-edit-input');if(activeInput) activeInput.blur();await new Promise(function(r){setTimeout(r,150);});await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+async function teamPrevMonth(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+async function teamNextMonth(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+async function teamGoToday(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
   await teamLoadSchedule();

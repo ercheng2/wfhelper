@@ -2353,8 +2353,13 @@ class Handler(BaseHTTPRequestHandler):
                 conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                             ('wfhelper_team_schedule', json.dumps(schedules, ensure_ascii=False)))
                 conn.commit()
+                # 立即验证写入
+                vrow = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+                vschedules = json.loads(vrow['value']) if vrow else {}
+                vdata = vschedules.get(month, {})
+                print(f'[team-schedule] POST 验证: {month}，{len(vdata)} 人，匹配={len(vdata)==len(data)}')
                 conn.close()
-                self.send_json({'ok': True})
+                self.send_json({'ok': True, 'verified': len(vdata)})
             except Exception as e:
                 print(f'[team-schedule] 保存失败: {e}')
                 self.send_json({'error': str(e)}, 500)
