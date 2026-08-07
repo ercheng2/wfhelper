@@ -5264,7 +5264,7 @@ function espAddFileToContract(d, opt){
   }
 }
 // === 全员日程安排 ===
-let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
+let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false, _teamClickTimer=null, _teamBound=false;
 
 async function teamLoadStaff(){
   try{
@@ -5402,23 +5402,24 @@ function teamRender(){
   
   html+='</tbody></table>';
   document.getElementById('teamTableContainer').innerHTML=html;
-  // 事件委托：单击编辑文字，双击编辑批注
-  var container=document.getElementById('teamTableContainer');
-  var clickTimer=null;
-  container.onclick=function(e){
-    var td=e.target.closest('td.team-cell');
-    if(!td) return;
-    if(clickTimer){
-      clearTimeout(clickTimer);
-      clickTimer=null;
-      teamCellNote(td);
-    }else{
-      clickTimer=setTimeout(function(){
-        clickTimer=null;
-        teamCellEdit(td);
-      },300);
-    }
-  };
+  // 事件委托：只绑定一次，避免重复绑定导致状态错乱
+  if(!_teamBound){
+    _teamBound=true;
+    document.getElementById('teamTableContainer').addEventListener('click',function(e){
+      var td=e.target.closest('td.team-cell');
+      if(!td) return;
+      if(_teamClickTimer){
+        clearTimeout(_teamClickTimer);
+        _teamClickTimer=null;
+        teamCellNote(td);
+      }else{
+        _teamClickTimer=setTimeout(function(){
+          _teamClickTimer=null;
+          teamCellEdit(td);
+        },300);
+      }
+    });
+  }
 }
 
 function teamGetCellData(val){
