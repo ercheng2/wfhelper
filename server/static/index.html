@@ -5398,7 +5398,7 @@ function teamRender(){
         else if(isWeekend) cls.push('weekend');
         var cellHtml=teamEsc(cd.v);
         if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
-        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)" ondblclick="teamCellNote(this)" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
+        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
     });
@@ -5432,20 +5432,31 @@ function teamIsHoliday(ds){
   return !!holidays[ds];
 }
 
+var _teamClickTimer=null;
 function teamCellEdit(td){
   if(td.querySelector('input')||td.querySelector('textarea')) return;
-  var sid=td.dataset.sid;
-  var day=td.dataset.day;
-  var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
-  td.classList.add('editing');
-  td.innerHTML='';
-  var inp=document.createElement('input');
-  inp.className='team-edit-input';
-  inp.value=cd.v;
-  inp.addEventListener('blur',function(){teamCellSave(inp);});
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
-  td.appendChild(inp);
-  inp.focus();
+  if(_teamClickTimer){
+    clearTimeout(_teamClickTimer);
+    _teamClickTimer=null;
+    teamCellNote(td);
+    return;
+  }
+  _teamClickTimer=setTimeout(function(){
+    _teamClickTimer=null;
+    if(td.querySelector('input')||td.querySelector('textarea')) return;
+    var sid=td.dataset.sid;
+    var day=td.dataset.day;
+    var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
+    td.classList.add('editing');
+    td.innerHTML='';
+    var inp=document.createElement('input');
+    inp.className='team-edit-input';
+    inp.value=cd.v;
+    inp.addEventListener('blur',function(){teamCellSave(inp);});
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
+    td.appendChild(inp);
+    inp.focus();
+  },300);
 }
 
 function teamCellNote(td){
@@ -5482,9 +5493,8 @@ async function teamCellSaveNote(ta){
   // 重新渲染单元格
   var cd=teamGetCellData(_teamSchedule[sid][day]);
   td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  td.setAttribute('onclick','teamCellEdit(this)');
-  td.setAttribute('ondblclick','teamCellNote(this)');
-  td.setAttribute('title','单击编辑文字，双击编辑批注');
+  td.onclick=function(){teamCellEdit(this);};
+  td.title='单击编辑文字，双击编辑批注';
   console.log('[team] noteSave',sid,day,note);
   await teamSaveSchedule();
 }
@@ -5509,9 +5519,8 @@ async function teamCellSave(inp){
   
   var cd=teamGetCellData(_teamSchedule[sid][day]);
   td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
-  td.setAttribute('onclick','teamCellEdit(this)');
-  td.setAttribute('ondblclick','teamCellNote(this)');
-  td.setAttribute('title','单击编辑文字，双击编辑批注');
+  td.onclick=function(){teamCellEdit(this);};
+  td.title='单击编辑文字，双击编辑批注';
   console.log('[team] cellSave',sid,day,val);
   await teamSaveSchedule();
   console.log('[team] cellSave done');
@@ -5562,7 +5571,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button onclick="teamSync()" style="margin-left:6px;background:#34a853;color:#fff;border-color:#34a853" title="从服务器重新加载数据">🔄 同步</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix10</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix11</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
