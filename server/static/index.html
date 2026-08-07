@@ -506,24 +506,31 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 /* === 全员日程安排 === */
 .team-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center}
 .team-modal{background:#fff;border-radius:0;width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)}
-.team-modal-header{display:flex;align-items:center;gap:6px;padding:10px 20px;border-bottom:1px solid #e8ecf1;background:linear-gradient(135deg,#f0f4ff,#faf5ff);flex-shrink:0}
-.team-modal-header button{padding:4px 10px;border:1px solid #d0d5dd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;transition:all .15s}
-.team-modal-header button:hover{background:#f0f2f5}
+.team-modal-header{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:2px solid #8899aa;background:linear-gradient(135deg,#e8ecf2,#eef1f6);flex-shrink:0}
+.team-modal-header button{padding:4px 10px;border:1px solid #8899aa;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;transition:all .15s}
+.team-modal-header button:hover{background:#e0e4ea}
 .team-modal-header #teamMonthTitle{font-size:16px;font-weight:700;color:#1a73e8;min-width:100px;text-align:center}
-.team-modal-body{flex:1;overflow:auto;padding:8px 0}
-.team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px}
-.team-table th,.team-table td{border:1px solid #b0b8c4;padding:3px 5px;text-align:center;min-width:62px;max-width:120px;overflow:hidden}
-.team-table th{background:#f0f4ff;font-weight:600;color:#3c4043;position:sticky;top:0;z-index:2}
+.team-modal-body{flex:1;overflow:auto;padding:0}
+.team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;table-layout:fixed}
+.team-table th,.team-table td{border:1px solid #6b7b8d;padding:2px 3px;text-align:center;min-width:48px;max-width:90px;overflow:hidden;word-wrap:break-word;white-space:normal;line-height:1.4}
+.team-table th{background:#d5dce6;font-weight:600;color:#2c3e50;position:sticky;top:0;z-index:2}
 .team-table th.today{background:#fef3c7;color:#92400e}
-.team-table th small{font-weight:400;color:#888;font-size:10px}
-.team-table td.team-staff-name{position:sticky;left:0;background:#fafbfd;z-index:1;font-weight:500;text-align:left;min-width:100px;white-space:nowrap}
-.team-table td.team-staff-group{background:#e8ecf2;font-weight:700;font-size:13px;color:#1a73e8;text-align:left;padding:6px 8px;position:sticky;left:0;z-index:1}
-.team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#e8ecf2;min-width:100px}
-.team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.team-table th.weekend{background:#fce4e4;color:#a94442}
+.team-table th.holiday{background:#ffe0e0;color:#c0392b}
+.team-table th small{font-weight:400;color:#666;font-size:10px}
+.team-table td.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:80px;font-weight:700}
+.team-table td.team-staff-name{position:sticky;left:0;background:#eef1f5;z-index:1;font-weight:500;text-align:left;min-width:80px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:12px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
+.team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:80px}
+.team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:normal;word-wrap:break-word;overflow:hidden;max-width:90px;min-height:22px;position:relative}
 .team-table td.team-cell:hover{background:#e8f0fe}
 .team-table td.team-cell.today{background:#fef9e7}
+.team-table td.team-cell.weekend{background:#fef5f5}
 .team-table td.team-cell.editing{padding:0}
-.team-edit-input{width:100%;border:2px solid #1a73e8;padding:3px 4px;font-size:12px;outline:none;box-sizing:border-box;border-radius:2px;background:#fff}
+.team-cell-note{font-size:9px;color:#e67e22;display:block;line-height:1.2;margin-top:1px;font-style:italic}
+.team-edit-input{width:100%;border:2px solid #1a73e8;padding:3px 4px;font-size:12px;outline:none;box-sizing:border-box;border-radius:2px;background:#fff;min-height:24px;word-wrap:break-word}
+.team-edit-textarea{width:100%;border:2px solid #1a73e8;padding:3px 4px;font-size:11px;outline:none;box-sizing:border-box;border-radius:2px;background:#fff;resize:vertical;min-height:40px;font-family:inherit}
+.team-note-indicator{position:absolute;top:1px;right:2px;width:6px;height:6px;background:#e67e22;border-radius:50%}
 .team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
 .team-add-btn:hover{background:#e8f0fe}
 </style>
@@ -5314,29 +5321,28 @@ async function teamOpen(){
 }
 
 async function teamClose(){
-  // 直接取值更新_teamSchedule（不依赖blur），消除竞态
-  var ai=document.querySelector('.team-edit-input');
-  if(ai){
-    var td=ai.parentElement;
-    var val=ai.value.trim();
-    var sid=td.dataset.sid;
-    var day=td.dataset.day;
-    if(!_teamSchedule[sid]) _teamSchedule[sid]={};
-    if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}
-    td.classList.remove('editing');
-    ai.remove();
-    td.textContent=val;
-    console.log('[team] teamClose直接取值',sid,day,val);
+  var ae=document.querySelector('.team-edit-input,.team-edit-textarea');
+  if(ae){
+    var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;
+    if(!_teamSchedule[sid])_teamSchedule[sid]={};
+    var ex=_teamSchedule[sid][day];
+    if(ae.tagName==='TEXTAREA'){
+      var ov=(typeof ex==='object'&&ex)?ex.v||'':'';
+      if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}
+    }else{
+      var on=(typeof ex==='object'&&ex)?ex.note||'':'';
+      if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}
+    }
+    td.classList.remove('editing');ae.remove();
   }
-  // 等之前的保存完成
   while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}
   await teamSaveSchedule();
   document.getElementById('teamModalOverlay').style.display='none';
 }
 
-async function teamPrevMonth(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
-async function teamNextMonth(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
-async function teamGoToday(){var ai=document.querySelector('.team-edit-input');if(ai){var td=ai.parentElement;var val=ai.value.trim();var sid=td.dataset.sid;var day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};if(val){_teamSchedule[sid][day]=val;}else{delete _teamSchedule[sid][day];}td.classList.remove('editing');ai.remove();td.textContent=val;}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+async function teamPrevMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day;if(!_teamSchedule[sid])_teamSchedule[sid]={};var ex=_teamSchedule[sid][day];if(ae.tagName==='TEXTAREA'){var ov=(typeof ex==='object'&&ex)?ex.v||'':'';if(val||ov){_teamSchedule[sid][day]={v:ov,note:val};}else{delete _teamSchedule[sid][day];}}else{var on=(typeof ex==='object'&&ex)?ex.note||'':'';if(val||on){_teamSchedule[sid][day]={v:val,note:on};if(!on)_teamSchedule[sid][day]={v:val};}else{delete _teamSchedule[sid][day];}}td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
   await teamLoadSchedule();
@@ -5353,8 +5359,15 @@ function teamRender(){
   for(var d=1;d<=lastDay;d++){
     var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var isToday=(ds===todayStr);
-    var dow=['日','一','二','三','四','五','六'][new Date(_teamYear,_teamMonth-1,d).getDay()];
-    html+='<th class="'+(isToday?'today':'')+'">'+d+'<br><small>'+dow+'</small></th>';
+    var wd=new Date(_teamYear,_teamMonth-1,d).getDay();
+    var isWeekend=(wd===0||wd===6);
+    var isHoliday=teamIsHoliday(ds);
+    var dow=['日','一','二','三','四','五','六'][wd];
+    var cls=[];
+    if(isToday) cls.push('today');
+    if(isHoliday) cls.push('holiday');
+    else if(isWeekend) cls.push('weekend');
+    html+='<th class="'+cls.join(' ')+'">'+d+'<br><small>'+dow+'</small></th>';
   }
   html+='</tr></thead><tbody>';
   
@@ -5373,8 +5386,18 @@ function teamRender(){
       for(var d=1;d<=lastDay;d++){
         var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         var isToday=(ds===todayStr);
-        var val=ss[d]||'';
-        html+='<td class="team-cell'+(isToday?' today':'')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)">'+teamEsc(val)+'</td>';
+        var wd=new Date(_teamYear,_teamMonth-1,d).getDay();
+        var isWeekend=(wd===0||wd===6);
+        var isHoliday=teamIsHoliday(ds);
+        var raw=ss[d]||'';
+        var cd=teamGetCellData(raw);
+        var cls=['team-cell'];
+        if(isToday) cls.push('today');
+        if(isHoliday) cls.push('holiday');
+        else if(isWeekend) cls.push('weekend');
+        var cellHtml=teamEsc(cd.v);
+        if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
+        html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" onclick="teamCellEdit(this)" ondblclick="teamCellNote(this)" title="单击编辑文字，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
     });
@@ -5388,18 +5411,81 @@ function teamRender(){
   document.getElementById('teamTableContainer').innerHTML=html;
 }
 
+function teamGetCellData(val){
+  if(!val) return {v:'',note:''};
+  if(typeof val==='string') return {v:val,note:''};
+  return {v:val.v||'',note:val.note||''};
+}
+
+// 节假日判断（2026年中国法定节假日）
+function teamIsHoliday(ds){
+  var holidays={
+    '2026-01-01':1,'2026-01-02':1,'2026-01-03':1,
+    '2026-02-17':1,'2026-02-18':1,'2026-02-19':1,'2026-02-20':1,'2026-02-21':1,'2026-02-22':1,'2026-02-23':1,
+    '2026-04-05':1,'2026-04-06':1,'2026-04-07':1,
+    '2026-05-01':1,'2026-05-02':1,'2026-05-03':1,'2026-05-04':1,'2026-05-05':1,
+    '2026-06-19':1,'2026-06-20':1,'2026-06-21':1,
+    '2026-09-25':1,'2026-09-26':1,'2026-09-27':1,
+    '2026-10-01':1,'2026-10-02':1,'2026-10-03':1,'2026-10-04':1,'2026-10-05':1,'2026-10-06':1,'2026-10-07':1
+  };
+  return !!holidays[ds];
+}
+
 function teamCellEdit(td){
-  if(td.querySelector('input')) return;
-  var orig=td.textContent;
+  if(td.querySelector('input')||td.querySelector('textarea')) return;
+  var sid=td.dataset.sid;
+  var day=td.dataset.day;
+  var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
   td.classList.add('editing');
-  td.textContent='';
+  td.innerHTML='';
   var inp=document.createElement('input');
   inp.className='team-edit-input';
-  inp.value=orig;
+  inp.value=cd.v;
   inp.addEventListener('blur',function(){teamCellSave(inp);});
   inp.addEventListener('keydown',function(e){if(e.key==='Enter') inp.blur();});
   td.appendChild(inp);
   inp.focus();
+}
+
+function teamCellNote(td){
+  if(td.querySelector('input')||td.querySelector('textarea')) return;
+  var sid=td.dataset.sid;
+  var day=td.dataset.day;
+  var cd=teamGetCellData(_teamSchedule[sid]?._teamSchedule[sid][day]);
+  td.classList.add('editing');
+  td.innerHTML='';
+  var ta=document.createElement('textarea');
+  ta.className='team-edit-textarea';
+  ta.value=cd.note;
+  ta.placeholder='输入批注...';
+  ta.addEventListener('blur',function(){teamCellSaveNote(ta);});
+  td.appendChild(ta);
+  ta.focus();
+}
+
+async function teamCellSaveNote(ta){
+  var td=ta.parentElement;
+  var note=ta.value.trim();
+  var sid=td.dataset.sid;
+  var day=td.dataset.day;
+  td.classList.remove('editing');
+  ta.remove();
+  
+  if(!_teamSchedule[sid]) _teamSchedule[sid]={};
+  var existing=_teamSchedule[sid][day];
+  if(typeof existing!=='object'||!existing) existing={v:typeof existing==='string'?existing:'',note:''};
+  if(note){existing.note=note;}else{delete existing.note;}
+  if(existing.v||existing.note){_teamSchedule[sid][day]=existing;}
+  else{delete _teamSchedule[sid][day];}
+  
+  // 重新渲染单元格
+  var cd=teamGetCellData(_teamSchedule[sid][day]);
+  td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
+  td.setAttribute('onclick','teamCellEdit(this)');
+  td.setAttribute('ondblclick','teamCellNote(this)');
+  td.setAttribute('title','单击编辑文字，双击编辑批注');
+  console.log('[team] noteSave',sid,day,note);
+  await teamSaveSchedule();
 }
 
 async function teamCellSave(inp){
@@ -5411,12 +5497,20 @@ async function teamCellSave(inp){
   inp.remove();
   
   if(!_teamSchedule[sid]) _teamSchedule[sid]={};
-  if(val){
-    _teamSchedule[sid][day]=val;
+  var existing=_teamSchedule[sid][day];
+  var note=(typeof existing==='object'&&existing)?existing.note||'':'';
+  if(val||note){
+    _teamSchedule[sid][day]={v:val,note:note};
+    if(!note) _teamSchedule[sid][day]={v:val};
   }else{
     delete _teamSchedule[sid][day];
   }
-  td.textContent=val;
+  
+  var cd=teamGetCellData(_teamSchedule[sid][day]);
+  td.innerHTML=teamEsc(cd.v)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
+  td.setAttribute('onclick','teamCellEdit(this)');
+  td.setAttribute('ondblclick','teamCellNote(this)');
+  td.setAttribute('title','单击编辑文字，双击编辑批注');
   console.log('[team] cellSave',sid,day,val);
   await teamSaveSchedule();
   console.log('[team] cellSave done');
@@ -5466,7 +5560,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix7</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix8</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
