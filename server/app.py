@@ -1046,6 +1046,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(parsed.path)
+        params = urllib.parse.parse_qs(parsed.query)
         
         # API: GET /api/data/<key>
         if path.startswith('/api/data/'):
