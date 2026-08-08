@@ -535,7 +535,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-group-move span:hover{background:rgba(255,255,255,.5)}
 .team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:48px;font-size:13px}
 .team-table th.team-period-col{position:sticky;left:48px;z-index:3;background:#c8d0db;min-width:42px;font-size:13px}
-.team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:normal;word-wrap:break-word;overflow:hidden;max-width:90px;min-height:22px;position:relative}
+.team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:normal;word-wrap:break-word;overflow:hidden;max-width:55px;min-height:22px;position:relative}
 .team-table td.team-cell:hover{background:#e8f0fe}
 .team-table td.team-cell.today{background:#fef9e7}
 .team-table td.team-cell.weekend{background:#fef5f5}
@@ -5721,7 +5721,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix29</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix30</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
