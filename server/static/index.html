@@ -512,7 +512,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-modal-header #teamMonthTitle{font-size:18px;font-weight:700;color:#1a73e8;min-width:100px;text-align:center}
 .team-modal-body{flex:1;overflow:auto;padding:0}
 .team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;table-layout:fixed}
-.team-table th,.team-table td{border:1px solid #6b7b8d;padding:2px 3px;text-align:center;min-width:48px;max-width:90px;overflow:hidden;word-wrap:break-word;white-space:normal;line-height:1.4}
+.team-table th,.team-table td{border:1px solid #6b7b8d;padding:2px 1px;text-align:center;min-width:48px;max-width:90px;overflow:hidden;word-wrap:break-word;white-space:normal;line-height:1.4}
 .team-table th{background:#d5dce6;font-weight:600;color:#2c3e50;position:sticky;top:0;z-index:2}
 .team-table th.today{background:#fef3c7;color:#92400e}
 .team-table th.weekend{background:#fce4e4;color:#a94442}
@@ -526,8 +526,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-staff-actions .team-edit-btn:hover{color:#1557b0}
 .team-staff-actions .team-del-btn{color:#ea4335}
 .team-staff-actions .team-del-btn:hover{color:#c5221f}
-.team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:14px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
-.team-group-move{float:right;font-size:11px;cursor:pointer;user-select:none;margin-left:6px}
+.team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:16px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
+.team-group-move{display:inline;font-size:11px;cursor:pointer;user-select:none;margin-left:6px}
 .team-group-move span{display:inline-block;padding:0 4px;color:#1a3a5c;border-radius:2px;transition:background .15s}
 .team-group-move span:hover{background:rgba(255,255,255,.5)}
 .team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:60px;font-size:13px}
@@ -5689,7 +5689,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix23</span>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix27</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
