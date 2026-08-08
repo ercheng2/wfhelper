@@ -925,7 +925,7 @@ def init_db():
     # Initialize team staff and schedule
     if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_staff'").fetchone():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                    ('wfhelper_team_staff', '[]'))
+                    ('wfhelper_team_staff', '{}'))
     if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_team_schedule', '{}'))
@@ -1482,12 +1482,24 @@ class Handler(BaseHTTPRequestHandler):
                 conn.close()
                 self.send_json(locations)
                 return
-            # API: GET /api/team-staff
+            # API: GET /api/team-staff?month=YYYY-MM
             if path == '/api/team-staff':
+                month = params.get('month', [''])[0]
                 conn = get_db()
                 row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_staff'").fetchone()
-                staff = json.loads(row['value']) if row else []
+                raw = json.loads(row['value']) if row else {}
                 conn.close()
+                # 兼容旧格式（flat array）→ 迁移为当月数据
+                if isinstance(raw, list):
+                    if month:
+                        staff = raw
+                    else:
+                        staff = raw
+                else:
+                    if month:
+                        staff = raw.get(month, [])
+                    else:
+                        staff = raw
                 self.send_json(staff)
                 return
             
@@ -2327,10 +2339,17 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 body = json.loads(self.read_body().decode('utf-8'))
                 staff = body.get('staff', [])
-                print(f'[team-staff] 保存 {len(staff)} 人')
+                month = body.get('month', '')
+                print(f'[team-staff] 保存 {month} {len(staff)} 人')
                 conn = get_db()
+                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_staff'").fetchone()
+                raw = json.loads(row['value']) if row else {}
+                # 兼容旧格式（flat array）→ 迁移为 month-keyed object
+                if isinstance(raw, list):
+                    raw = {month: raw}
+                raw[month] = staff
                 conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                            ('wfhelper_team_staff', json.dumps(staff, ensure_ascii=False)))
+                            ('wfhelper_team_staff', json.dumps(raw, ensure_ascii=False)))
                 conn.commit()
                 conn.close()
                 self.send_json({'ok': True})

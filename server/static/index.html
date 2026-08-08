@@ -538,11 +538,11 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-cell-placeholder.today{background:#fef9e7}
 .team-cell-placeholder.weekend{background:#fef5f5}
 .team-cell-placeholder.holiday{background:#ffe0e0}
-.team-staff-row.highlight td{background:#c8e6c9!important}
-.team-staff-row.highlight td.weekend{background:#d7f0d8!important}
-.team-staff-row.highlight td.holiday{background:#c8e6c9!important}
-.team-staff-row.highlight td.team-staff-name{background:#a5d6a7!important}
-.team-staff-row.highlight td.team-sub-label{background:#a5d6a7!important}
+.team-staff-row.team-highlight td{background:#c8e6c9!important}
+.team-staff-row.team-highlight td.weekend{background:#d7f0d8!important}
+.team-staff-row.team-highlight td.holiday{background:#c8e6c9!important}
+.team-staff-row.team-highlight td.team-staff-name{background:#a5d6a7!important}
+.team-staff-row.team-highlight td.team-sub-label{background:#a5d6a7!important}
 .team-staff-name{cursor:pointer}
 .team-staff-name:hover{background:#d5dce6!important}
 .team-col-header{cursor:pointer;transition:background .15s}
@@ -5286,17 +5286,19 @@ let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
 
 async function teamLoadStaff(){
   try{
-    const r=await fetch('/api/team-staff?_t='+Date.now());
-    if(r.ok){_teamStaff=await r.json();console.log('[team] staff从服务器加载',_teamStaff.length+'人');return;}
+    const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+    const r=await fetch('/api/team-staff?month='+m+'&_t='+Date.now());
+    if(r.ok){const d=await r.json();_teamStaff=Array.isArray(d)?d:[];console.log('[team] staff从服务器加载',m,_teamStaff.length+'人');return;}
     throw new Error('HTTP '+r.status);
   }catch(e){console.error('[team] staff加载失败:',e);showToast('人员列表加载失败，请刷新重试','error');_teamStaff=[];}
 }
 
 async function teamSaveStaff(){
   try{
-    const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staff:_teamStaff})});
+    const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
+    const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,staff:_teamStaff})});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    console.log('[team] staff已保存到服务器');
+    console.log('[team] staff已保存到服务器',m);
   }catch(e){console.error('teamSaveStaff失败:',e);showToast('人员列表保存失败！','error');}
 }
 
@@ -5351,6 +5353,7 @@ async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.
 async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
+  await teamLoadStaff();
   await teamLoadSchedule();
   teamRender();
 }
@@ -5439,6 +5442,7 @@ function teamRender(){
   document.querySelectorAll('#teamTableContainer td.team-cell').forEach(function(td){
     var t=null;
     td.addEventListener('click',function(){
+      teamCellHighlight(td);
       if(t){clearTimeout(t);t=null;teamCellNote(td);}
       else{t=setTimeout(function(){t=null;teamCellEdit(td);},300);}
     });
@@ -5448,10 +5452,37 @@ function teamRender(){
 function teamToggleHighlight(uid){
   var rows=document.querySelectorAll('#teamTableContainer tr[data-uid="'+uid+'"]');
   var active=rows[0]&&rows[0].classList.contains('team-highlight');
+  // 同时清除列高亮
+  document.querySelectorAll('#teamTableContainer .team-col-active').forEach(function(h){h.classList.remove('team-col-active');});
+  document.querySelectorAll('#teamTableContainer .team-col-highlight').forEach(function(t){t.classList.remove('team-col-highlight');});
   rows.forEach(function(r){r.classList.toggle('team-highlight',!active);});
 }
 
+function teamCellHighlight(td){
+  // 清除所有高亮
+  document.querySelectorAll('#teamTableContainer .team-highlight').forEach(function(r){r.classList.remove('team-highlight');});
+  document.querySelectorAll('#teamTableContainer .team-col-active').forEach(function(h){h.classList.remove('team-col-active');});
+  document.querySelectorAll('#teamTableContainer .team-col-highlight').forEach(function(t){t.classList.remove('team-col-highlight');});
+  // 高亮当前行
+  var row=td.closest('tr');
+  if(row){row.classList.add('team-highlight');}
+  // 高亮下一个兄弟行（下午行）
+  var next=row&&row.nextElementSibling;
+  if(next&&next.dataset.uid===row.dataset.uid){next.classList.add('team-highlight');}
+  // 高亮上一个兄弟行（上午行）
+  var prev=row&&row.previousElementSibling;
+  if(prev&&prev.dataset.uid===row.dataset.uid){prev.classList.add('team-highlight');}
+  // 高亮列
+  var day=td.dataset.day;
+  if(day){
+    document.querySelectorAll('#teamTableContainer th[data-col="'+day+'"]').forEach(function(h){h.classList.add('team-col-active');});
+    document.querySelectorAll('#teamTableContainer td[data-day="'+day+'"]').forEach(function(t){t.classList.add('team-col-highlight');});
+  }
+}
+
 function teamToggleColumn(th){
+  // 同时清除行高亮
+  document.querySelectorAll('#teamTableContainer .team-highlight').forEach(function(r){r.classList.remove('team-highlight');});
   var col=th.dataset.col;
   var active=th.classList.contains('team-col-active');
   // toggle th
