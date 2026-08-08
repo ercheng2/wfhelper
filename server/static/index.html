@@ -522,10 +522,12 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-table td.team-staff-name{position:sticky;left:0;background:#eef1f5;z-index:1;font-weight:500;text-align:left;min-width:80px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:13px}
 .team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:14px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
 .team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:80px;font-size:13px}
+.team-table th.team-period-col{position:sticky;left:80px;z-index:3;background:#c8d0db;min-width:42px;font-size:13px}
 .team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:normal;word-wrap:break-word;overflow:hidden;max-width:90px;min-height:22px;position:relative}
 .team-table td.team-cell:hover{background:#e8f0fe}
 .team-table td.team-cell.today{background:#fef9e7}
 .team-table td.team-cell.weekend{background:#fef5f5}
+.team-table td.team-cell.holiday{background:#ffe0e0}
 .team-table td.team-cell.editing{padding:0}
 .team-cell-note{font-size:9px;color:#e67e22;display:block;line-height:1.2;margin-top:1px;font-style:italic}
 .team-edit-input{width:100%;border:2px solid #1a73e8;padding:3px 4px;font-size:12px;outline:none;box-sizing:border-box;border-radius:2px;background:#fff;min-height:24px;word-wrap:break-word}
@@ -533,7 +535,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-note-indicator{position:absolute;top:1px;right:2px;width:6px;height:6px;background:#e67e22;border-radius:50%}
 .team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
 .team-add-btn:hover{background:#e8f0fe}
-.team-sub-label{position:sticky;left:0;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:80px;padding:2px 4px;white-space:nowrap}
+.team-table td.team-sub-label{position:sticky;left:80px;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:42px;padding:2px 4px;white-space:nowrap}
 .team-cell-placeholder{min-width:48px;max-width:90px}
 .team-cell-placeholder.today{background:#fef9e7}
 .team-cell-placeholder.weekend{background:#fef5f5}
@@ -5364,7 +5366,7 @@ function teamRender(){
   var today=new Date();
   var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   
-  var html='<table class="team-table"><thead><tr><th class="team-staff-col">人员</th><th class="team-staff-col">时段</th>';
+  var html='<table class="team-table"><thead><tr><th class="team-staff-col">人员</th><th class="team-period-col">时段</th>';
   for(var d=1;d<=lastDay;d++){
     var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var isToday=(ds===todayStr);
@@ -5517,8 +5519,8 @@ function teamCleanCellData(sid,day,ex){
 function teamIsHoliday(ds){
   var holidays={
     '2026-01-01':1,'2026-01-02':1,'2026-01-03':1,
-    '2026-02-17':1,'2026-02-18':1,'2026-02-19':1,'2026-02-20':1,'2026-02-21':1,'2026-02-22':1,'2026-02-23':1,
-    '2026-04-05':1,'2026-04-06':1,'2026-04-07':1,
+    '2026-02-15':1,'2026-02-16':1,'2026-02-17':1,'2026-02-18':1,'2026-02-19':1,'2026-02-20':1,'2026-02-21':1,'2026-02-22':1,'2026-02-23':1,
+    '2026-04-04':1,'2026-04-05':1,'2026-04-06':1,
     '2026-05-01':1,'2026-05-02':1,'2026-05-03':1,'2026-05-04':1,'2026-05-05':1,
     '2026-06-19':1,'2026-06-20':1,'2026-06-21':1,
     '2026-09-25':1,'2026-09-26':1,'2026-09-27':1,
