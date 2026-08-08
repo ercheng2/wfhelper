@@ -518,11 +518,20 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-table th.weekend{background:#fce4e4;color:#a94442}
 .team-table th.holiday{background:#ffe0e0;color:#c0392b}
 .team-table th small{font-weight:400;color:#666;font-size:10px}
-.team-table td.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:80px;font-weight:700;font-size:13px}
-.team-table td.team-staff-name{position:sticky;left:0;background:#eef1f5;z-index:1;font-weight:500;text-align:left;min-width:80px;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.team-table td.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:60px;font-weight:700;font-size:13px}
+.team-table td.team-staff-name{position:sticky;left:0;background:#eef1f5;z-index:1;font-weight:500;text-align:left;min-width:60px;max-width:80px;font-size:13px;line-height:1.3;padding:2px 4px;overflow:hidden}
+.team-staff-actions{font-size:10px;margin-top:2px;white-space:nowrap}
+.team-staff-actions span{cursor:pointer;padding:0 2px}
+.team-staff-actions .team-edit-btn{color:#1a73e8}
+.team-staff-actions .team-edit-btn:hover{color:#1557b0}
+.team-staff-actions .team-del-btn{color:#ea4335}
+.team-staff-actions .team-del-btn:hover{color:#c5221f}
 .team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:14px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
-.team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:80px;font-size:13px}
-.team-table th.team-period-col{position:sticky;left:80px;z-index:3;background:#c8d0db;min-width:42px;font-size:13px}
+.team-group-move{float:right;font-size:11px;cursor:pointer;user-select:none;margin-left:6px}
+.team-group-move span{display:inline-block;padding:0 4px;color:#1a3a5c;border-radius:2px;transition:background .15s}
+.team-group-move span:hover{background:rgba(255,255,255,.5)}
+.team-table th.team-staff-col{position:sticky;left:0;z-index:3;background:#c8d0db;min-width:60px;font-size:13px}
+.team-table th.team-period-col{position:sticky;left:60px;z-index:3;background:#c8d0db;min-width:42px;font-size:13px}
 .team-table td.team-cell{cursor:pointer;transition:background .15s;white-space:normal;word-wrap:break-word;overflow:hidden;max-width:90px;min-height:22px;position:relative}
 .team-table td.team-cell:hover{background:#e8f0fe}
 .team-table td.team-cell.today{background:#fef9e7}
@@ -535,7 +544,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-note-indicator{position:absolute;top:1px;right:2px;width:6px;height:6px;background:#e67e22;border-radius:50%}
 .team-add-btn{padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#1a73e8;transition:all .15s}
 .team-add-btn:hover{background:#e8f0fe}
-.team-table td.team-sub-label{position:sticky;left:80px;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:42px;padding:2px 4px;white-space:nowrap}
+.team-table td.team-sub-label{position:sticky;left:60px;background:#eef1f5;z-index:1;font-size:11px;font-weight:600;color:#555;text-align:center;min-width:42px;padding:2px 4px;white-space:nowrap}
 .team-cell-placeholder{min-width:48px;max-width:90px}
 .team-cell-placeholder.today{background:#fef9e7}
 .team-cell-placeholder.weekend{background:#fef5f5}
@@ -5390,11 +5399,11 @@ function teamRender(){
   });
   
   for(var g in groups){
-    html+='<tr class="team-staff-group"><td colspan="'+(lastDay+2)+'">'+teamEsc(g)+'</td></tr>';
+    html+='<tr class="team-staff-group"><td colspan="'+(lastDay+2)+'">'+teamEsc(g)+'<span class="team-group-move"><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27up\x27)" title="上移分组">▲</span><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27down\x27)" title="下移分组">▼</span></span></td></tr>';
     groups[g].forEach(function(s){
       var ss=_teamSchedule[s.id]||{};
       // 人名行（rowspan=2，人名在上午/下午左边）
-      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-staff-name" rowspan="2" onclick="teamToggleHighlight(\x27'+s.id+'\x27)">'+teamEsc(s.name)+' <span style="font-size:10px;color:#999;cursor:pointer" onclick="event.stopPropagation();teamEditStaff(\x27'+s.id+'\x27)">✎</span> <span style="font-size:10px;color:#ea4335;cursor:pointer" onclick="event.stopPropagation();teamDelStaff(\x27'+s.id+'\x27)">✕</span></td><td class="team-sub-label">上午</td>';
+      html+='<tr class="team-staff-row" data-uid="'+s.id+'"><td class="team-staff-name" rowspan="2" onclick="teamToggleHighlight(\x27'+s.id+'\x27)">'+teamEsc(s.name)+'<div class="team-staff-actions"><span class="team-edit-btn" onclick="event.stopPropagation();teamEditStaff(\x27'+s.id+'\x27)">✎</span><span class="team-del-btn" onclick="event.stopPropagation();teamDelStaff(\x27'+s.id+'\x27)">✕</span></div></td><td class="team-sub-label">上午</td>';
       for(var d=1;d<=lastDay;d++){
         var ds=_teamYear+'-'+String(_teamMonth).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         var isToday=(ds===todayStr);
@@ -5642,6 +5651,29 @@ async function teamDelStaff(sid){
   delete _teamSchedule[sid];
   await teamSaveStaff();
   await teamSaveSchedule();
+  teamRender();
+}
+
+function teamGroupMove(groupName, direction){
+  // 按当前顺序提取分组列表
+  var groupOrder=[],seen={};
+  _teamStaff.forEach(function(s){
+    if(!seen[s.group]){seen[s.group]=true;groupOrder.push(s.group);}
+  });
+  var idx=groupOrder.indexOf(groupName);
+  if(idx===-1) return;
+  if(direction==='up'&&idx===0) return;
+  if(direction==='down'&&idx===groupOrder.length-1) return;
+  var swapIdx=direction==='up'?idx-1:idx+1;
+  var tmp=groupOrder[idx];groupOrder[idx]=groupOrder[swapIdx];groupOrder[swapIdx]=tmp;
+  // 按新顺序重建 _teamStaff
+  var newStaff=[];
+  groupOrder.forEach(function(g){
+    _teamStaff.forEach(function(s){if(s.group===g) newStaff.push(s);});
+  });
+  _teamStaff=newStaff;
+  _teamStaff.forEach(function(s,i){s.sortOrder=i;});
+  teamSaveStaff();
   teamRender();
 }
 
