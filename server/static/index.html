@@ -527,6 +527,9 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-staff-actions .team-del-btn{color:#ea4335}
 .team-staff-actions .team-del-btn:hover{color:#c5221f}
 .team-table td.team-staff-group{background:#c8d0db;font-weight:700;font-size:16px;color:#1a3a5c;text-align:left;padding:4px 6px;position:sticky;left:0;z-index:1}
+.team-carry-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1.5px solid #999;background:transparent;color:#999;font-size:14px;cursor:pointer;margin-left:6px;transition:all .2s;line-height:1;padding:0}
+.team-carry-btn:hover{border-color:#1a73e8;color:#1a73e8}
+.team-carry-btn.done{border-color:#34a853;color:#34a853;background:#e6f4ea}
 .team-group-move{display:inline;font-size:11px;cursor:pointer;user-select:none;margin-left:6px}
 .team-group-move span{display:inline-block;padding:0 4px;color:#1a3a5c;border-radius:2px;transition:background .15s}
 .team-group-move span:hover{background:rgba(255,255,255,.5)}
@@ -5364,6 +5367,7 @@ async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.
 async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
+  var btn=document.getElementById('teamCarryBtn');if(btn)btn.classList.remove('done');
   await teamLoadStaff();
   await teamLoadSchedule();
   teamRender();
@@ -5677,6 +5681,33 @@ function teamGroupMove(groupName, direction){
   teamRender();
 }
 
+async function teamCarryOver(){
+  if(_teamStaff.length===0){showToast('当前月份没有人员，无需沿用','error');return;}
+  var nextM=_teamMonth===12?1:_teamMonth+1;
+  var nextY=_teamMonth===12?_teamYear+1:_teamYear;
+  var nextMonth=nextY+'-'+String(nextM).padStart(2,'0');
+  // 先检查下月是否已有人员
+  try{
+    var r=await fetch('/api/team-staff?month='+nextMonth+'&_t='+Date.now());
+    if(r.ok){
+      var d=await r.json();
+      if(Array.isArray(d)&&d.length>0){
+        if(!confirm('下月（'+nextMonth+'）已有'+d.length+'人，沿用将覆盖现有人员，确定继续？')) return;
+      }
+    }
+  }catch(e){}
+  // 沿用：当前月人员复制到下月，sortOrder 重置
+  var carry=_teamStaff.map(function(s,i){return {id:s.id,group:s.group,name:s.name,sortOrder:i};});
+  var r2=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:nextMonth,staff:carry})});
+  if(r2.ok){
+    var btn=document.getElementById('teamCarryBtn');
+    if(btn){btn.classList.add('done');}
+    showToast('已沿用 '+_teamStaff.length+' 人到 '+nextMonth+' ✓','success');
+  }else{
+    showToast('沿用失败，请重试','error');
+  }
+}
+
 function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 </script>
@@ -5689,7 +5720,8 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
-      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix27</span>
+      <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
+      <span style="font-size:10px;color:#999;margin-left:8px">v2.4_fix28</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
