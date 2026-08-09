@@ -5348,9 +5348,12 @@ async function teamOpen(){
   await teamLoadSchedule();
   teamRender();
   document.getElementById('teamModalOverlay').style.display='flex';
+  teamClockUpdate();
+  _teamClockTimer=setInterval(teamClockUpdate,1000);
 }
 
 async function teamClose(){
+  if(_teamClockTimer){clearInterval(_teamClockTimer);_teamClockTimer=null;}
   var ae=document.querySelector('.team-edit-input,.team-edit-textarea');
   if(ae){
     var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';
@@ -5376,6 +5379,16 @@ async function teamReload(){
   teamRender();
 }
 
+function teamClockUpdate(){
+  var el=document.getElementById('teamClock');
+  if(!el) return;
+  var n=new Date();
+  var h=String(n.getHours()).padStart(2,'0');
+  var m=String(n.getMinutes()).padStart(2,'0');
+  var s=String(n.getSeconds()).padStart(2,'0');
+  el.textContent=h+':'+m+':'+s;
+}
+
 function teamRender(){
   document.getElementById('teamMonthTitle').textContent=_teamYear+'年'+_teamMonth+'月';
   var lastDay=new Date(_teamYear,_teamMonth,0).getDate();
@@ -5394,7 +5407,7 @@ function teamRender(){
     if(isToday) cls.push('today');
     if(isHoliday) cls.push('holiday');
     else if(isWeekend) cls.push('weekend');
-    html+='<th class="'+cls.join(' ')+'" data-col="'+d+'" onclick="teamToggleColumn(this)" title="点击高亮该列">'+d+'<br><small>'+dow+'</small></th>';
+    html+='<th class="'+cls.join(' ')+'" data-col="'+d+'" onclick="teamToggleColumn(this)" title="点击高亮该列">'+d+'<hr style="margin:1px 0;border:none;border-top:1px solid #8899aa">星期'+dow+'</th>';
   }
   html+='</tr></thead><tbody>';
   
@@ -5406,7 +5419,7 @@ function teamRender(){
   });
   
   for(var g in groups){
-    html+='<tr class="team-staff-group"><td colspan="'+(lastDay+2)+'">'+teamEsc(g)+'<span class="team-group-move"><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27up\x27)" title="上移分组">▲</span><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27down\x27)" title="下移分组">▼</span></span></td></tr>';
+    html+='<tr class="team-staff-group"><td colspan="'+(lastDay+2)+'"><span style="cursor:pointer" onclick="event.stopPropagation();teamEditGroup(\x27'+teamEsc(g)+'\x27)" title="点击编辑分组名">'+teamEsc(g)+'</span><span class="team-group-move"><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27up\x27)" title="上移分组">▲</span><span onclick="event.stopPropagation();teamGroupMove(\x27'+g+'\x27,\x27down\x27)" title="下移分组">▼</span></span></td></tr>';
     groups[g].forEach(function(s){
       var ss=_teamSchedule[s.id]||{};
       // 人名行（rowspan=2，人名在上午/下午左边）
@@ -5684,6 +5697,15 @@ function teamGroupMove(groupName, direction){
   teamRender();
 }
 
+function teamEditGroup(oldName){
+  var newName=prompt('编辑分组名称：',oldName);
+  if(!newName||newName.trim()===''||newName.trim()===oldName) return;
+  newName=newName.trim();
+  _teamStaff.forEach(function(s){if(s.group===oldName) s.group=newName;});
+  teamSaveStaff();
+  teamRender();
+}
+
 async function teamCarryOver(){
   if(_teamStaff.length===0){showToast('当前月份没有人员，无需沿用','error');return;}
   var nextM=_teamMonth===12?1:_teamMonth+1;
@@ -5724,7 +5746,8 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
-      <button onclick="teamClose()" style="margin-left:auto">✕</button>
+      <span id="teamClock" style="margin-left:auto;margin-right:8px;font-size:12px;color:#555;white-space:nowrap"></span>
+      <button onclick="teamClose()">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
   </div>
