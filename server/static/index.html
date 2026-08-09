@@ -515,7 +515,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-modal-header #teamMonthTitle{font-size:18px;font-weight:700;color:#1a73e8;min-width:100px;text-align:center}
 .team-modal-body{flex:1;overflow:auto;padding:0}
 .team-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:11px;table-layout:fixed}
-.team-table th,.team-table td{border:1px solid #3a4a5c;padding:1px 0;text-align:center;min-width:48px;max-width:90px;overflow:hidden;word-wrap:break-word;white-space:normal;line-height:1.4}
+.team-table th,.team-table td{border:1px solid #2c3e50;padding:1px 0;text-align:center;min-width:48px;max-width:90px;overflow:hidden;word-wrap:break-word;white-space:normal;line-height:1.4}
 .team-table th{background:#d5dce6;font-weight:600;color:#2c3e50;position:sticky;top:0;z-index:2}
 .team-table th.today{background:#fef3c7;color:#92400e}
 .team-table th.weekend{background:#fce4e4;color:#a94442}
@@ -529,7 +529,7 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-staff-actions .team-edit-btn:hover{color:#1557b0}
 .team-staff-actions .team-del-btn{color:#ea4335}
 .team-staff-actions .team-del-btn:hover{color:#c5221f}
-.team-table tr.team-staff-group td{background:#c8d0db;font-weight:700;font-size:18px;color:#1a3a5c;text-align:center;padding:4px 6px;position:sticky;left:0;z-index:1}
+.team-table tr.team-staff-group td{background:#c8d0db;font-weight:700;font-size:15px;color:#1a3a5c;text-align:center;padding:4px 6px;position:sticky;left:0;z-index:1}
 .team-carry-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1.5px solid #999;background:transparent;color:#999;font-size:14px;cursor:pointer;margin-left:6px;transition:all .2s;line-height:1;padding:0}
 .team-carry-btn:hover{border-color:#1a73e8;color:#1a73e8}
 .team-carry-btn.done{border-color:#34a853;color:#34a853;background:#e6f4ea}
@@ -5724,7 +5724,6 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
-      <span style="font-size:14px;color:#e00;margin-left:8px;font-weight:700">🔴 BUILD v2.4_fix37</span>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
