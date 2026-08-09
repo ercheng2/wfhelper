@@ -5383,8 +5383,8 @@ async function teamSwitchMode(mode){
 function teamUpdateTabs(){
   var outTab=document.getElementById('teamTabOutsource');
   var parTab=document.getElementById('teamTabPartner');
-  if(outTab) outTab.style.background=_teamMode==='outsource'?'#e53e3e':'#e0e0e0';
-  if(parTab) parTab.style.background=_teamMode==='partner'?'#e53e3e':'#e0e0e0';
+  if(outTab) outTab.style.background=_teamMode==='outsource'?'#34a853':'#e0e0e0';
+  if(parTab) parTab.style.background=_teamMode==='partner'?'#34a853':'#e0e0e0';
 }
 
 async function teamClose(){
@@ -5625,8 +5625,6 @@ function teamCellNote(td){
     var day=td.dataset.day;
     var ex=teamEnsureCellData(sid,day);
     ex[sub]=val;
-    var pn=td._teamPreNote||'';
-    if(pn) ex.note=pn;
     teamCleanCellData(sid,day,ex);
     inp.remove();
     td.classList.remove('editing');
@@ -5785,8 +5783,8 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <span id="teamMonthTitle">2026年7月</span>
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
-      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#e53e3e;margin-left:16px">外包</button>
-      <button onclick="teamSwitchMode('partner')" id="teamTabPartner" class="team-tab-btn" style="background:#e0e0e0">兄弟单位合作</button>
+      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#34a853;margin-left:16px">全员日程安排</button>
+      <button onclick="teamSwitchMode('partner')" id="teamTabPartner" class="team-tab-btn" style="background:#e0e0e0">兄弟合同单位</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>
