@@ -5383,10 +5383,15 @@ function teamClockUpdate(){
   var el=document.getElementById('teamClock');
   if(!el) return;
   var n=new Date();
+  var y=n.getFullYear();
+  var mo=String(n.getMonth()+1).padStart(2,'0');
+  var d=String(n.getDate()).padStart(2,'0');
   var h=String(n.getHours()).padStart(2,'0');
-  var m=String(n.getMinutes()).padStart(2,'0');
+  var mi=String(n.getMinutes()).padStart(2,'0');
   var s=String(n.getSeconds()).padStart(2,'0');
-  el.textContent=h+':'+m+':'+s;
+  var week='日一二三四五六'[n.getDay()];
+  var lunar=lunarByDate(y+'-'+mo+'-'+d);
+  el.innerHTML=y+'年'+mo+'月'+d+'日 星期'+week+' '+lunar+' '+h+':'+mi+':'+s;
 }
 
 function teamRender(){
@@ -5740,14 +5745,14 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 <div class="team-modal-overlay" id="teamModalOverlay" style="display:none">
   <div class="team-modal">
     <div class="team-modal-header">
+      <span id="teamClock" style="font-size:11px;color:#555;white-space:nowrap;margin-right:6px"></span>
       <button onclick="teamPrevMonth()">◀</button>
       <span id="teamMonthTitle">2026年7月</span>
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
-      <span id="teamClock" style="margin-left:auto;margin-right:8px;font-size:12px;color:#555;white-space:nowrap"></span>
-      <button onclick="teamClose()">✕</button>
+      <button onclick="teamClose()" style="margin-left:auto">✕</button>
     </div>
     <div class="team-modal-body" id="teamTableContainer"></div>
   </div>
