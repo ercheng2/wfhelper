@@ -533,6 +533,8 @@ body{font-family:'Microsoft YaHei','PingFang SC',sans-serif;background:#f0f2f5;c
 .team-carry-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1.5px solid #999;background:transparent;color:#999;font-size:14px;cursor:pointer;margin-left:6px;transition:all .2s;line-height:1;padding:0}
 .team-carry-btn:hover{border-color:#1a73e8;color:#1a73e8}
 .team-carry-btn.done{border-color:#34a853;color:#34a853;background:#e6f4ea}
+.team-tab-btn{padding:4px 14px;border:1px solid #8899aa;border-radius:6px;background:#e0e0e0;cursor:pointer;font-size:12px;font-weight:700;color:#333;transition:all .15s}
+.team-tab-btn:hover{opacity:.85}
 .team-group-move{display:inline;font-size:11px;cursor:pointer;user-select:none;margin-left:6px}
 .team-group-move span{display:inline-block;padding:0 4px;color:#1a3a5c;border-radius:2px;transition:background .15s}
 .team-group-move span:hover{background:rgba(255,255,255,.5)}
@@ -949,7 +951,7 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
       <button class="ac-copy" id="amountCopyBtn" onclick="amountCopy()" style="display:none">复制</button>
     </div>
     <div style="text-align:center;flex:1">
-      <a href="javascript:void(0)" onclick="teamOpen()" style="color:#e53e3e;font-size:14px;font-weight:700;text-decoration:none">📋 全员日程安排</a>
+      <a href="javascript:void(0)" onclick="teamOpen('outsource')" style="color:#e53e3e;font-size:14px;font-weight:700;text-decoration:none">📋 全员日程安排</a>
     </div>
     <div id="reminderSetting" style="text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
   </div>
@@ -5299,13 +5301,16 @@ function espAddFileToContract(d, opt){
   }
 }
 // === 全员日程安排 ===
-let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false;
+let _teamYear, _teamMonth, _teamStaff=[], _teamSchedule={}, _teamSaving=false, _teamMode='outsource';
+
+function teamStaffKey(){return _teamMode==='partner'?'wfhelper_team_staff_partner':'wfhelper_team_staff';}
+function teamScheduleKey(){return _teamMode==='partner'?'wfhelper_team_schedule_partner':'wfhelper_team_schedule';}
 
 async function teamLoadStaff(){
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-    const r=await fetch('/api/team-staff?month='+m+'&_t='+Date.now());
-    if(r.ok){const d=await r.json();_teamStaff=Array.isArray(d)?d:[];console.log('[team] staff从服务器加载',m,_teamStaff.length+'人');return;}
+    const r=await fetch('/api/team-staff?month='+m+'&mode='+_teamMode+'&_t='+Date.now());
+    if(r.ok){const d=await r.json();_teamStaff=Array.isArray(d)?d:[];console.log('[team] staff从服务器加载',m,_teamMode,_teamStaff.length+'人');return;}
     throw new Error('HTTP '+r.status);
   }catch(e){console.error('[team] staff加载失败:',e);showToast('人员列表加载失败，请刷新重试','error');_teamStaff=[];}
 }
@@ -5313,17 +5318,17 @@ async function teamLoadStaff(){
 async function teamSaveStaff(){
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-    const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,staff:_teamStaff})});
+    const r=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,staff:_teamStaff,mode:_teamMode})});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    console.log('[team] staff已保存到服务器',m);
+    console.log('[team] staff已保存到服务器',m,_teamMode);
   }catch(e){console.error('teamSaveStaff失败:',e);showToast('人员列表保存失败！','error');}
 }
 
 async function teamLoadSchedule(){
   const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
   try{
-    const r=await fetch('/api/team-schedule?month='+m+'&_t='+Date.now());
-    if(r.ok){const d=await r.json();_teamSchedule=d[m]||{};console.log('[team] schedule从服务器加载',m,Object.keys(_teamSchedule).length+'人');return;}
+    const r=await fetch('/api/team-schedule?month='+m+'&mode='+_teamMode+'&_t='+Date.now());
+    if(r.ok){const d=await r.json();_teamSchedule=d[m]||{};console.log('[team] schedule从服务器加载',m,_teamMode,Object.keys(_teamSchedule).length+'人');return;}
     throw new Error('HTTP '+r.status);
   }catch(e){console.error('[team] schedule加载失败:',e);showToast('日程数据加载失败，请刷新重试','error');_teamSchedule={};}
 }
@@ -5333,14 +5338,15 @@ async function teamSaveSchedule(){
   _teamSaving=true;
   try{
     const m=_teamYear+'-'+String(_teamMonth).padStart(2,'0');
-    const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule})});
-    console.log('[team] saveSchedule',r.status);
+    const r=await fetch('/api/team-schedule',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m,data:_teamSchedule,mode:_teamMode})});
+    console.log('[team] saveSchedule',r.status,_teamMode);
     if(!r.ok) throw new Error('HTTP '+r.status);
   }catch(e){console.error('[team] saveSchedule失败:',e);showToast('保存失败！请检查网络后重试','error');}
   finally{_teamSaving=false;}
 }
 
-async function teamOpen(){
+async function teamOpen(mode){
+  if(mode) _teamMode=mode;
   var now=new Date();
   _teamYear=now.getFullYear();
   _teamMonth=now.getMonth()+1;
@@ -5350,6 +5356,35 @@ async function teamOpen(){
   document.getElementById('teamModalOverlay').style.display='flex';
   teamClockUpdate();
   _teamClockTimer=setInterval(teamClockUpdate,1000);
+  teamUpdateTabs();
+}
+
+async function teamSwitchMode(mode){
+  if(_teamMode===mode) return;
+  // 保存当前编辑
+  var ae=document.querySelector('.team-edit-input,.team-edit-textarea');
+  if(ae){
+    var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';
+    var ex=teamEnsureCellData(sid,day);
+    if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}
+    else{ex[sub]=val;}
+    teamCleanCellData(sid,day,ex);
+    td.classList.remove('editing');ae.remove();
+  }
+  while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}
+  await teamSaveSchedule();
+  _teamMode=mode;
+  await teamLoadStaff();
+  await teamLoadSchedule();
+  teamRender();
+  teamUpdateTabs();
+}
+
+function teamUpdateTabs(){
+  var outTab=document.getElementById('teamTabOutsource');
+  var parTab=document.getElementById('teamTabPartner');
+  if(outTab) outTab.style.background=_teamMode==='outsource'?'#e53e3e':'#e0e0e0';
+  if(parTab) parTab.style.background=_teamMode==='partner'?'#e53e3e':'#e0e0e0';
 }
 
 async function teamClose(){
@@ -5718,7 +5753,7 @@ async function teamCarryOver(){
   var nextMonth=nextY+'-'+String(nextM).padStart(2,'0');
   // 先检查下月是否已有人员
   try{
-    var r=await fetch('/api/team-staff?month='+nextMonth+'&_t='+Date.now());
+    var r=await fetch('/api/team-staff?month='+nextMonth+'&mode='+_teamMode+'&_t='+Date.now());
     if(r.ok){
       var d=await r.json();
       if(Array.isArray(d)&&d.length>0){
@@ -5728,7 +5763,7 @@ async function teamCarryOver(){
   }catch(e){}
   // 沿用：当前月人员复制到下月，sortOrder 重置
   var carry=_teamStaff.map(function(s,i){return {id:s.id,group:s.group,name:s.name,sortOrder:i};});
-  var r2=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:nextMonth,staff:carry})});
+  var r2=await fetch('/api/team-staff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:nextMonth,staff:carry,mode:_teamMode})});
   if(r2.ok){
     var btn=document.getElementById('teamCarryBtn');
     if(btn){btn.classList.add('done');}
@@ -5750,6 +5785,8 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <span id="teamMonthTitle">2026年7月</span>
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
+      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#e53e3e;margin-left:16px">外包</button>
+      <button onclick="teamSwitchMode('partner')" id="teamTabPartner" class="team-tab-btn">兄弟单位合作</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
       <button onclick="teamClose()" style="margin-left:auto">✕</button>

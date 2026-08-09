@@ -922,13 +922,12 @@ def init_db():
         conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
                     ('wfhelper_schedule_board', '{}'))
     
-    # Initialize team staff and schedule
-    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_staff'").fetchone():
-        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                    ('wfhelper_team_staff', '{}'))
-    if not conn.execute("SELECT 1 FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone():
-        conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                    ('wfhelper_team_schedule', '{}'))
+    # Initialize team staff and schedule (outsource + partner)
+    for prefix in ['wfhelper_team_staff', 'wfhelper_team_schedule',
+                   'wfhelper_team_staff_partner', 'wfhelper_team_schedule_partner']:
+        if not conn.execute("SELECT 1 FROM kv_store WHERE key=?", (prefix,)).fetchone():
+            conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
+                        (prefix, '{}'))
     
     conn.commit()
     conn.close()
@@ -1482,11 +1481,13 @@ class Handler(BaseHTTPRequestHandler):
                 conn.close()
                 self.send_json(locations)
                 return
-            # API: GET /api/team-staff?month=YYYY-MM
+            # API: GET /api/team-staff?month=YYYY-MM&mode=outsource|partner
             if path == '/api/team-staff':
                 month = params.get('month', [''])[0]
+                mode = params.get('mode', ['outsource'])[0]
+                key = 'wfhelper_team_staff' if mode == 'outsource' else 'wfhelper_team_staff_partner'
                 conn = get_db()
-                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_staff'").fetchone()
+                row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
                 raw = json.loads(row['value']) if row else {}
                 conn.close()
                 # 兼容旧格式（flat array）→ 迁移为当月数据
@@ -1503,16 +1504,18 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(staff)
                 return
             
-            # API: GET /api/team-schedule?month=YYYY-MM
+            # API: GET /api/team-schedule?month=YYYY-MM&mode=outsource|partner
             if path == '/api/team-schedule':
                 month = params.get('month', [''])[0]
+                mode = params.get('mode', ['outsource'])[0]
+                key = 'wfhelper_team_schedule' if mode == 'outsource' else 'wfhelper_team_schedule_partner'
                 conn = get_db()
-                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+                row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
                 schedules = json.loads(row['value']) if row else {}
                 conn.close()
                 if month:
                     data = schedules.get(month, {})
-                    print(f'[team-schedule] GET {month}，{len(data)} 人')
+                    print(f'[team-schedule] GET {month} mode={mode}，{len(data)} 人')
                     self.send_json({month: data})
                 else:
                     self.send_json(schedules)
@@ -2340,16 +2343,18 @@ class Handler(BaseHTTPRequestHandler):
                 body = json.loads(self.read_body().decode('utf-8'))
                 staff = body.get('staff', [])
                 month = body.get('month', '')
-                print(f'[team-staff] 保存 {month} {len(staff)} 人')
+                mode = body.get('mode', 'outsource')
+                key = 'wfhelper_team_staff' if mode == 'outsource' else 'wfhelper_team_staff_partner'
+                print(f'[team-staff] 保存 {month} mode={mode} {len(staff)} 人')
                 conn = get_db()
-                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_staff'").fetchone()
+                row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
                 raw = json.loads(row['value']) if row else {}
                 # 兼容旧格式（flat array）→ 迁移为 month-keyed object
                 if isinstance(raw, list):
                     raw = {month: raw}
                 raw[month] = staff
                 conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                            ('wfhelper_team_staff', json.dumps(raw, ensure_ascii=False)))
+                            (key, json.dumps(raw, ensure_ascii=False)))
                 conn.commit()
                 conn.close()
                 self.send_json({'ok': True})
@@ -2364,22 +2369,19 @@ class Handler(BaseHTTPRequestHandler):
                 body = json.loads(self.read_body().decode('utf-8'))
                 month = body.get('month', '')
                 data = body.get('data', {})
+                mode = body.get('mode', 'outsource')
+                key = 'wfhelper_team_schedule' if mode == 'outsource' else 'wfhelper_team_schedule_partner'
                 cell_count = sum(len(v) for v in data.values()) if isinstance(data, dict) else 0
-                print(f'[team-schedule] POST 保存 {month}，{len(data)} 人，{cell_count} 个单元格，data keys: {list(data.keys())[:3]}...')
+                print(f'[team-schedule] POST 保存 {month} mode={mode}，{len(data)} 人，{cell_count} 个单元格')
                 conn = get_db()
-                row = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
+                row = conn.execute("SELECT value FROM kv_store WHERE key=?", (key,)).fetchone()
                 schedules = json.loads(row['value']) if row else {}
                 schedules[month] = data
                 conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
-                            ('wfhelper_team_schedule', json.dumps(schedules, ensure_ascii=False)))
+                            (key, json.dumps(schedules, ensure_ascii=False)))
                 conn.commit()
-                # 立即验证写入
-                vrow = conn.execute("SELECT value FROM kv_store WHERE key='wfhelper_team_schedule'").fetchone()
-                vschedules = json.loads(vrow['value']) if vrow else {}
-                vdata = vschedules.get(month, {})
-                print(f'[team-schedule] POST 验证: {month}，{len(vdata)} 人，匹配={len(vdata)==len(data)}')
                 conn.close()
-                self.send_json({'ok': True, 'verified': len(vdata)})
+                self.send_json({'ok': True})
             except Exception as e:
                 print(f'[team-schedule] 保存失败: {e}')
                 self.send_json({'error': str(e)}, 500)
