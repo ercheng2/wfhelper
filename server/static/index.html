@@ -943,10 +943,6 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
 
 <!-- === 日程管理面板 === -->
 <div class="panel" id="panel-schedule">
-  <!-- 选中日期显示（顶部） -->
-  <div style="display:none;text-align:left;padding:10px 20px 0;background:linear-gradient(135deg,#f0f4ff,#faf5ff)" id="calSelectedDateWrap">
-    <span id="calSelectedDate" style="font-size:15px;font-weight:700;color:#1a73e8;background:#e8f0fe;padding:4px 16px;border-radius:6px;border:1px solid #8ab4f8"></span>
-  </div>
   <div class="cal-header">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calPrevMonth()" title="上一月">◀</button>
@@ -963,6 +959,7 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
       <button class="ac-copy" id="amountCopyBtn" onclick="amountCopy()" style="display:none">复制</button>
     </div>
     <div style="text-align:center;flex:1;display:flex;align-items:center;justify-content:center;gap:8px">
+      <span id="calSelectedDate" style="font-size:14px;font-weight:700;color:#1a73e8;background:#e8f0fe;padding:2px 12px;border-radius:6px;border:1px solid #8ab4f8;display:none"></span>
       <a href="javascript:void(0)" onclick="teamOpen('outsource')" style="color:#e53e3e;font-size:14px;font-weight:700;text-decoration:none">📋 全员日程安排</a>
     </div>
     <div id="reminderSetting" style="text-align:right;font-size:11px"><a href="javascript:void(0)" onclick="document.querySelector('.tab[data-tab=settings]').click();setTimeout(function(){document.getElementById('reminderDays').focus();},300)" style="color:#7c3aed;text-decoration:none">⚙ 提醒设置</a></div>
@@ -2604,10 +2601,9 @@ function calInit(){
   if(rd) rd.value=calReminderGetDays();
   // 初始化选中日期显示
   var sdEl=document.getElementById('calSelectedDate');
-  var wrapEl=document.getElementById('calSelectedDateWrap');
   if(sdEl){
     sdEl.textContent=_calYear+'年'+_calMonth+'月'+now.getDate()+'日';
-    if(wrapEl) wrapEl.style.display='block';
+    sdEl.style.display='';
   }
   calLoadMonth().then(function(){boardLoad();});
 }
@@ -2702,10 +2698,9 @@ function calGoToday(){
   calLoadMonth().then(function(){boardLoad();});
   // 更新选中日期显示
   var sdEl=document.getElementById('calSelectedDate');
-  var wrapEl=document.getElementById('calSelectedDateWrap');
   if(sdEl){
     sdEl.textContent=_calYear+'年'+_calMonth+'月'+now.getDate()+'日';
-    if(wrapEl) wrapEl.style.display='block';
+    sdEl.style.display='';
   }
 }
 function calSetView(v){
@@ -2817,11 +2812,10 @@ function calSelectDate(ds){
   boardLoad();
   // 更新选中日期显示
   var sdEl=document.getElementById('calSelectedDate');
-  var wrapEl=document.getElementById('calSelectedDateWrap');
   if(sdEl){
     var parts=ds.split('-');
     sdEl.textContent=parts[0]+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日';
-    if(wrapEl) wrapEl.style.display='block';
+    sdEl.style.display='';
   }
 }
 
