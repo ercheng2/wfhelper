@@ -943,6 +943,10 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
 
 <!-- === 日程管理面板 === -->
 <div class="panel" id="panel-schedule">
+  <!-- 选中日期显示（顶部） -->
+  <div style="display:none;text-align:left;padding:10px 20px 0;background:linear-gradient(135deg,#f0f4ff,#faf5ff)" id="calSelectedDateWrap">
+    <span id="calSelectedDate" style="font-size:15px;font-weight:700;color:#1a73e8;background:#e8f0fe;padding:4px 16px;border-radius:6px;border:1px solid #8ab4f8"></span>
+  </div>
   <div class="cal-header">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calPrevMonth()" title="上一月">◀</button>
@@ -1002,10 +1006,6 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
         <input type="text" id="pendingName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardPendingAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardPendingAdd()">+</button>
       </div>
-    </div>
-    <!-- 选中日期显示 -->
-    <div style="padding:8px 14px 2px;display:none" id="calSelectedDateWrap">
-      <span id="calSelectedDate" style="font-size:14px;font-weight:700;color:#1a73e8;background:#e8f0fe;padding:4px 14px;border-radius:6px;border:1px solid #8ab4f8"></span>
     </div>
     <!-- 今日待办 -->
     <div class="board-strip" id="board-today-todo">
