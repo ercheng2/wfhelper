@@ -5679,19 +5679,27 @@ function teamToggleColumn(th){
 function teamGetCellData(val){
   if(!val) return {am:'',pm:'',am_note:'',pm_note:''};
   if(typeof val==='string') return {am:val,pm:'',am_note:'',pm_note:''};
-  if('am' in val||'pm' in val) return {am:val.am||'',pm:val.pm||'',am_note:val.am_note||'',pm_note:val.pm_note||''};
-  return {am:val.v||'',pm:'',am_note:val.am_note||'',pm_note:val.pm_note||''};
+  var r={am:(val.am||val.v||''),pm:(val.pm||''),am_note:'',pm_note:''};
+  if(val.am_note||val.pm_note){r.am_note=val.am_note||'';r.pm_note=val.pm_note||'';}
+  else if(val.note){r.am_note=val.note;r.pm_note=val.note;} // 迁移旧数据
+  return r;
 }
 function teamEnsureCellData(sid,day){
   if(!_teamSchedule[sid]) _teamSchedule[sid]={};
   var ex=_teamSchedule[sid][day];
   if(typeof ex!=='object'||!ex) ex={am:'',pm:'',am_note:'',pm_note:''};
   else if(!('am' in ex)&&!('pm' in ex)) ex={am:ex.v||'',pm:'',am_note:ex.am_note||'',pm_note:ex.pm_note||''};
+  else{
+    // 迁移旧数据中的note到am_note/pm_note
+    if(ex.note&&!ex.am_note&&!ex.pm_note){ex.am_note=ex.note;ex.pm_note=ex.note;}
+    if(!ex.am_note) ex.am_note='';if(!ex.pm_note) ex.pm_note='';
+    delete ex.note;delete ex.v;
+  }
   return ex;
 }
 function teamCleanCellData(sid,day,ex){
   if(!ex.am&&!ex.pm&&!ex.am_note&&!ex.pm_note){delete _teamSchedule[sid][day];}
-  else{_teamSchedule[sid][day]=ex;}
+  else{delete ex.note;delete ex.v;_teamSchedule[sid][day]=ex;}
 }
 
 // 节假日判断（2026年中国法定节假日）
@@ -5896,7 +5904,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <span id="teamMonthTitle">2026年7月</span>
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
-      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#34a853;margin-left:4px">全员日程安排</button>
+      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#34a853;margin-left:0">全员日程安排</button>
       <button onclick="teamSwitchMode('partner')" id="teamTabPartner" class="team-tab-btn" style="background:#e0e0e0">兄弟合同单位</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
