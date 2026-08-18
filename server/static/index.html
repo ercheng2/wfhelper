@@ -988,7 +988,7 @@ td.team-col-highlight.holiday{background:#c8e6c9!important}
     <div class="board-strip" id="board-active-projects">
       <div class="board-strip-header"><span class="strip-title">📌 执行项目</span><span class="strip-badge" id="activeCount">0</span></div>
       <div class="board-strip-body" id="activeList"><div class="board-empty">暂无</div></div>
-      <div class="board-strip-toggle"><button class="btn btn-sm" onclick="boardActiveClearAll()" style="font-size:10px;padding:2px 6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
+      <div class="board-strip-toggle"><label><input type="checkbox" id="activeCarry" onchange="boardActiveCarryToggle(this.checked)">全部延续到明天</label><button class="btn btn-sm" onclick="boardActiveClearAll()" style="font-size:10px;padding:2px 6px;margin-left:6px;color:#ea4335;border-color:#ea4335">全部删除</button></div>
       <div class="board-strip-footer">
         <input type="text" id="activeName" placeholder="项目名称" onkeydown="if(event.key==='Enter')boardActiveAdd()">
         <button class="btn btn-primary btn-sm" onclick="boardActiveAdd()">+</button>
@@ -2582,7 +2582,7 @@ let _calLocationData={}, _calLocationEdit='';
 function emptyBoard(){return {
   daily_must:{carry_over:false,tasks:[]},
   today_todo:{items:[]},
-  active_projects:{projects:[]},
+  active_projects:{carry_over:false,projects:[]},
   pending_projects:{carry_over:false,projects:[]},
   collection:{carry_over:false,items:[]},
   after_sales:{carry_over:false,items:[]},
@@ -2912,7 +2912,8 @@ async function boardLoad(){
     if(_boardData.after_sales.carry_over===undefined) _boardData.after_sales.carry_over=false;
     if(!_boardData.temp_events) _boardData.temp_events={items:[]};
     if(!_boardData.payments) _boardData.payments={items:[]};
-    if(!_boardData.active_projects) _boardData.active_projects={projects:[]};
+    if(!_boardData.active_projects) _boardData.active_projects={carry_over:false,projects:[]};
+    if(_boardData.active_projects.carry_over===undefined) _boardData.active_projects.carry_over=false;
     if(!_boardData.pending_projects) _boardData.pending_projects={carry_over:false,projects:[]};
     _boardCache[_calSelDate]=_boardData;
   }catch(e){console.error(e);_boardData=emptyBoard();_boardCache[_calSelDate]=_boardData;}
@@ -2927,6 +2928,7 @@ async function boardLoad(){
   boardUpdateAllCalendarDots();
   // 同步延续勾选框状态
   var pc=document.getElementById('pendingCarry');if(pc)pc.checked=_boardData.pending_projects.carry_over||false;
+  var ac=document.getElementById('activeCarry');if(ac)ac.checked=_boardData.active_projects.carry_over||false;
   await calReminderRefresh();
 }
 
@@ -3339,8 +3341,7 @@ function boardActiveRender(){
       +'<span style="color:#8b96a5;font-size:10px;min-width:16px">'+(i+1)+'.</span>'
       +'<span class="board-item-title" onclick="boardActiveEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
     if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
-    html+='<span class="board-item-carry"><input type="checkbox"'+(p.carry_over?' checked':'')+' onchange="boardActiveCarry('+i+',this.checked)">延续</span>'
-      +'<input type="checkbox" class="board-active-to-coll" onchange="boardActiveToColl('+i+',this.checked)" title="选中后移到催款项目">催款'
+    html+='<input type="checkbox" class="board-active-to-coll" onchange="boardActiveToColl('+i+',this.checked)" title="选中后移到催款项目">催款'
       +'<span class="board-item-del" onclick="boardActiveDel('+i+')">×</span>'
       +'</div>';
   }
@@ -3349,7 +3350,7 @@ function boardActiveRender(){
 function boardActiveAdd(){
   var name=document.getElementById('activeName').value.trim();
   if(!name) return;
-  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:'',carry_over:false});
+  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name,category:''});
   document.getElementById('activeName').value='';
   boardActiveRender();
   boardSave();
@@ -3370,8 +3371,8 @@ function boardActiveEdit(el,idx){
   el.onblur=save;
   el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}if(e.key==='Escape'){el.textContent=orig;el.blur();}};
 }
-function boardActiveCarry(idx,val){
-  _boardData.active_projects.projects[idx].carry_over=val;
+function boardActiveCarryToggle(val){
+  _boardData.active_projects.carry_over=val;
   boardSave();
 }
 function boardActiveToColl(idx,checked){
@@ -3452,7 +3453,7 @@ function boardPendingEdit(el,idx){
 }
 function boardPendingToActive(idx){
   var p=_boardData.pending_projects.projects.splice(idx,1)[0];
-  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:p.name,category:p.category,carry_over:false});
+  _boardData.active_projects.projects.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:p.name,category:p.category});
   boardPendingRender();
   boardActiveRender();
   boardSave();
