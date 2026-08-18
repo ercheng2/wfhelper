@@ -5476,7 +5476,7 @@ async function teamSwitchMode(mode){
   if(ae){
     var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';
     var ex=teamEnsureCellData(sid,day);
-    if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}
+    if(ae.tagName==='TEXTAREA'){var nk=sub+'_note';if(val){ex[nk]=val;}else{delete ex[nk];}}
     else{ex[sub]=val;}
     teamCleanCellData(sid,day,ex);
     td.classList.remove('editing');ae.remove();
@@ -5503,7 +5503,7 @@ async function teamClose(){
   if(ae){
     var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';
     var ex=teamEnsureCellData(sid,day);
-    if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}
+    if(ae.tagName==='TEXTAREA'){var nk=sub+'_note';if(val){ex[nk]=val;}else{delete ex[nk];}}
     else{ex[sub]=val;}
     teamCleanCellData(sid,day,ex);
     td.classList.remove('editing');ae.remove();
@@ -5513,9 +5513,9 @@ async function teamClose(){
   document.getElementById('teamModalOverlay').style.display='none';
 }
 
-async function teamPrevMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
-async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
-async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){if(val){ex.note=val;}else{delete ex.note;}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
+async function teamPrevMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){var nk=sub+'_note';if(val){ex[nk]=val;}else{delete ex[nk];}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===1){_teamYear--;_teamMonth=12;}else{_teamMonth--;}teamReload();}
+async function teamNextMonth(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){var nk=sub+'_note';if(val){ex[nk]=val;}else{delete ex[nk];}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();if(_teamMonth===12){_teamYear++;_teamMonth=1;}else{_teamMonth++;}teamReload();}
+async function teamGoToday(){var ae=document.querySelector('.team-edit-input,.team-edit-textarea');if(ae){var td=ae.parentElement,val=ae.value.trim(),sid=td.dataset.sid,day=td.dataset.day,sub=td.dataset.sub||'am';var ex=teamEnsureCellData(sid,day);if(ae.tagName==='TEXTAREA'){var nk=sub+'_note';if(val){ex[nk]=val;}else{delete ex[nk];}}else{ex[sub]=val;}teamCleanCellData(sid,day,ex);td.classList.remove('editing');ae.remove();}while(_teamSaving){await new Promise(function(r){setTimeout(r,50);});}await teamSaveSchedule();var n=new Date();_teamYear=n.getFullYear();_teamMonth=n.getMonth()+1;teamReload();}
 
 async function teamReload(){
   var btn=document.getElementById('teamCarryBtn');if(btn)btn.classList.remove('done');
@@ -5587,7 +5587,7 @@ function teamRender(){
         if(isHoliday) cls.push('holiday');
         else if(isWeekend) cls.push('weekend');
         var cellHtml=teamEsc(cd.am);
-        if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
+        if(cd.am_note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.am_note)+'</span>';}
         html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" data-sub="am" title="单击编辑上午排班，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
@@ -5606,7 +5606,7 @@ function teamRender(){
         if(isHoliday) cls.push('holiday');
         else if(isWeekend) cls.push('weekend');
         var cellHtml=teamEsc(cd.pm);
-        if(cd.note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.note)+'</span>';}
+        if(cd.pm_note){cellHtml+='<span class="team-cell-note">'+teamEsc(cd.pm_note)+'</span>';}
         html+='<td class="'+cls.join(' ')+'" data-sid="'+s.id+'" data-day="'+d+'" data-sub="pm" title="单击编辑下午排班，双击编辑批注">'+cellHtml+'</td>';
       }
       html+='</tr>';
@@ -5677,20 +5677,20 @@ function teamToggleColumn(th){
 }
 
 function teamGetCellData(val){
-  if(!val) return {am:'',pm:'',note:''};
-  if(typeof val==='string') return {am:val,pm:'',note:''};
-  if('am' in val||'pm' in val) return {am:val.am||'',pm:val.pm||'',note:val.note||''};
-  return {am:val.v||'',pm:'',note:val.note||''};
+  if(!val) return {am:'',pm:'',am_note:'',pm_note:''};
+  if(typeof val==='string') return {am:val,pm:'',am_note:'',pm_note:''};
+  if('am' in val||'pm' in val) return {am:val.am||'',pm:val.pm||'',am_note:val.am_note||'',pm_note:val.pm_note||''};
+  return {am:val.v||'',pm:'',am_note:val.am_note||'',pm_note:val.pm_note||''};
 }
 function teamEnsureCellData(sid,day){
   if(!_teamSchedule[sid]) _teamSchedule[sid]={};
   var ex=_teamSchedule[sid][day];
-  if(typeof ex!=='object'||!ex) ex={am:'',pm:'',note:''};
-  else if(!('am' in ex)&&!('pm' in ex)) ex={am:ex.v||'',pm:'',note:ex.note||''};
+  if(typeof ex!=='object'||!ex) ex={am:'',pm:'',am_note:'',pm_note:''};
+  else if(!('am' in ex)&&!('pm' in ex)) ex={am:ex.v||'',pm:'',am_note:ex.am_note||'',pm_note:ex.pm_note||''};
   return ex;
 }
 function teamCleanCellData(sid,day,ex){
-  if(!ex.am&&!ex.pm&&!ex.note){delete _teamSchedule[sid][day];}
+  if(!ex.am&&!ex.pm&&!ex.am_note&&!ex.pm_note){delete _teamSchedule[sid][day];}
   else{_teamSchedule[sid][day]=ex;}
 }
 
@@ -5715,7 +5715,7 @@ function teamCellEdit(td){
   var sub=td.dataset.sub||'am';
   var cd=teamGetCellData(_teamSchedule[sid]?.[day]);
   td.classList.add('editing');
-  td._teamPreNote=cd.note||'';
+  td._teamPreNote=cd[sub+'_note']||'';
   td.innerHTML='';
   var inp=document.createElement('input');
   inp.className='team-edit-input';
@@ -5747,7 +5747,7 @@ function teamCellNote(td){
   td.innerHTML='';
   var ta=document.createElement('textarea');
   ta.className='team-edit-textarea';
-  ta.value=cd.note;
+  ta.value=cd[sub+'_note'];
   ta.placeholder='输入批注...';
   ta.addEventListener('blur',function(){teamCellSaveNote(ta);});
   td.appendChild(ta);
@@ -5764,11 +5764,13 @@ async function teamCellSaveNote(ta){
   ta.remove();
   
   var ex=teamEnsureCellData(sid,day);
-  if(note){ex.note=note;}else{delete ex.note;}
+  var noteKey=sub+'_note';
+  if(note){ex[noteKey]=note;}else{delete ex[noteKey];}
   teamCleanCellData(sid,day,ex);
   
   var cd=teamGetCellData(_teamSchedule[sid][day]);
-  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
+  var cellNote=cd[noteKey];
+  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cellNote?'<span class="team-cell-note">'+teamEsc(cellNote)+'</span>':'');
   await teamSaveSchedule();
 }
 
@@ -5786,7 +5788,8 @@ async function teamCellSave(inp){
   teamCleanCellData(sid,day,ex);
   
   var cd=teamGetCellData(_teamSchedule[sid][day]);
-  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cd.note?'<span class="team-cell-note">'+teamEsc(cd.note)+'</span>':'');
+  var cellNote=cd[sub+'_note'];
+  td.innerHTML=teamEsc(sub==='am'?cd.am:cd.pm)+(cellNote?'<span class="team-cell-note">'+teamEsc(cellNote)+'</span>':'');
   await teamSaveSchedule();
 }
 
@@ -5893,7 +5896,7 @@ function teamEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
       <span id="teamMonthTitle">2026年7月</span>
       <button onclick="teamNextMonth()">▶</button>
       <button onclick="teamGoToday()">今天</button>
-      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#34a853;margin-left:16px">全员日程安排</button>
+      <button onclick="teamSwitchMode('outsource')" id="teamTabOutsource" class="team-tab-btn" style="background:#34a853;margin-left:4px">全员日程安排</button>
       <button onclick="teamSwitchMode('partner')" id="teamTabPartner" class="team-tab-btn" style="background:#e0e0e0">兄弟合同单位</button>
       <button onclick="teamAddStaff()" style="margin-left:12px">+ 添加人员</button>
       <button class="team-carry-btn" id="teamCarryBtn" onclick="teamCarryOver()" title="沿用当前人员到下月">↻</button>
