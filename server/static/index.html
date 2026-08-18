@@ -3340,6 +3340,7 @@ function boardActiveRender(){
       +'<span class="board-item-title" onclick="boardActiveEdit(this,'+i+')">'+calEsc(p.name)+'</span>';
     if(p.category) html+='<span class="board-item-tag">'+calEsc(p.category)+'</span>';
     html+='<span class="board-item-carry"><input type="checkbox"'+(p.carry_over?' checked':'')+' onchange="boardActiveCarry('+i+',this.checked)">延续</span>'
+      +'<input type="checkbox" class="board-active-to-coll" onchange="boardActiveToColl('+i+',this.checked)" title="选中后移到催款项目">催款'
       +'<span class="board-item-del" onclick="boardActiveDel('+i+')">×</span>'
       +'</div>';
   }
@@ -3371,6 +3372,15 @@ function boardActiveEdit(el,idx){
 }
 function boardActiveCarry(idx,val){
   _boardData.active_projects.projects[idx].carry_over=val;
+  boardSave();
+}
+function boardActiveToColl(idx,checked){
+  if(!checked) return;
+  var p=_boardData.active_projects.projects[idx];
+  _boardData.collection.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:p.name});
+  _boardData.active_projects.projects.splice(idx,1);
+  boardActiveRender();
+  boardCollRender();
   boardSave();
 }
 function boardPendingCarryToggle(val){
