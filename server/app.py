@@ -1190,11 +1190,11 @@ class Handler(BaseHTTPRequestHandler):
                             'carry_over': False,
                             'items': [dict(t) for t in prev['after_sales']['items']]
                         }
-                    for p in prev.get('active_projects', {}).get('projects', []):
-                        if p.get('carry_over'):
-                            copied = dict(p)
-                            copied['carry_over'] = False
-                            new_entry['active_projects']['projects'].append(copied)
+                    if prev.get('active_projects', {}).get('carry_over'):
+                        new_entry['active_projects'] = {
+                            'carry_over': False,
+                            'projects': [dict(p) for p in prev['active_projects']['projects']]
+                        }
                     board[date] = new_entry
                     conn = get_db()
                     conn.execute("INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)",
@@ -1210,7 +1210,7 @@ class Handler(BaseHTTPRequestHandler):
                     curr_has_coll = bool(existing.get('collection', {}).get('items'))
                     prev_as_carry = prev.get('after_sales', {}).get('carry_over', False)
                     curr_has_as = bool(existing.get('after_sales', {}).get('items'))
-                    prev_ap_carry = any(p.get('carry_over') for p in prev.get('active_projects', {}).get('projects', []))
+                    prev_ap_carry = prev.get('active_projects', {}).get('carry_over', False)
                     curr_has_ap = bool(existing.get('active_projects', {}).get('projects'))
                     prev_pp_carry = prev.get('pending_projects', {}).get('carry_over', False)
                     curr_has_pp = bool(existing.get('pending_projects', {}).get('projects'))
@@ -1219,15 +1219,9 @@ class Handler(BaseHTTPRequestHandler):
                     if not curr_has_dm and prev_dm_carry:
                         existing['daily_must'] = {'carry_over': False, 'tasks': [dict(t) for t in prev['daily_must']['tasks']]}
                         modified = True
-                    # 执行项目：空+前一天有延续→补填（项目级延续）
+                    # 执行项目：空+前一天有延续→补填（板块级延续）
                     if not curr_has_ap and prev_ap_carry:
-                        if 'active_projects' not in existing:
-                            existing['active_projects'] = {'projects': []}
-                        for p in prev.get('active_projects', {}).get('projects', []):
-                            if p.get('carry_over'):
-                                copied = dict(p)
-                                copied['carry_over'] = False
-                                existing['active_projects']['projects'].append(copied)
+                        existing['active_projects'] = {'carry_over': False, 'projects': [dict(p) for p in prev.get('active_projects', {}).get('projects', [])]}
                         modified = True
                     # 待执行项目：空+前一天有延续→补填（板块级延续）
                     if not curr_has_pp and prev_pp_carry:
